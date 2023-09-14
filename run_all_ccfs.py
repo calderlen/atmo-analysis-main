@@ -1300,13 +1300,71 @@ def run_one_ccf(species_label, vmr, arm, observation_epoch, template_wave, templ
         plotname = '/home/calder/Documents/atmo-analysis-main/plots/' + planet_name + '.' + observation_epoch + '.' + species_name_ccf + model_tag + '.CCFs-raw.pdf'
         psarr(cross_cor, drv, orbital_phase, 'v (km/s)', 'orbital phase', 'SNR', filename=plotname, ctable='gist_gray')
 
+        #Importing Packages
+        from scipy.optimize import curve_fit
+
+        def gaussian(x, a, mu, sigma):
+
+            '''
+            Inputs:
+            x: x values
+            a: amplitude
+            mu: mean
+            sigma: standard deviation
+
+            Output:
+            Gaussian function
+            '''
+            return a * np.exp(-(x - mu)**2 / (2 * sigma**2))
+
+        # Fitting a Guassian to the 1D slice during transit
+
+        amps = []
+        amps_err = []
+        centers = []
+        centers_err = []
+        sigmas = []
+        sigmas_err = []
+
+        phase_slices = []
+
+        phase = 0.0
+
+        for i in range(len(orbital_phase)):
+            current_slice = cross_cor[i, :]
+            phase_slices.append(current_slice)
+            popt, pcov = curve_fit(gaussian, drv, current_slice, p0=[1, 0, 1])
+
+            amps.append(popt[0])
+            centers.append(popt[1])
+            sigmas.append(popt[2])
+
+            # Storing errors (standard deviations)
+            amps_err.append(np.sqrt(pcov[0, 0]))
+            centers_err.append(np.sqrt(pcov[1, 1]))
+            sigmas_err.append(np.sqrt(pcov[2, 2]))
+
+        # Selecting a specific phase slice
+        selected_idx = np.argmin(np.abs(orbital_phase - phase))
+        selected_slice = phase_slices[selected_idx]
+
+        # Fitting a Gaussian to the selected slice
+        popt_selected = [amps[selected_idx], centers[selected_idx], sigmas[selected_idx]]
+
+        # Plotting the fit parameters for the phase slice
+        pl.plot(drv, selected_slice, 'o', label='data')
+        pl.plot(drv, gaussian(drv, *popt_selected), 'r-', label='fit')
+        pl.legend()
+
+        pl.show()
+
+        breakpoint()
     
         snr, Kp, drv = combine_ccfs(drv, cross_cor, sigma_cross_cor, orbital_phase, n_spectra, ccf_weights, half_duration_phase, temperature_profile)
         make_shifted_plot(snr, planet_name, observation_epoch, arm, species_name_ccf, model_tag, RV_abs, Kp_expected, V_sys_true, Kp_true, do_inject_model, True, drv, Kp, species_label, temperature_profile, method)
 
         get_peak_snr(snr, drv, Kp, do_inject_model, V_sys_true, Kp_true, RV_abs, Kp_expected, arm, observation_epoch, f, method)
 
-        #import pdb; pdb.set_trace()
 
 
     if 'likelihood' in method:

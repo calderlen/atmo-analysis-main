@@ -8,6 +8,14 @@ def psarr(inarr,xaxis,yaxis,xname,yname,zname,filename=' ',contour=False,clevels
         Generates a color-mapped 2D plot of a given data array (inarr) against x and y axes. Can include contour lines, a colorbar, 
         and text labels. It can also save the plot to a file.
 
+           - Sets the figure size based on provided parameters.
+           - Creates a color map of the data (inarr) against the provided x and y axes.
+           - Depending on the options selected, it can add white dotted lines to the plot.
+           - Adds a color bar (optional).
+           - Can overlay contour lines (optional).
+           - Can overlay text on the plot (optional).
+           - Saves the plot to a file (optional).
+
         Inputs:
             inarr - 2D array of values to be plotted
             xaxis - 2D array of xaxis values
@@ -29,7 +37,7 @@ def psarr(inarr,xaxis,yaxis,xname,yname,zname,filename=' ',contour=False,clevels
             carr - unused; default = np.zeros(1)
             points - unused; default = False
             xypoints - unused; default = 0
-            xyerr - unused; default = 0
+            xyerr - unused; default = 0 
             xysyms - unused; default = 'o'
             levels - unused; default = 0
             alines - T/F;  ; default = False
@@ -99,7 +107,12 @@ def mktslprplot(profarr,profarrerr,vabsfine,phase,phase2,vsini,bpar,RpRs,filenam
     Inputs:
 
         Processes profile data and then calls the psarr function to generate a plot. Plot represents changes in a stellar line profile 
-        over the phase of a transit.
+        over the phase of a transit.\
+        
+        - Calculates a parameter called rmsprof that seems to be the standard deviation of the profiles outside a certain velocity range.
+        - Re-bins the profile data in phase or time (using a new grid of phases or times).
+        - Calculates some transit-related parameters like the time at different transit phases.
+        - Finally, it calls the psarr function to plot the processed data
 
         profarr - 2D array of profiles
         profarrerr - 2D array of profile errors; unused
@@ -117,10 +130,6 @@ def mktslprplot(profarr,profarrerr,vabsfine,phase,phase2,vsini,bpar,RpRs,filenam
         weighted - T/F; if true, weights the profiles by their rms; default = True
         usetime - T/F; if true, plots time instead of phase; default = False
         dur - duration of transit in days; default = 0.
-
-
-
-
     """
     nexps=len(phase)
     nvabsfine=len(vabsfine)
