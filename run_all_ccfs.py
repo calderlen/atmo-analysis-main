@@ -5,6 +5,7 @@ from glob import glob
 from astropy.io import fits
 
 from scipy.stats import chisquare
+from scipy.optimize import curve_fit
 
 from astropy.time import Time
 from astropy.coordinates import SkyCoord, EarthLocation
@@ -971,10 +972,10 @@ def combine_ccfs(drv, cross_cor, sigma_cross_cor, orbital_phase, n_spectra, ccf_
     
     sigma_shifted_ccfs = np.sqrt(var_shifted_ccfs)
 
-    goods = np.abs(drv) <= 200.
+    #goods = np.abs(drv) <= 200.
 
-    drv = drv[goods]
-    shifted_ccfs, sigma_shifted_ccfs = shifted_ccfs[:,goods], sigma_shifted_ccfs[:,goods]
+    #drv = drv[goods]
+    #shifted_ccfs, sigma_shifted_ccfs = shifted_ccfs[:,goods], sigma_shifted_ccfs[:,goods]
 
     shifted_ccfs -= np.median(shifted_ccfs) #handle any offset
 
@@ -1048,7 +1049,7 @@ def make_shifted_plot(snr, planet_name, observation_epoch, arm, species_name_ccf
     plotsnr, Kp = plotsnr[keepKp, :], Kp[keepKp]
     psarr(plotsnr, drv, Kp, '$V_{\mathrm{sys}}$ (km/s)', '$K_p$ (km/s)', zlabel, filename=plotname, ctable=ctable, alines=True, apoints=apoints, acolor='cyan', textstr=species_label+' '+model_label, textloc = np.array([apoints[0]-75.,apoints[1]+75.]), textcolor='cyan', fileformat=plotformat)
 
-    breakpoint()
+   # breakpoint()
     
 def get_peak_snr(snr, drv, Kp, do_inject_model, V_sys_true, Kp_true, RV_abs, Kp_expected, arm, observation_epoch, f, method):
 
@@ -1232,8 +1233,7 @@ def run_one_ccf(species_label, vmr, arm, observation_epoch, template_wave, templ
 
     #Make some diagnostic
     sysrem_file = '/home/calder/Documents/atmo-analysis-main/data_products/' + planet_name + '.' + observation_epoch + '.' + arm + '.SYSREM-' + str(n_systematics[0]) + '+' + str(n_systematics[1])+model_tag+'.npy'
-
-    
+ 
     if do_sysrem:
         
         corrected_flux, corrected_error = do_sysrem(wave, residual_flux, arm, airmass, n_spectra, niter, n_systematics, do_molecfit)
@@ -1300,67 +1300,8 @@ def run_one_ccf(species_label, vmr, arm, observation_epoch, template_wave, templ
         plotname = '/home/calder/Documents/atmo-analysis-main/plots/' + planet_name + '.' + observation_epoch + '.' + species_name_ccf + model_tag + '.CCFs-raw.pdf'
         psarr(cross_cor, drv, orbital_phase, 'v (km/s)', 'orbital phase', 'SNR', filename=plotname, ctable='gist_gray')
 
-        #Importing Packages
-        from scipy.optimize import curve_fit
-
-        def gaussian(x, a, mu, sigma):
-
-            '''
-            Inputs:
-            x: x values
-            a: amplitude
-            mu: mean
-            sigma: standard deviation
-
-            Output:
-            Gaussian function
-            '''
-            return a * np.exp(-(x - mu)**2 / (2 * sigma**2))
-
-        # Fitting a Guassian to the 1D slice during transit
-
-        amps = []
-        amps_err = []
-        centers = []
-        centers_err = []
-        sigmas = []
-        sigmas_err = []
-
-        phase_slices = []
-
-        phase = 0.0
-
-        for i in range(len(orbital_phase)):
-            current_slice = cross_cor[i, :]
-            phase_slices.append(current_slice)
-            popt, pcov = curve_fit(gaussian, drv, current_slice, p0=[1, 0, 1])
-
-            amps.append(popt[0])
-            centers.append(popt[1])
-            sigmas.append(popt[2])
-
-            # Storing errors (standard deviations)
-            amps_err.append(np.sqrt(pcov[0, 0]))
-            centers_err.append(np.sqrt(pcov[1, 1]))
-            sigmas_err.append(np.sqrt(pcov[2, 2]))
-
-        # Selecting a specific phase slice
-        selected_idx = np.argmin(np.abs(orbital_phase - phase))
-        selected_slice = phase_slices[selected_idx]
-
-        # Fitting a Gaussian to the selected slice
-        popt_selected = [amps[selected_idx], centers[selected_idx], sigmas[selected_idx]]
-
-        # Plotting the fit parameters for the phase slice
-        pl.plot(drv, selected_slice, 'o', label='data')
-        pl.plot(drv, gaussian(drv, *popt_selected), 'r-', label='fit')
-        pl.legend()
-
-        pl.show()
-
-        breakpoint()
-    
         snr, Kp, drv = combine_ccfs(drv, cross_cor, sigma_cross_cor, orbital_phase, n_spectra, ccf_weights, half_duration_phase, temperature_profile)
+        
         make_shifted_plot(snr, planet_name, observation_epoch, arm, species_name_ccf, model_tag, RV_abs, Kp_expected, V_sys_true, Kp_true, do_inject_model, True, drv, Kp, species_label, temperature_profile, method)
 
         get_peak_snr(snr, drv, Kp, do_inject_model, V_sys_true, Kp_true, RV_abs, Kp_expected, arm, observation_epoch, f, method)
@@ -1383,8 +1324,45 @@ def run_one_ccf(species_label, vmr, arm, observation_epoch, template_wave, templ
 
         make_shifted_plot(shifted_lnL, planet_name, observation_epoch, arm, species_name_ccf, model_tag, RV_abs, Kp_expected, V_sys_true, Kp_true, do_inject_model, True, drv, Kp, species_label, temperature_profile, method)
 
-        
-        
+def gaussian(x, a, mu, sigma):
+
+    '''
+    Inputs:
+    x: x values
+    a: amplitude
+    mu: mean
+    sigma: standard deviation
+
+    Output:
+    Gaussian function
+    '''
+    return a * np.exp(-(x - mu)**2 / (2 * sigma**2))
+
+
+def multi_gaussian(x, *params):
+    """Fit multiple Gaussians.
+    
+    Inputs:
+    x: x values
+    a: amplitude
+    mu: mean
+    sigma: standard deviation
+
+    Output:
+    Gaussian function
+
+    
+    Params should contain tuples of (a, mu, sigma) for each Gaussian.
+    For example, for two Gaussians, params should be (a1, mu1, sigma1, a2, mu2, sigma2).
+    """
+    y = np.zeros_like(x)
+    for i in range(0, len(params), 3):
+        a = params[i]
+        mu = params[i+1]
+        sigma = params[i+2]
+        y = y + a * np.exp(-(x - mu)**2 / (2 * sigma**2))
+    return y
+
 
 def combine_observations(observation_epochs, arms, planet_name, temperature_profile, species_label, species_name_ccf, model_tag, RV_abs, Kp_expected, do_inject_model, f, method):
 
@@ -1452,6 +1430,103 @@ def combine_observations(observation_epochs, arms, planet_name, temperature_prof
     make_shifted_plot(snr, planet_name, all_epochs, all_arms, species_name_ccf, model_tag, RV_abs, Kp_expected, V_sys_true, Kp_true, do_inject_model, True, drv, Kp, species_label, temperature_profile, method)
 
     #import pdb; pdb.set_trace()
+
+    
+
+    # Fitting a Gaussian to the 1D slice during transit
+
+    # Initializing lists to store fit parameters
+    amps = []
+    amps_err = []
+    centers = []
+    centers_err = []
+    sigmas = []
+    sigmas_err = []
+
+    phase_slices = []
+
+    phase = 0.0
+
+   # breakpoint()
+
+    # Fitting gaussian to all 1D slices
+    for i in range(len(orbital_phase)):
+        current_slice = -1 * cross_cor[i, :]
+        phase_slices.append(current_slice)
+        popt, pcov = curve_fit(gaussian, drv, current_slice, p0=[5, 4, 10])
+
+        amps.append(popt[0])
+        centers.append(popt[1])
+        sigmas.append(popt[2])
+
+        # Storing errors (standard deviations)
+        amps_err.append(np.sqrt(pcov[0, 0]))
+        centers_err.append(np.sqrt(pcov[1, 1]))
+        sigmas_err.append(np.sqrt(pcov[2, 2]))
+
+    # Selecting a specific phase slice to ultimately fit and plot a Gaussian to
+    #selected_idx = np.argmax(amps)
+    selected_idx = np.argmin(np.abs(orbital_phase - phase))
+
+    selected_slice = phase_slices[selected_idx]
+
+    # Fitting a Gaussian to the selected slice
+    popt_selected = [amps[selected_idx], centers[selected_idx], sigmas[selected_idx]]
+    print('Selected SNR:' ,amps[selected_idx], '\n Selected Vsys:', centers[selected_idx], '\n Selected sigma:', sigmas[selected_idx])
+
+
+    # Computing residuals and reduced chi-square for the selected slice
+    residuals = []
+    chi2_red = []
+
+   # for i in range(len(orbital_phase)):
+   #     current_slice = cross_cor[i, :]
+   #     popt, pcov = curve_fit(gaussian, drv, current_slice, p0=[1, 0, 1])
+   #     
+   #     # Compute residuals and reduced chi-square
+   #     residual = current_slice - gaussian(drv, *popt)
+   #     residuals.append(residual)
+   #     chi2 = np.sum((residual / np.std(residual))**2)
+   #     chi2_red.append(chi2 / (len(drv) - len(popt)))
+
+
+
+    # Plotting the fit parameters for the phase slice
+    pl.plot(drv, selected_slice, 'o', label='data')
+    pl.plot(drv, gaussian(drv, *popt_selected), 'r-', label='fit')
+    pl.xlabel('Velocity (km/s)')
+    pl.ylabel('SNR')
+    pl.legend()
+    params_str = f"Peak (a): {popt_selected[0]:.2f}\nMean (mu): {popt_selected[1]:.2f}\nSigma: {popt_selected[2]:.2f}\nOrbital Phase Slice: {orbital_phase[selected_idx]:.2f}"
+    pl.text(0.05, 0.95, params_str, transform=pl.gca().transAxes, verticalalignment='top')
+    pl.show()
+    breakpoint()
+
+    # Fitting a curve to the velocity centers versus orbital phase
+    # popt_centers, pcov_centers = curve_fit(linear, orbital_phase, centers, p0=[0, 0])
+    
+
+
+    # Plotting velocity offset vs. orbital phase of the selected species 
+    pl.figure()
+    pl.errorbar(np.unique(orbital_phase), centers, yerr=centers_err, fmt='o-', label='Center')
+    pl.xlabel('Orbital Phase')
+    pl.ylabel('Center')
+    pl.title('Center vs. Orbital Phase')
+    pl.legend()
+    pl.show()
+
+    # Plotting sigma vs. orbital phase of the selected species
+    pl.figure()
+    pl.plot(drv, np.sin(drv, *popt_selected), 'r-', label='fit')
+    pl.errorbar(sigmas, centers, yerr=centers_err, fmt='o-', label='Center')
+    pl.xlabel('Orbital Phase')
+    pl.ylabel('Sigma')
+    pl.title('Sigma vs. Orbital Phase')
+    pl.legend()
+    pl.show()
+
+    breakpoint()
 
     get_peak_snr(snr, drv, Kp, do_inject_model, V_sys_true, Kp_true, RV_abs, Kp_expected, all_arms, all_epochs, f, method)
     
@@ -1524,5 +1599,6 @@ def run_all_ccfs(planet_name, temperature_profile, species_label, vmr, do_inject
     
     combine_observations(observation_epochs, arms, planet_name, temperature_profile, species_label, species_name_ccf, model_tag, RV_abs, Kp_expected, do_inject_model, f, method)
 
+    
     f.close()
     
