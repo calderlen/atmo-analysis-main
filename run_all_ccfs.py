@@ -1494,12 +1494,19 @@ def combine_observations(observation_epochs, arms, planet_name, temperature_prof
     # Plotting the fit parameters for the phase slice
     pl.plot(drv, selected_slice, 'o', label='data')
     pl.plot(drv, gaussian(drv, *popt_selected), 'r-', label='fit')
+   
+    residuals = gaussian(drv, *popt_selected) - selected_slice
+   
+   
+   
+   
     pl.xlabel('Velocity (km/s)')
     pl.ylabel('SNR')
     pl.legend()
     params_str = f"Peak (a): {popt_selected[0]:.2f}\nMean (mu): {popt_selected[1]:.2f}\nSigma: {popt_selected[2]:.2f}\nOrbital Phase Slice: {orbital_phase[selected_idx]:.2f}"
     pl.text(0.05, 0.95, params_str, transform=pl.gca().transAxes, verticalalignment='top')
     pl.show()
+
     breakpoint()
 
     # Fitting a curve to the velocity centers versus orbital phase
@@ -1518,7 +1525,8 @@ def combine_observations(observation_epochs, arms, planet_name, temperature_prof
 
     # Plotting sigma vs. orbital phase of the selected species
     pl.figure()
-    pl.plot(drv, np.sin(drv, *popt_selected), 'r-', label='fit')
+    pl.plot(drv, gaussian(drv, *popt_selected), 'r-', label='fit')
+
     pl.errorbar(sigmas, centers, yerr=centers_err, fmt='o-', label='Center')
     pl.xlabel('Orbital Phase')
     pl.ylabel('Sigma')
