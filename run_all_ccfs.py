@@ -34,10 +34,21 @@ pl.rc('xtick', labelsize=14) #fontsize of the x tick labels
 pl.rc('ytick', labelsize=14) #fontsize of the y tick labels
 pl.rc('legend', fontsize=14) #fontsize of the legend
 
+
+ 
 def get_species_keys(species_label):
+    """
+    Given a species label, returns the corresponding species name for injection and CCF calculation.
+    If the species label is not found in the list, the function will not return anything.
 
-# Add species here!!!!
+    Args:
+    - species_label (str): The label of the species for which to retrieve the corresponding names.
 
+    Returns:
+    - species_name_inject (str): The name of the species to be used for injection.
+    - species_name_ccf (str): The name of the species to be used for CCF calculation.
+    """
+    
     if species_label == 'TiO':
         species_name_inject = 'TiO_all_iso_Plez'
         species_name_ccf = 'TiO_all_iso_Plez'
@@ -49,11 +60,11 @@ def get_species_keys(species_label):
     if species_label == 'TiO_47':
         species_name_inject = 'TiO_47_Exomol_McKemmish'
         species_name_ccf = 'TiO_47_Exomol_McKemmish'
-       
+
     if species_label == 'TiO_48':
         species_name_inject = 'TiO_48_Exomol_McKemmish'
         species_name_ccf = 'TiO_48_Exomol_McKemmish'
-         
+        
     if species_label == 'TiO_49':
         species_name_inject = 'TiO_49_Exomol_McKemmish'
         species_name_ccf = 'TiO_49_Exomol_McKemmish'
@@ -61,11 +72,11 @@ def get_species_keys(species_label):
     if species_label == 'TiO_50':
         species_name_inject = 'TiO_50_Exomol_McKemmish'
         species_name_ccf = 'TiO_50_Plez'
-    
+
     if species_label == 'VO':
         species_name_inject = 'VO_ExoMol_McKemmish'
         species_name_ccf = 'VO_ExoMol_McKemmish'
-    
+
     if species_label == 'FeH':
         species_name_inject = 'FeH_main_iso'
         species_name_ccf = 'FeH_main_iso'
@@ -73,7 +84,7 @@ def get_species_keys(species_label):
     if species_label == 'CaH':
         species_name_inject = 'CaH'
         species_name_ccf = 'CaH'
-    
+
     if species_label == 'Fe I':
         species_name_inject = 'Fe'
         species_name_ccf = 'Fe'
@@ -93,7 +104,7 @@ def get_species_keys(species_label):
     if species_label == 'Mg II':
         species_name_inject = 'Mg+'
         species_name_ccf = 'Mg+'
-    
+
     if species_label == 'Fe II':
         species_name_inject = 'Fe+'
         species_name_ccf = 'Fe+'
@@ -101,7 +112,7 @@ def get_species_keys(species_label):
     if species_label == 'Cr I':
         species_name_inject = 'Cr'
         species_name_ccf = 'Cr'
-    
+
     if species_label == 'Si I':
         species_name_inject = 'Si'
         species_name_ccf = 'Si'
@@ -117,11 +128,11 @@ def get_species_keys(species_label):
     if species_label == 'SiO':
         species_name_inject = 'SiO_main_iso_new_incl_UV'
         species_name_ccf = 'SiO_main_iso_new_incl_UV'
-    
+
     if species_label == 'H2O':
         species_name_inject = 'H2O_main_iso'
         species_name_ccf = 'H2O_main_iso'
-    
+
     if species_label == 'OH':
         species_name_inject = 'OH_main_iso'
         species_name_ccf = 'OH_main_iso'
@@ -145,11 +156,11 @@ def get_species_keys(species_label):
     if species_label == 'AlO':
         species_name_inject = 'AlO' 
         species_name_ccf = 'AlO'
-    
+
     if species_label == 'Ba I':
         species_name_inject = 'Ba'
         species_name_ccf = 'Ba'
-    
+
     if species_label == 'Ba II':
         species_name_inject == 'Ba+'
         species_name_ccf == 'Ba+'
@@ -157,7 +168,7 @@ def get_species_keys(species_label):
     if species_label == 'CaO':
         species_name_inject = 'CaO'
         species_name_ccf = 'CaO'
-    
+
     if species_label == 'Co I':
         species_name_inject = 'Co' 
         species_name_ccf = 'Co'
@@ -193,11 +204,11 @@ def get_species_keys(species_label):
     if species_label == 'Ir I':
         species_name_inject = 'Ir' 
         species_name_ccf = 'Ir'
-    
+
     if species_label == 'Mn I':
         species_name_inject = 'Mn' 
         species_name_ccf = 'Mn'
-    
+
     if species_label == 'Mo I':
         species_name_inject = 'Mo'
         species_name_ccf = 'Mo'
@@ -218,27 +229,27 @@ def get_species_keys(species_label):
     if species_label == 'Ni I':
         species_name_inject = 'Ni'
         species_name_ccf = 'Ni'
-    
+
     if species_label == 'O I':
         species_name_inject = 'O'
         species_name_ccf = 'O'
-    
+
     if species_label == 'Os I':
         species_name_inject = 'Os'
         species_name_ccf = 'Os'
-    
+
     if species_label == 'Pb I':
         species_name_inject = 'Pb'
         species_name_ccf = 'Pb'
-    
+
     if species_label == 'Pd I':
         species_name_inject = 'Pd'
         species_name_ccf = 'Pd'
-    
+
     if species_label == 'Rb I':
         species_name_inject = 'Rb'
         species_name_ccf = 'Rb'
-    
+
     if species_label == 'Rh I':
         species_name_inject = 'Rh'
         species_name_ccf = 'Rh'
@@ -246,7 +257,7 @@ def get_species_keys(species_label):
     if species_label == 'Ru I':
         species_name_inject = 'Ru'
         species_name_ccf = 'Ru'
-    
+
     if species_label == 'Sc I':
         species_name_inject = 'Sc'
         species_name_ccf = 'Sc'
@@ -254,11 +265,11 @@ def get_species_keys(species_label):
     if species_label == 'Sc II':
         species_name_inject = 'Sc+'
         species_name_ccf = 'Sc+'
-    
+
     if species_label == 'Sn I':
         species_name_inject = 'Sn'
         species_name_ccf = 'Sn'
-    
+
     if species_label == 'Sr I':
         species_name_inject = 'Sr'
         species_name_ccf = 'Sr'
@@ -306,7 +317,7 @@ def get_species_keys(species_label):
     if species_label == 'Y I':
         species_name_inject = 'Y'
         species_name_ccf = 'Y'
-    
+
     if species_label == 'Li I':
         species_name_inject = 'Li'
         species_name_ccf = 'Li'
@@ -314,7 +325,7 @@ def get_species_keys(species_label):
     if species_label == 'V I':
         species_name_inject = 'V'
         species_name_ccf = 'V'
-    
+
 
 
     return species_name_inject, species_name_ccf
@@ -338,6 +349,31 @@ def get_sysrem_parameters(arm, observation_epoch, species_label):
 
     return n_systematics
 
+def get_planet_parameters(planet_name):
+    """
+    Returns the orbital and physical parameters of a given exoplanet.
+
+    Parameters:
+    -----------
+    planet_name : str
+        The name of the exoplanet. Valid options are 'KELT-20b', 'WASP-76b', 'KELT-9b', 'WASP-12b', 'WASP-33b', and 'WASP-18b'.
+
+    Returns:
+    --------
+    tuple
+        A tuple containing the following elements:
+        - Period: the orbital period of the planet in days (uncertainties are included as well)
+        - epoch: the epoch of the first transit in BJD_TDB (uncertainties are included as well)
+        - M_star: the mass of the host star in solar masses (uncertainties are included as well)
+        - RV_abs: the absolute radial velocity of the star in km/s (uncertainties are included as well)
+        - i: the inclination of the planet's orbit in degrees (uncertainties are included as well)
+        - M_p: the mass of the planet in Jupiter masses (uncertainties are included as well)
+        - R_p: the radius of the planet in Jupiter radii (uncertainties are included as well)
+        - RA: the right ascension of the star in sexagesimal format
+        - Dec: the declination of the star in sexagesimal format
+        - Kp_expected: the expected radial velocity semi-amplitude of the star in km/s
+        - half_duration_phase: the half-duration of the transit in phase units
+    """
 def get_planet_parameters(planet_name):
 
     MJoMS = 1./1047. #MJ in MSun
@@ -580,7 +616,19 @@ def get_pepsi_data(arm, observation_epoch, planet_name, do_molecfit):
     return wave, fluxin, errorin, jd, snr_spectra, exptime, airmass, n_spectra, npix
 
 def get_orbital_phase(jd, epoch, Period, RA, Dec):
+    """
+    Calculates the orbital phase of an object given its Julian date, epoch, period, right ascension, and declination.
 
+    Parameters:
+    jd (float): Julian date of the observation.
+    epoch (float): Epoch of the object.
+    Period (float): Period of the object.
+    RA (str): Right ascension of the object in the format 'hh:mm:ss'.
+    Dec (str): Declination of the object in the format 'dd:mm:ss'.
+
+    Returns:
+    orbital_phase (float): The orbital phase of the object.
+    """
     lbt_coordinates = EarthLocation.of_site('lbt')
 
     observed_times = Time(jd, format='jd', location=lbt_coordinates)
@@ -599,6 +647,21 @@ def get_orbital_phase(jd, epoch, Period, RA, Dec):
     return orbital_phase
 
 def convolve_atmospheric_model(template_wave, template_flux, profile_width, profile_form, temperature_profile='emission', epsilon=0.6):
+    """
+    Convolve atmospheric model with a kernel.
+
+    Args:
+    template_wave (numpy.ndarray): Array of wavelengths.
+    template_flux (numpy.ndarray): Array of fluxes.
+    profile_width (float): Width of the kernel.
+    profile_form (str): Form of the kernel. Can be 'rotational' or 'gaussian'.
+    temperature_profile (str, optional): Temperature profile. Defaults to 'emission'.
+    epsilon (float, optional): Epsilon value. Defaults to 0.6.
+
+    Returns:
+    numpy.ndarray: Convolved flux.
+    """
+    
     ckms =2.9979e5
     velocities = (template_wave - np.mean(template_wave)) / template_wave * ckms
     velocities = velocities[np.abs(velocities) <= 100.]
@@ -622,8 +685,22 @@ def convolve_atmospheric_model(template_wave, template_flux, profile_width, prof
     
     return convolved_flux
 
-def do_convolutions(planet_name, template_wave, template_flux, do_rotate, do_instrument, temperature_profile, Resolve = 130000.): #Resolve defaults to PEPSI
+def do_convolutions(planet_name, template_wave, template_flux, do_rotate, do_instrument, temperature_profile, Resolve = 130000.):
+    """
+    Perform convolutions on a given atmospheric model.
 
+    Args:
+    planet_name (str): Name of the planet.
+    template_wave (numpy.ndarray): Wavelength array of the atmospheric model.
+    template_flux (numpy.ndarray): Flux array of the atmospheric model.
+    do_rotate (bool): Whether or not to perform rotational convolution.
+    do_instrument (bool): Whether or not to perform instrumental convolution.
+    temperature_profile (numpy.ndarray): Temperature profile of the planet's atmosphere.
+    Resolve (float): The resolving power of the instrument. Defaults to 130000.
+
+    Returns:
+    numpy.ndarray: The convolved atmospheric model.
+    """
     if do_rotate:
         epsilon = 0.6
         Period, epoch, M_star, RV_abs, i, M_p, R_p, RA, Dec, Kp_expected, half_duration_phase = get_planet_parameters(planet_name)
@@ -641,7 +718,20 @@ def do_convolutions(planet_name, template_wave, template_flux, do_rotate, do_ins
     
 
 def make_spectrum_plot(template_wave, template_flux, planet_name, species_name_ccf, temperature_profile, vmr):
+    """
+    Plots a spectrum of a given planet and species.
 
+    Args:
+    - template_wave (array): wavelength array
+    - template_flux (array): flux array
+    - planet_name (str): name of the planet
+    - species_name_ccf (str): name of the species
+    - temperature_profile (str): temperature profile
+    - vmr (float): volume mixing ratio
+
+    Returns:
+    - None
+    """
     pl.fill([4800,4800,5441,5441],[np.nanmin(template_flux),np.nanmax(template_flux),np.nanmax(template_flux),np.nanmin(template_flux)],color='blue',alpha=0.25)
     pl.fill([6278,6278,7419,7419],[np.nanmin(template_flux),np.nanmax(template_flux),np.nanmax(template_flux),np.nanmin(template_flux)],color='red',alpha=0.25)
 
@@ -658,7 +748,23 @@ def make_spectrum_plot(template_wave, template_flux, planet_name, species_name_c
     pl.clf()
 
 def make_new_model(instrument, species_name_new, vmr, spectrum_type, planet_name, temperature_profile, do_plot=False):
+    """
+    Generate a new atmospheric model for a given planet and species.
 
+    Args:
+    - instrument (str): the name of the instrument used to observe the planet
+    - species_name_new (str): the name of the species to model
+    - vmr (float): the volume mixing ratio of the species
+    - spectrum_type (str): the type of spectrum to generate (e.g. 'transmission', 'emission')
+    - planet_name (str): the name of the planet to model
+    - temperature_profile (str): the type of temperature profile to use (e.g. 'inverted-emission-better', 'Borsa')
+    - do_plot (bool): whether or not to generate a plot of the resulting spectrum
+
+    Returns:
+    - template_wave (numpy.ndarray): the wavelength array of the resulting spectrum
+    - template_flux (numpy.ndarray): the flux array of the resulting spectrum
+    """
+    # function code here
 
     if planet_name == 'WASP-189b':
         instrument_here = 'PEPSI-25' 
@@ -748,6 +854,20 @@ def make_new_model(instrument, species_name_new, vmr, spectrum_type, planet_name
     return template_wave, template_flux
 
 def get_atmospheric_model(planet_name, species_name_ccf, vmr, temperature_profile, do_rotate, do_instrument):
+    """
+    Returns the atmospheric model for a given planet, species, VMR, temperature profile, and instrument configuration.
+
+    Args:
+        planet_name (str): Name of the planet.
+        species_name_ccf (str): Name of the species.
+        vmr (float): Volume mixing ratio.
+        temperature_profile (str): Temperature profile.
+        do_rotate (bool): Whether or not to rotate the planet.
+        do_instrument (bool): Whether or not to apply instrument effects.
+
+    Returns:
+        tuple: A tuple containing the wavelength and flux arrays of the atmospheric model.
+    """
 
     filein = '/home/calder/Documents/atmo-analysis-main/templates/' + planet_name + '.' + species_name_ccf + '.' + str(vmr) + '.' + temperature_profile + '.combined.fits'
     hdu = fits.open(filein)
@@ -765,7 +885,24 @@ def get_atmospheric_model(planet_name, species_name_ccf, vmr, temperature_profil
 
 
 def inject_model(Kp_expected, orbital_phase, wave, fluxin, template_wave_in, template_flux_in, n_spectra):
+    """
+    Injects a model planet spectrum into a set of observed spectra.
 
+    Args:
+        Kp_expected (float): Expected radial velocity semi-amplitude of the planet.
+        orbital_phase (float): Orbital phase of the planet.
+        wave (ndarray): Array of wavelength values for each observed spectrum.
+        fluxin (ndarray): Array of flux values for each observed spectrum.
+        template_wave_in (ndarray): Array of wavelength values for the planet model spectrum.
+        template_flux_in (ndarray): Array of flux values for the planet model spectrum.
+        n_spectra (int): Number of observed spectra.
+
+    Returns:
+        tuple: A tuple containing:
+            - **fluxin** (*ndarray*) - Array of flux values for each observed spectrum with the planet model injected.
+            - **Kp_true** (*float*) - True radial velocity semi-amplitude of the planet.
+            - **V_sys_true** (*float*) - True systemic velocity of the planet.
+    """
     ckms = 2.9979e5
     scale_factor = 1.0
     Kp_true, V_sys_true = unp.nominal_values(Kp_expected), 0.0
@@ -782,7 +919,30 @@ def inject_model(Kp_expected, orbital_phase, wave, fluxin, template_wave_in, tem
 
     return fluxin, Kp_true, V_sys_true
 
+import numpy as np
+import uncertainties.unumpy as unp
+
 def regrid_data(wave, fluxin, errorin, n_spectra, template_wave, template_flux, snr_spectra, temperature_profile, do_make_new_model):
+    """
+    Regrids the input data to a common wavelength grid, and returns the regridded data along with weights for the combined CCFs.
+
+    Args:
+    wave (numpy.ndarray): 2D array of wavelength values for each spectrum.
+    fluxin (numpy.ndarray): 2D array of flux values for each spectrum.
+    errorin (numpy.ndarray): 2D array of error values for each spectrum.
+    n_spectra (int): Number of spectra.
+    template_wave (numpy.ndarray): 1D array of wavelength values for the template spectrum.
+    template_flux (numpy.ndarray): 1D array of flux values for the template spectrum.
+    snr_spectra (numpy.ndarray): 1D array of signal-to-noise ratios for each spectrum.
+    temperature_profile (str): Temperature profile type ('transmission' or 'emission').
+    do_make_new_model (bool): Whether or not to make a new model.
+
+    Returns:
+    tuple: A tuple containing:
+        - wave (numpy.ndarray): 1D array of wavelength values for the regridded data.
+        - flux (uncertainties.core.AffineScalarFunc): 2D array of flux values for the regridded data.
+        - ccf_weights (numpy.ndarray): 1D array of weights for the combined CCFs.
+    """
     for i in range (1, n_spectra):
         tempflux = np.interp(wave[0,:], wave[i,:], fluxin[i,:])
         temperror = np.interp(wave[0,:], wave[i,:], errorin[i,:])
@@ -831,7 +991,23 @@ def flatten_spectra(flux, npix, n_spectra):
 
 
 def do_sysrem(wave, residual_flux, arm, airmass, n_spectra, niter, n_systematics, do_molecfit):
+    """
+    Perform systematics removal on a set of spectra using the SYSREM algorithm.
 
+    Parameters:
+    wave (numpy.ndarray): Array of wavelength values for each pixel in the spectra.
+    residual_flux (uncertainties.core.AffineScalarFunc): Array of residual flux values for each pixel in the spectra.
+    arm (str): The arm of the spectrograph used to obtain the spectra ('red' or 'blue').
+    airmass (list): List of airmass values for each spectrum.
+    n_spectra (int): The number of spectra being analyzed.
+    niter (int): The number of iterations to perform for each systematic.
+    n_systematics (list): List of the number of systematics to remove for each chunk of the spectra.
+    do_molecfit (bool): Whether or not to mask out regions of the spectra affected by atmospheric absorption using molecfit.
+
+    Returns:
+    corrected_flux (numpy.ndarray): Array of corrected flux values for each pixel in the spectra.
+    corrected_error (numpy.ndarray): Array of corrected error values for each pixel in the spectra.
+    """
     #Running SYSREM with the uncertainties is just too slow, so unfortunately we have to go 
     #back to manual tracking
     corrected_flux = unp.nominal_values(residual_flux)
@@ -919,7 +1095,23 @@ def do_sysrem(wave, residual_flux, arm, airmass, n_spectra, niter, n_systematics
     return corrected_flux, corrected_error
 
 def get_ccfs(wave, corrected_flux, corrected_error, template_wave, template_flux, n_spectra):
+    """
+    Computes the cross-correlation functions (CCFs) for a set of spectra.
 
+    Args:
+        wave (numpy.ndarray): Array of wavelengths for the spectra.
+        corrected_flux (numpy.ndarray): Array of corrected flux values for the spectra.
+        corrected_error (numpy.ndarray): Array of corrected error values for the spectra.
+        template_wave (numpy.ndarray): Array of wavelengths for the template spectrum.
+        template_flux (numpy.ndarray): Array of flux values for the template spectrum.
+        n_spectra (int): Number of spectra to compute CCFs for.
+
+    Returns:
+        tuple: A tuple containing the following three elements:
+            - drv (numpy.ndarray): Array of radial velocity values.
+            - cross_cor (numpy.ndarray): Array of CCF values for each spectrum.
+            - sigma_cross_cor (numpy.ndarray): Array of CCF errors for each spectrum.
+    """
     rvmin, rvmax = -400., 400. #kms
     rvspacing = 1.0 #kms
 
@@ -931,8 +1123,24 @@ def get_ccfs(wave, corrected_flux, corrected_error, template_wave, template_flux
 
     return drv, cross_cor, sigma_cross_cor
 
-def get_likelihood(wave, corrected_flux, corrected_error, template_wave, template_flux, n_spectra):
+import numpy as np
 
+def get_likelihood(wave, corrected_flux, corrected_error, template_wave, template_flux, n_spectra):
+    """
+    Calculates the likelihood of a given set of spectra using a template spectrum.
+
+    Args:
+    wave (numpy.ndarray): Array of wavelengths for the spectra.
+    corrected_flux (numpy.ndarray): Array of corrected flux values for the spectra.
+    corrected_error (numpy.ndarray): Array of corrected error values for the spectra.
+    template_wave (numpy.ndarray): Array of wavelengths for the template spectrum.
+    template_flux (numpy.ndarray): Array of flux values for the template spectrum.
+    n_spectra (int): Number of spectra to calculate likelihood for.
+
+    Returns:
+    numpy.ndarray: Array of radial velocity values.
+    numpy.ndarray: Array of likelihood values for each radial velocity value and each spectrum.
+    """
     rvmin, rvmax = -400., 400. #kms
     rvspacing = 1.0 #kms
 
@@ -948,7 +1156,38 @@ def get_likelihood(wave, corrected_flux, corrected_error, template_wave, templat
     return drv, lnL
 
 def combine_ccfs(drv, cross_cor, sigma_cross_cor, orbital_phase, n_spectra, ccf_weights, half_duration_phase, temperature_profile):
+    """
+    Combine cross-correlation functions (CCFs) from multiple spectra into a single CCF.
 
+    Parameters:
+    -----------
+    drv : array_like
+        Array of Doppler velocities (km/s) at which the CCFs are sampled.
+    cross_cor : array_like
+        2D array of CCFs, with shape (n_spectra, len(drv)).
+    sigma_cross_cor : array_like
+        2D array of uncertainties in the CCFs, with shape (n_spectra, len(drv)).
+    orbital_phase : array_like
+        Array of orbital phases of the planet, with values between 0 and 1.
+    n_spectra : int
+        Number of spectra to combine.
+    ccf_weights : array_like
+        Array of weights for each spectrum, with shape (n_spectra,).
+    half_duration_phase : float
+        Half duration of the transit in orbital phase units.
+    temperature_profile : str
+        Type of temperature profile to use ('isothermal' or 'transmission').
+
+    Returns:
+    --------
+    snr : array_like
+        Signal-to-noise ratio of the combined CCF, with shape (len(Kp), len(drv)).
+    Kp : array_like
+        Array of planet radial velocities (km/s) at which the CCFs are evaluated.
+    drv : array_like
+        Array of Doppler velocities (km/s) at which the CCFs are sampled.
+    """
+    
     Kp = np.arange(50, 350, 1)
     nKp, nv = len(Kp), len(drv)
 
@@ -991,7 +1230,33 @@ def combine_ccfs(drv, cross_cor, sigma_cross_cor, orbital_phase, n_spectra, ccf_
     return snr, Kp, drv
 
 def combine_likelihoods(drv, lnL, orbital_phase, n_spectra, half_duration_phase, temperature_profile):
+    """
+    Combines likelihoods for a given set of parameters.
 
+    Parameters:
+    -----------
+    drv : numpy.ndarray
+        Array of Doppler velocities.
+    lnL : numpy.ndarray
+        Array of log-likelihoods.
+    orbital_phase : numpy.ndarray
+        Array of orbital phases.
+    n_spectra : int
+        Number of spectra.
+    half_duration_phase : float
+        Half duration phase.
+    temperature_profile : str
+        Temperature profile.
+
+    Returns:
+    --------
+    shifted_lnL : numpy.ndarray
+        Array of shifted log-likelihoods.
+    Kp : numpy.ndarray
+        Array of Kp values.
+    drv : numpy.ndarray
+        Array of Doppler velocities.
+    """
     Kp = np.arange(50, 350, 1)
     nKp, nv = len(Kp), len(drv)
 
@@ -1017,6 +1282,33 @@ def combine_likelihoods(drv, lnL, orbital_phase, n_spectra, half_duration_phase,
     return shifted_lnL, Kp, drv
 
 def make_shifted_plot(snr, planet_name, observation_epoch, arm, species_name_ccf, model_tag, RV_abs, Kp_expected, V_sys_true, Kp_true, do_inject_model, do_combine, drv, Kp, species_label, temperature_profile, method, plotformat='pdf'):
+    """
+    Creates a shifted plot of the CCFs or likelihoods for a given planet, observation epoch, arm, and species.
+
+    Args:
+    snr (numpy.ndarray): Signal-to-noise ratio of the CCFs or likelihoods.
+    planet_name (str): Name of the planet.
+    observation_epoch (str): Observation epoch.
+    arm (str): Spectrograph arm.
+    species_name_ccf (str): Name of the species.
+    model_tag (str): Model tag.
+    RV_abs (astropy.units.Quantity): Absolute radial velocity.
+    Kp_expected (astropy.units.Quantity): Expected Kp.
+    V_sys_true (astropy.units.Quantity): True systemic velocity.
+    Kp_true (astropy.units.Quantity): True Kp.
+    do_inject_model (bool): Whether to inject the model.
+    do_combine (bool): Whether to combine the plots.
+    drv (astropy.units.Quantity): Radial velocity.
+    Kp (astropy.units.Quantity): Kp.
+    species_label (str): Species label.
+    temperature_profile (str): Temperature profile.
+    method (str): Method used to create the plot (either 'ccf' or 'likelihood').
+    plotformat (str): Format of the plot file (default is 'pdf').
+
+    Returns:
+    None
+    """
+    
     if method == 'ccf':
         outtag, zlabel = 'CCFs-shifted', 'SNR'
         plotsnr = snr[:]
@@ -1052,7 +1344,26 @@ def make_shifted_plot(snr, planet_name, observation_epoch, arm, species_name_ccf
    # breakpoint()
     
 def get_peak_snr(snr, drv, Kp, do_inject_model, V_sys_true, Kp_true, RV_abs, Kp_expected, arm, observation_epoch, f, method):
+    """
+    Calculates the peak signal-to-noise ratio (SNR) for a given set of data.
 
+    Args:
+    snr (numpy.ndarray): 2D array of SNR values.
+    drv (numpy.ndarray): 1D array of Doppler radial velocity values.
+    Kp (numpy.ndarray): 1D array of Kp values.
+    do_inject_model (bool): Whether or not to inject a model.
+    V_sys_true (float): True systemic velocity.
+    Kp_true (float): True Kp value.
+    RV_abs (astropy.units.Quantity): Absolute radial velocity.
+    Kp_expected (astropy.units.Quantity): Expected Kp value.
+    arm (str): Name of the arm.
+    observation_epoch (str): Name of the observation epoch.
+    f (file): File object to write output to.
+    method (str): Method used to calculate peak SNR.
+
+    Returns:
+    None
+    """
     if do_inject_model:
         boxy = np.where((drv > V_sys_true-20.) & (drv < V_sys_true+20.))
         boxx = np.where((Kp > Kp_true-20.) & (Kp < Kp_true+20.))
@@ -1204,7 +1515,30 @@ def DopplerShadowModel(vsini,
         return ccf_model
 
 def run_one_ccf(species_label, vmr, arm, observation_epoch, template_wave, template_flux, template_wave_in, template_flux_in, planet_name, temperature_profile, do_inject_model, species_name_ccf, model_tag, f, method, do_make_new_model):
+    """
+    Runs the cross-correlation function (CCF) for a given set of input parameters.
 
+    Args:
+        species_label (str): The label for the species being analyzed.
+        vmr (float): The volume mixing ratio of the species being analyzed.
+        arm (str): The arm of the spectrograph being used ('red' or 'blue').
+        observation_epoch (str): The epoch of the observation.
+        template_wave (numpy.ndarray): The wavelength array for the template spectrum.
+        template_flux (numpy.ndarray): The flux array for the template spectrum.
+        template_wave_in (numpy.ndarray): The wavelength array for the injected model spectrum.
+        template_flux_in (numpy.ndarray): The flux array for the injected model spectrum.
+        planet_name (str): The name of the planet being analyzed.
+        temperature_profile (numpy.ndarray): The temperature profile for the planet being analyzed.
+        do_inject_model (bool): Whether or not to inject a model into the data.
+        species_name_ccf (str): The name of the species being analyzed for the CCF.
+        model_tag (str): The tag for the model being used.
+        f (float): The f parameter for the CCF.
+        method (str): The method to use for the CCF ('ccf' or 'likelihood').
+        do_make_new_model (bool): Whether or not to make a new model.
+
+    Returns:
+        None
+    """
     
     niter = 10
     n_systematics = np.array(get_sysrem_parameters(arm, observation_epoch, species_label))
@@ -1295,6 +1629,127 @@ def run_one_ccf(species_label, vmr, arm, observation_epoch, template_wave, templ
         ccf_model *= scale_factor
         cross_cor -= ccf_model
         
+        
+
+    
+# -----------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+        # Fitting a Gaussian to the 1D slice during transit
+
+        # Initializing lists to store fit parameters
+        amps = []
+        amps_err = []
+        centers = []
+        centers_err = []
+        sigmas = []
+        sigmas_err = []
+
+        phase_slices = []
+
+        phase = 0.0
+        
+        # Setting desired velocity range for analysis
+        drv_range = slice(300,501)
+        
+    # breakpoint()
+
+        # Fitting gaussian to all 1D slices
+        for i in range(len(orbital_phase)):
+            current_slice = cross_cor[i, :]
+            phase_slices.append(current_slice)
+            popt, pcov = curve_fit(gaussian, drv[drv_range], current_slice[drv_range], p0=[5, 4, 10])
+
+            amps.append(popt[0])
+            centers.append(popt[1])
+            sigmas.append(popt[2])
+
+            # Storing errors (standard deviations)
+            amps_err.append(np.sqrt(pcov[0, 0]))
+            centers_err.append(np.sqrt(pcov[1, 1]))
+            sigmas_err.append(np.sqrt(pcov[2, 2]))
+
+        # Selecting a specific orbital_phase slice
+        #selected_idx = np.argmax(amps)
+        selected_idx = np.argmin(np.abs(orbital_phase - phase))
+
+        phase_slice = phase_slices[selected_idx]
+
+    
+
+        # Fitting a Gaussian to the selected slice
+        popt_selected = [amps[selected_idx], centers[selected_idx], sigmas[selected_idx]]
+        print('Selected SNR:' ,amps[selected_idx], '\n Selected Vsys:', centers[selected_idx], '\n Selected sigma:', sigmas[selected_idx])
+
+
+        # Computing residuals and reduced chi-square for the selected slice
+        residuals = []
+        chi2_red = []
+
+        for i in range(len(orbital_phase)):
+            current_slice = cross_cor[i, :] * -1
+            popt, pcov = curve_fit(gaussian, drv[drv_range], current_slice[drv_range], p0=[1, 0, 1])
+            
+            # Compute residuals and reduced chi-square
+        #    residual = current_slice - gaussian(drv, *popt)
+        #    residuals.append(residual)
+        #    chi2 = np.sum((residual / np.std(residual))**2)
+        #    chi2_red.append(chi2 / (len(drv) - len(popt)))
+
+
+
+        # Plotting the fit parameters for the phase slice
+        pl.plot(drv[drv_range], phase_slice[drv_range], 'o', label='data')
+        pl.plot(drv[drv_range], gaussian(drv, *popt_selected)[drv_range], 'r-', label='fit')
+    
+        residuals = gaussian(drv, *popt_selected) - phase_slice
+    
+        # pl.plot(drv[drv_range], residuals[drv_range])
+    
+    
+        pl.xlabel('Velocity (km/s)')
+        pl.ylabel('SNR')
+        pl.legend()
+        params_str = f"Peak (a): {popt_selected[0]:.2f}\nMean (mu): {popt_selected[1]:.2f}\nSigma: {popt_selected[2]:.2f}\nOrbital Phase Slice: {Kp[selected_idx]:.2f}"
+        pl.text(0.05, 0.95, params_str, transform=pl.gca().transAxes, verticalalignment='top')
+        pl.show()
+
+        breakpoint()
+
+        # Fitting a curve to the velocity centers versus orbital phase
+        # popt_centers, pcov_centers = curve_fit(linear, Kp, centers, p0=[0, 0])
+        
+
+
+        # Plotting velocity offset vs. orbital phase of the selected species 
+        pl.figure()
+        pl.errorbar(np.unique(Kp), centers, yerr=centers_err, fmt='o-', label='Center')
+        pl.xlabel('Orbital Phase')
+        pl.ylabel('Center')
+        pl.title('Center vs. Orbital Phase')
+        pl.legend()
+        pl.show()
+
+        # Plotting sigma vs. orbital phase of the selected species
+        pl.figure()
+        pl.plot(drv, gaussian(drv, *popt_selected), 'r-', label='fit')
+
+        pl.errorbar(sigmas, centers, yerr=centers_err, fmt='o-', label='Center')
+        pl.xlabel('Orbital Phase')
+        pl.ylabel('Sigma')
+        pl.title('Sigma vs. Orbital Phase')
+        pl.legend()
+        pl.show()
+
+        breakpoint()
+
+#---------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+
+
+
+
+
+
+
+
 
         #Make a plot
         plotname = '/home/calder/Documents/atmo-analysis-main/plots/' + planet_name + '.' + observation_epoch + '.' + species_name_ccf + model_tag + '.CCFs-raw.pdf'
@@ -1364,8 +1819,29 @@ def multi_gaussian(x, *params):
     return y
 
 
-def combine_observations(observation_epochs, arms, planet_name, temperature_profile, species_label, species_name_ccf, model_tag, RV_abs, Kp_expected, do_inject_model, f, method):
 
+def combine_observations(observation_epochs, arms, planet_name, temperature_profile, species_label, species_name_ccf, model_tag, RV_abs, Kp_expected, do_inject_model, f, method):
+    """
+    Combine observations of a planet's cross-correlation function (CCF) from different epochs and arms.
+
+    Parameters:
+    observation_epochs (list): List of strings representing the observation epochs.
+    arms (list): List of strings representing the arms of the spectrograph.
+    planet_name (str): Name of the planet.
+    temperature_profile (str): Temperature profile of the planet's atmosphere.
+    species_label (str): Label of the species being analyzed.
+    species_name_ccf (str): Name of the CCF species.
+    model_tag (str): Tag for the model being used.
+    RV_abs (float): Absolute radial velocity of the planet.
+    Kp_expected (float): Expected semi-amplitude of the planet's radial velocity curve.
+    do_inject_model (bool): Whether or not to inject a model into the observations.
+    f (float): Scaling factor for the injected model.
+    method (str): Method for combining the observations. Can be 'ccf' or 'likelihood'.
+
+    Returns:
+    None
+    """
+    
     Period, epoch, M_star, RV_abs, i, M_p, R_p, RA, Dec, Kp_expected, half_duration_phase = get_planet_parameters(planet_name)
 
     j=0
@@ -1431,118 +1907,28 @@ def combine_observations(observation_epochs, arms, planet_name, temperature_prof
 
     #import pdb; pdb.set_trace()
 
-    
-
-    # Fitting a Gaussian to the 1D slice during transit
-
-    # Initializing lists to store fit parameters
-    amps = []
-    amps_err = []
-    centers = []
-    centers_err = []
-    sigmas = []
-    sigmas_err = []
-
-    phase_slices = []
-
-    phase = 0.0
-
-   # breakpoint()
-
-    # Fitting gaussian to all 1D slices
-    for i in range(len(orbital_phase)):
-        current_slice = -1 * cross_cor[i, :]
-        phase_slices.append(current_slice)
-        popt, pcov = curve_fit(gaussian, drv, current_slice, p0=[5, 4, 10])
-
-        amps.append(popt[0])
-        centers.append(popt[1])
-        sigmas.append(popt[2])
-
-        # Storing errors (standard deviations)
-        amps_err.append(np.sqrt(pcov[0, 0]))
-        centers_err.append(np.sqrt(pcov[1, 1]))
-        sigmas_err.append(np.sqrt(pcov[2, 2]))
-
-    # Selecting a specific phase slice to ultimately fit and plot a Gaussian to
-    #selected_idx = np.argmax(amps)
-    selected_idx = np.argmin(np.abs(orbital_phase - phase))
-
-    selected_slice = phase_slices[selected_idx]
-
-    # Fitting a Gaussian to the selected slice
-    popt_selected = [amps[selected_idx], centers[selected_idx], sigmas[selected_idx]]
-    print('Selected SNR:' ,amps[selected_idx], '\n Selected Vsys:', centers[selected_idx], '\n Selected sigma:', sigmas[selected_idx])
-
-
-    # Computing residuals and reduced chi-square for the selected slice
-    residuals = []
-    chi2_red = []
-
-   # for i in range(len(orbital_phase)):
-   #     current_slice = cross_cor[i, :]
-   #     popt, pcov = curve_fit(gaussian, drv, current_slice, p0=[1, 0, 1])
-   #     
-   #     # Compute residuals and reduced chi-square
-   #     residual = current_slice - gaussian(drv, *popt)
-   #     residuals.append(residual)
-   #     chi2 = np.sum((residual / np.std(residual))**2)
-   #     chi2_red.append(chi2 / (len(drv) - len(popt)))
-
-
-
-    # Plotting the fit parameters for the phase slice
-    pl.plot(drv, selected_slice, 'o', label='data')
-    pl.plot(drv, gaussian(drv, *popt_selected), 'r-', label='fit')
-   
-    residuals = gaussian(drv, *popt_selected) - selected_slice
-   
-   
-   
-   
-    pl.xlabel('Velocity (km/s)')
-    pl.ylabel('SNR')
-    pl.legend()
-    params_str = f"Peak (a): {popt_selected[0]:.2f}\nMean (mu): {popt_selected[1]:.2f}\nSigma: {popt_selected[2]:.2f}\nOrbital Phase Slice: {orbital_phase[selected_idx]:.2f}"
-    pl.text(0.05, 0.95, params_str, transform=pl.gca().transAxes, verticalalignment='top')
-    pl.show()
-
-    breakpoint()
-
-    # Fitting a curve to the velocity centers versus orbital phase
-    # popt_centers, pcov_centers = curve_fit(linear, orbital_phase, centers, p0=[0, 0])
-    
-
-
-    # Plotting velocity offset vs. orbital phase of the selected species 
-    pl.figure()
-    pl.errorbar(np.unique(orbital_phase), centers, yerr=centers_err, fmt='o-', label='Center')
-    pl.xlabel('Orbital Phase')
-    pl.ylabel('Center')
-    pl.title('Center vs. Orbital Phase')
-    pl.legend()
-    pl.show()
-
-    # Plotting sigma vs. orbital phase of the selected species
-    pl.figure()
-    pl.plot(drv, gaussian(drv, *popt_selected), 'r-', label='fit')
-
-    pl.errorbar(sigmas, centers, yerr=centers_err, fmt='o-', label='Center')
-    pl.xlabel('Orbital Phase')
-    pl.ylabel('Sigma')
-    pl.title('Sigma vs. Orbital Phase')
-    pl.legend()
-    pl.show()
-
-    breakpoint()
-
     get_peak_snr(snr, drv, Kp, do_inject_model, V_sys_true, Kp_true, RV_abs, Kp_expected, all_arms, all_epochs, f, method)
     
                 
             
 
 def run_all_ccfs(planet_name, temperature_profile, species_label, vmr, do_inject_model, do_run_all, do_make_new_model, method):
+    """
+    Runs all cross-correlation functions (CCFs) for a given planet, temperature profile, and species label.
 
+    Args:
+    planet_name (str): Name of the planet.
+    temperature_profile (str): Type of temperature profile (e.g. 'hot', 'cold', 'transmission', 'emission').
+    species_label (str): Label of the species to analyze (e.g. 'FeH', 'CaH').
+    vmr (float): Volume mixing ratio of the species.
+    do_inject_model (bool): Whether or not to inject the model.
+    do_run_all (bool): Whether or not to run all observations.
+    do_make_new_model (bool): Whether or not to make a new model.
+    method (str): Method to use for the CCF (e.g. 'Gaussian')
+
+    Returns:
+    None
+    """
     initial_time=time.time()
     ckms = 2.9979e5
 
