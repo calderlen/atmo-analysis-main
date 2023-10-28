@@ -1,6 +1,8 @@
 #import packages
 import numpy as np
 import matplotlib.pyplot as pl
+import matplotlib.gridspec as gridspec
+
 from glob import glob
 from astropy.io import fits
 
@@ -1281,6 +1283,47 @@ def combine_likelihoods(drv, lnL, orbital_phase, n_spectra, half_duration_phase,
 
     return shifted_lnL, Kp, drv
 
+
+def gaussian(x, a, mu, sigma):
+
+    '''
+    Inputs:
+    x: x values
+    a: amplitude
+    mu: mean
+    sigma: standard deviation
+
+    Output:
+    Gaussian function
+    '''
+    return a * np.exp(-(x - mu)**2 / (2 * sigma**2))
+
+
+def multi_gaussian(x, *params):
+    """Fit multiple Gaussians.
+    
+    Inputs:
+    x: x values
+    a: amplitude
+    mu: mean
+    sigma: standard deviation
+
+    Output:
+    Gaussian function
+
+    
+    Params should contain tuples of (a, mu, sigma) for each Gaussian.
+    For example, for two Gaussians, params should be (a1, mu1, sigma1, a2, mu2, sigma2).
+    """
+    y = np.zeros_like(x)
+    for i in range(0, len(params), 3):
+        a = params[i]
+        mu = params[i+1]
+        sigma = params[i+2]
+        y = y + a * np.exp(-(x - mu)**2 / (2 * sigma**2))
+    return y
+
+
 def make_shifted_plot(snr, planet_name, observation_epoch, arm, species_name_ccf, model_tag, RV_abs, Kp_expected, V_sys_true, Kp_true, do_inject_model, do_combine, drv, Kp, species_label, temperature_profile, method, plotformat='pdf'):
     """
     Creates a shifted plot of the CCFs or likelihoods for a given planet, observation epoch, arm, and species.
@@ -1339,9 +1382,107 @@ def make_shifted_plot(snr, planet_name, observation_epoch, arm, species_name_ccf
     plotsnr, drv = plotsnr[:, keeprv], drv[keeprv]
     keepKp = np.abs(Kp-apoints[1]) <= 100.
     plotsnr, Kp = plotsnr[keepKp, :], Kp[keepKp]
+
+# ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+    # Fitting a Gaussian to the 1D slice during transit
+
+    # Initializing lists to store fit parameters
+    amps = []
+    amps_err = []
+    centers = []
+    centers_err = []
+    sigmas = []
+    sigmas_err = []
+
+    Kp_slices = []
+
+    residuals = []
+    chi2_red = []
+
+    # Fitting gaussian to all 1D Kp slices
+    for i in range(plotsnr.shape[0]):
+        current_slice = plotsnr[i,:]
+        Kp_slices.append(current_slice)
+        popt, pcov = curve_fit(gaussian, drv, current_slice, p0=[5, -5, 5])
+
+        amps.append(popt[0])
+        centers.append(popt[1])
+        sigmas.append(popt[2])
+
+        # Storing errors (standard deviations)
+        amps_err.append(np.sqrt(pcov[0, 0]))
+        centers_err.append(np.sqrt(pcov[1, 1]))
+        sigmas_err.append(np.sqrt(pcov[2, 2]))
+
+
+    # Selecting a specific Kp slice
+    selected_idx = np.where(Kp == int((np.floor(Kp_true))))[0][0]
+
+    # Fitting a Gaussian to the selected slice
+    popt_selected = [amps[selected_idx], centers[selected_idx], sigmas[selected_idx]]
+    print('Selected SNR:' ,amps[selected_idx], '\n Selected Vsys:', centers[selected_idx], '\n Selected sigma:', sigmas[selected_idx])
+ 
+    # Computing residuals and chi-squared for selected slice
+    residual = plotsnr[selected_idx, :] - gaussian(drv, *popt_selected)
+    # chi2 = np.sum((residual / np.std(residual))**2)/(len(drv)-len(popt))
+
+    # Initialize Figure and GridSpec objects
+    fig = pl.figure()
+    gs = gridspec.GridSpec(2, 1, height_ratios=[4, 1])
+
+    # Create Axes for the main plot and the residuals plot
+    ax1 = pl.subplot(gs[0])
+    ax2 = pl.subplot(gs[1], sharex=ax1)
+    
+    # Main Plot (ax1)
+    ax1.plot(drv, plotsnr[selected_idx, :], 'o', label='data', markersize=2)
+    ax1.plot(drv, gaussian(drv, *popt_selected), 'r-', label='fit')
+    pl.setp(ax1.get_xticklabels(), visible=False)
+    ax1.set_ylabel('SNR')
+    ax1.legend()
+
+    # Inset for residuals (ax2)
+    ax2.plot(drv, residual, 'o-', markersize=1)
+    ax2.set_xlabel('Velocity (km/s)')
+    ax2.set_ylabel('Residuals')
+
+    # Additional text information for the main plot
+    params_str = f"Peak (a): {popt_selected[0]:.2f}\nMean (mu): {popt_selected[1]:.2f}\nSigma: {popt_selected[2]:.2f}\nKp: {Kp[selected_idx]:.0f}"
+    ax1.text(0.05, 0.95, params_str, transform=ax1.transAxes, verticalalignment='top')
+
+    # Show the plot
+    pl.show()
+
+
+    # Fitting a curve to the velocity centers versus orbital phase
+    # popt_centers, pcov_centers = curve_fit(linear, Kp, centers, p0=[0, 0]) Describe the 
+    
+
+
+    # Plotting velocity offset vs. orbital phase of the selected species 
+    # pl.figure()
+    # pl.errorbar(np.unique(Kp), centers, yerr=centers_err, fmt='o-', label='Center')
+    # pl.xlabel('Orbital Phase')
+    # pl.ylabel('Center')
+    # pl.title('Center vs. Orbital Phase')
+    # pl.legend()
+    # pl.show()
+
+    # Plotting sigma vs. orbital phase of the selected species
+    # pl.figure()
+    # pl.plot(drv, gaussian(drv, *popt_selected), 'r-', label='fit')
+
+    # pl.errorbar(sigmas, centers, yerr=centers_err, fmt='o-', label='Center')
+    # pl.xlabel('Orbital Phase')
+    # pl.ylabel('Sigma')
+    # pl.title('Sigma vs. Orbital Phase')
+    # pl.legend()
+    # pl.show()
+
+#-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+
     psarr(plotsnr, drv, Kp, '$V_{\mathrm{sys}}$ (km/s)', '$K_p$ (km/s)', zlabel, filename=plotname, ctable=ctable, alines=True, apoints=apoints, acolor='cyan', textstr=species_label+' '+model_label, textloc = np.array([apoints[0]-75.,apoints[1]+75.]), textcolor='cyan', fileformat=plotformat)
 
-   # breakpoint()
     
 def get_peak_snr(snr, drv, Kp, do_inject_model, V_sys_true, Kp_true, RV_abs, Kp_expected, arm, observation_epoch, f, method):
     """
@@ -1602,7 +1743,7 @@ def run_one_ccf(species_label, vmr, arm, observation_epoch, template_wave, templ
             sigma_cross_cor[i,:] = np.sqrt(sigma_cross_cor[i,:]**2 + np.sum(sigma_cross_cor[i,:]**2)/len(sigma_cross_cor[i,:])**2)
             cross_cor[i,:]/=np.std(cross_cor[i,:])
             
-        # Specifically for KELT-20b
+        # Specifically for
         vsini = 110
         lambda_p = 0.5                  
         
@@ -1629,127 +1770,7 @@ def run_one_ccf(species_label, vmr, arm, observation_epoch, template_wave, templ
         ccf_model *= scale_factor
         cross_cor -= ccf_model
         
-        
-
     
-# -----------------------------------------------------------------------------------------------------------------------------------------------------------------------------
-        # Fitting a Gaussian to the 1D slice during transit
-
-        # Initializing lists to store fit parameters
-        amps = []
-        amps_err = []
-        centers = []
-        centers_err = []
-        sigmas = []
-        sigmas_err = []
-
-        phase_slices = []
-
-        phase = 0.0
-        
-        # Setting desired velocity range for analysis
-        drv_range = slice(300,501)
-        
-    # breakpoint()
-
-        # Fitting gaussian to all 1D slices
-        for i in range(len(orbital_phase)):
-            current_slice = cross_cor[i, :]
-            phase_slices.append(current_slice)
-            popt, pcov = curve_fit(gaussian, drv[drv_range], current_slice[drv_range], p0=[5, 4, 10])
-
-            amps.append(popt[0])
-            centers.append(popt[1])
-            sigmas.append(popt[2])
-
-            # Storing errors (standard deviations)
-            amps_err.append(np.sqrt(pcov[0, 0]))
-            centers_err.append(np.sqrt(pcov[1, 1]))
-            sigmas_err.append(np.sqrt(pcov[2, 2]))
-
-        # Selecting a specific orbital_phase slice
-        #selected_idx = np.argmax(amps)
-        selected_idx = np.argmin(np.abs(orbital_phase - phase))
-
-        phase_slice = phase_slices[selected_idx]
-
-    
-
-        # Fitting a Gaussian to the selected slice
-        popt_selected = [amps[selected_idx], centers[selected_idx], sigmas[selected_idx]]
-        print('Selected SNR:' ,amps[selected_idx], '\n Selected Vsys:', centers[selected_idx], '\n Selected sigma:', sigmas[selected_idx])
-
-
-        # Computing residuals and reduced chi-square for the selected slice
-        residuals = []
-        chi2_red = []
-
-        for i in range(len(orbital_phase)):
-            current_slice = cross_cor[i, :] * -1
-            popt, pcov = curve_fit(gaussian, drv[drv_range], current_slice[drv_range], p0=[1, 0, 1])
-            
-            # Compute residuals and reduced chi-square
-        #    residual = current_slice - gaussian(drv, *popt)
-        #    residuals.append(residual)
-        #    chi2 = np.sum((residual / np.std(residual))**2)
-        #    chi2_red.append(chi2 / (len(drv) - len(popt)))
-
-
-
-        # Plotting the fit parameters for the phase slice
-        pl.plot(drv[drv_range], phase_slice[drv_range], 'o', label='data')
-        pl.plot(drv[drv_range], gaussian(drv, *popt_selected)[drv_range], 'r-', label='fit')
-    
-        residuals = gaussian(drv, *popt_selected) - phase_slice
-    
-        # pl.plot(drv[drv_range], residuals[drv_range])
-    
-    
-        pl.xlabel('Velocity (km/s)')
-        pl.ylabel('SNR')
-        pl.legend()
-        params_str = f"Peak (a): {popt_selected[0]:.2f}\nMean (mu): {popt_selected[1]:.2f}\nSigma: {popt_selected[2]:.2f}\nOrbital Phase Slice: {Kp[selected_idx]:.2f}"
-        pl.text(0.05, 0.95, params_str, transform=pl.gca().transAxes, verticalalignment='top')
-        pl.show()
-
-        breakpoint()
-
-        # Fitting a curve to the velocity centers versus orbital phase
-        # popt_centers, pcov_centers = curve_fit(linear, Kp, centers, p0=[0, 0])
-        
-
-
-        # Plotting velocity offset vs. orbital phase of the selected species 
-        pl.figure()
-        pl.errorbar(np.unique(Kp), centers, yerr=centers_err, fmt='o-', label='Center')
-        pl.xlabel('Orbital Phase')
-        pl.ylabel('Center')
-        pl.title('Center vs. Orbital Phase')
-        pl.legend()
-        pl.show()
-
-        # Plotting sigma vs. orbital phase of the selected species
-        pl.figure()
-        pl.plot(drv, gaussian(drv, *popt_selected), 'r-', label='fit')
-
-        pl.errorbar(sigmas, centers, yerr=centers_err, fmt='o-', label='Center')
-        pl.xlabel('Orbital Phase')
-        pl.ylabel('Sigma')
-        pl.title('Sigma vs. Orbital Phase')
-        pl.legend()
-        pl.show()
-
-        breakpoint()
-
-#---------------------------------------------------------------------------------------------------------------------------------------------------------------------------
-
-
-
-
-
-
-
-
 
         #Make a plot
         plotname = '/home/calder/Documents/atmo-analysis-main/plots/' + planet_name + '.' + observation_epoch + '.' + species_name_ccf + model_tag + '.CCFs-raw.pdf'
@@ -1778,46 +1799,6 @@ def run_one_ccf(species_label, vmr, arm, observation_epoch, template_wave, templ
         shifted_lnL, Kp, drv = combine_likelihoods(drv, lnL, orbital_phase, n_spectra, half_duration_phase, temperature_profile)
 
         make_shifted_plot(shifted_lnL, planet_name, observation_epoch, arm, species_name_ccf, model_tag, RV_abs, Kp_expected, V_sys_true, Kp_true, do_inject_model, True, drv, Kp, species_label, temperature_profile, method)
-
-def gaussian(x, a, mu, sigma):
-
-    '''
-    Inputs:
-    x: x values
-    a: amplitude
-    mu: mean
-    sigma: standard deviation
-
-    Output:
-    Gaussian function
-    '''
-    return a * np.exp(-(x - mu)**2 / (2 * sigma**2))
-
-
-def multi_gaussian(x, *params):
-    """Fit multiple Gaussians.
-    
-    Inputs:
-    x: x values
-    a: amplitude
-    mu: mean
-    sigma: standard deviation
-
-    Output:
-    Gaussian function
-
-    
-    Params should contain tuples of (a, mu, sigma) for each Gaussian.
-    For example, for two Gaussians, params should be (a1, mu1, sigma1, a2, mu2, sigma2).
-    """
-    y = np.zeros_like(x)
-    for i in range(0, len(params), 3):
-        a = params[i]
-        mu = params[i+1]
-        sigma = params[i+2]
-        y = y + a * np.exp(-(x - mu)**2 / (2 * sigma**2))
-    return y
-
 
 
 def combine_observations(observation_epochs, arms, planet_name, temperature_profile, species_label, species_name_ccf, model_tag, RV_abs, Kp_expected, do_inject_model, f, method):
