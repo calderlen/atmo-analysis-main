@@ -1403,7 +1403,7 @@ def make_shifted_plot(snr, planet_name, observation_epoch, arm, species_name_ccf
     for i in range(plotsnr.shape[0]):
         current_slice = plotsnr[i,:]
         Kp_slices.append(current_slice)
-        popt, pcov = curve_fit(gaussian, drv, current_slice, p0=[5, -5, 5])
+        popt, pcov = curve_fit(gaussian, drv, current_slice, p0=[5, -7, 1])
 
         amps.append(popt[0])
         centers.append(popt[1])
@@ -1435,11 +1435,14 @@ def make_shifted_plot(snr, planet_name, observation_epoch, arm, species_name_ccf
     ax2 = pl.subplot(gs[1], sharex=ax1)
     
     # Main Plot (ax1)
-    ax1.plot(drv, plotsnr[selected_idx, :], 'o', label='data', markersize=2)
+    ax1.plot(drv, plotsnr[selected_idx, :], 'k--', label='data', markersize=2)
     ax1.plot(drv, gaussian(drv, *popt_selected), 'r-', label='fit')
     pl.setp(ax1.get_xticklabels(), visible=False)
     ax1.set_ylabel('SNR')
     ax1.legend()
+
+    # Add the horizontal line at 4 SNR
+    ax1.axhline(y=4, color='g', linestyle='--', label=r'4 $\sigma$')    
 
     # Inset for residuals (ax2)
     ax2.plot(drv, residual, 'o-', markersize=1)
@@ -1456,28 +1459,27 @@ def make_shifted_plot(snr, planet_name, observation_epoch, arm, species_name_ccf
 
     # Fitting a curve to the velocity centers versus orbital phase
     # popt_centers, pcov_centers = curve_fit(linear, Kp, centers, p0=[0, 0]) Describe the 
-    
-
 
     # Plotting velocity offset vs. orbital phase of the selected species 
-    # pl.figure()
-    # pl.errorbar(np.unique(Kp), centers, yerr=centers_err, fmt='o-', label='Center')
-    # pl.xlabel('Orbital Phase')
-    # pl.ylabel('Center')
-    # pl.title('Center vs. Orbital Phase')
-    # pl.legend()
-    # pl.show()
+    #breakpoint() 
+    #pl.figure()
+    #pl.errorbar(keeprv, centers, yerr=centers_err, fmt='o-', label='Center')
+    #pl.xlabel('Orbital Phase')
+    #pl.ylabel('Vsys')
+    #pl.title('Vsys vs. Orbital Phase')
+    #pl.legend()
+    #pl.show()
 
-    # Plotting sigma vs. orbital phase of the selected species
-    # pl.figure()
-    # pl.plot(drv, gaussian(drv, *popt_selected), 'r-', label='fit')
+    #Plotting sigma vs. orbital phase of the selected species
+    #pl.figure()
+   # pl.plot(drv, gaussian(drv, *popt_selected), 'r-', label='fit')
 
-    # pl.errorbar(sigmas, centers, yerr=centers_err, fmt='o-', label='Center')
-    # pl.xlabel('Orbital Phase')
-    # pl.ylabel('Sigma')
-    # pl.title('Sigma vs. Orbital Phase')
-    # pl.legend()
-    # pl.show()
+    #pl.errorbar(sigmas, centers, yerr=centers_err, fmt='o-', label='Center')
+   # pl.xlabel('Orbital Phase')
+    #pl.ylabel('Sigma')
+    #pl.title('Sigma vs. Orbital Phase')
+    #pl.legend()
+    #pl.show()
 
 #-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 
@@ -1769,8 +1771,6 @@ def run_one_ccf(species_label, vmr, arm, observation_epoch, template_wave, templ
         # Scale ccf_model by scale factor
         ccf_model *= scale_factor
         cross_cor -= ccf_model
-        
-    
 
         #Make a plot
         plotname = '/home/calder/Documents/atmo-analysis-main/plots/' + planet_name + '.' + observation_epoch + '.' + species_name_ccf + model_tag + '.CCFs-raw.pdf'
