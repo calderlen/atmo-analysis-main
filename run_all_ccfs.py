@@ -1456,19 +1456,37 @@ def make_shifted_plot(snr, planet_name, observation_epoch, arm, species_name_ccf
     # Show the plot
     pl.show()
 
+    breakpoint()
+   
+    
+
+    if arm == 'red':
+        do_molecfit = True
+    else:
+        do_molecfit = False
+
+    Period, epoch, M_star, RV_abs, i, M_p, R_p, RA, Dec, Kp_expected, half_duration_phase = get_planet_parameters(planet_name)
+
+    wave, fluxin, errorin, jd, snr_spectra, exptime, airmass, n_spectra, npix = get_pepsi_data(arm, observation_epoch, planet_name, do_molecfit)
+
+    orbital_phase = get_orbital_phase(jd, epoch, Period, RA, Dec)
+
+    phase_min = np.min(orbital_phase)
+    phase_max = np.max(orbital_phase)
+    phase_array = np.linspace(phase_min, phase_max, np.shape(centers)[0])
+
+
+    # Plotting velocity offset vs. orbital phase of the selected species  
+    pl.figure()
+    pl.errorbar(phase_array, centers, yerr=centers_err, fmt='o-', label='Center')
+    pl.xlabel('Orbital Phase')
+    pl.ylabel('Vsys')
+    pl.title('Vsys vs. Orbital Phase')
+    pl.legend()
+    pl.show()
 
     # Fitting a curve to the velocity centers versus orbital phase
     # popt_centers, pcov_centers = curve_fit(linear, Kp, centers, p0=[0, 0]) Describe the 
-
-    # Plotting velocity offset vs. orbital phase of the selected species 
-    #breakpoint() 
-    #pl.figure()
-    #pl.errorbar(keeprv, centers, yerr=centers_err, fmt='o-', label='Center')
-    #pl.xlabel('Orbital Phase')
-    #pl.ylabel('Vsys')
-    #pl.title('Vsys vs. Orbital Phase')
-    #pl.legend()
-    #pl.show()
 
     #Plotting sigma vs. orbital phase of the selected species
     #pl.figure()
