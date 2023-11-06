@@ -1475,29 +1475,23 @@ def make_shifted_plot(snr, planet_name, observation_epoch, arm, species_name_ccf
     phase_max = np.max(orbital_phase)
     phase_array = np.linspace(phase_min, phase_max, np.shape(centers)[0])
 
+    fig, ax1 = pl.subplots()
 
-    # Plotting velocity offset vs. orbital phase of the selected species  
-    pl.figure()
-    pl.errorbar(phase_array, centers, yerr=centers_err, fmt='o-', label='Center')
-    pl.xlabel('Orbital Phase')
-    pl.ylabel('Vsys')
-    pl.title('Vsys vs. Orbital Phase')
-    pl.legend()
+    ax1.errorbar(phase_array, centers, yerr=centers_err, fmt='o-', label='Center')
+    ax1.set_xlabel('Orbital Phase')
+    ax1.set_ylabel('Vsys', color='b')
+    ax1.tick_params(axis='y', labelcolor='b')
+    ax1.set_title('Vsys and Sigma vs. Orbital Phase')
+    ax1.legend(loc='upper left')
+
+    ax2 = ax1.twinx()
+    ax2.plot(phase_array, sigmas, 'r-', label='Sigma')
+    ax2.set_ylabel('Sigma', color='r')
+    ax2.tick_params(axis='y', labelcolor='r')
+    ax2.legend(loc='upper right')
+
     pl.show()
 
-    # Fitting a curve to the velocity centers versus orbital phase
-    # popt_centers, pcov_centers = curve_fit(linear, Kp, centers, p0=[0, 0]) Describe the 
-
-    #Plotting sigma vs. orbital phase of the selected species
-    #pl.figure()
-   # pl.plot(drv, gaussian(drv, *popt_selected), 'r-', label='fit')
-
-    #pl.errorbar(sigmas, centers, yerr=centers_err, fmt='o-', label='Center')
-   # pl.xlabel('Orbital Phase')
-    #pl.ylabel('Sigma')
-    #pl.title('Sigma vs. Orbital Phase')
-    #pl.legend()
-    #pl.show()
 
 #-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 
