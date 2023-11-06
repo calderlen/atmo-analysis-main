@@ -1456,10 +1456,6 @@ def make_shifted_plot(snr, planet_name, observation_epoch, arm, species_name_ccf
     # Show the plot
     pl.show()
 
-    breakpoint()
-   
-    
-
     if arm == 'red':
         do_molecfit = True
     else:
