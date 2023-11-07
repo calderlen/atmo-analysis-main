@@ -1426,11 +1426,13 @@ def make_shifted_plot(snr, planet_name, observation_epoch, arm, species_name_ccf
         
         # Fitting a Gaussian to the selected slice
         popt_selected = [amps[selected_idx], centers[selected_idx], sigmas[selected_idx]]
-        print('Selected SNR:' ,amps[selected_idx], '\n Selected Vsys:', centers[selected_idx], '\n Selected sigma:', sigmas[selected_idx])
+        print('Selected SNR:', amps[selected_idx], '\n Selected Vsys:', centers[selected_idx], '\n Selected sigma:', sigmas[selected_idx], '\n Selected Kp:', Kp[selected_idx])
     
         # Computing residuals and chi-squared for selected slice
         residual = plotsnr[selected_idx, :] - gaussian(drv, *popt_selected)
         # chi2 = np.sum((residual / np.std(residual))**2)/(len(drv)-len(popt))
+
+        fig, ax1 = pl.subplots(figsize=(10, 6))  # Modify figsize as needed to accommodate new features
 
         # Initialize Figure and GridSpec objects
         fig = pl.figure()
@@ -1445,6 +1447,19 @@ def make_shifted_plot(snr, planet_name, observation_epoch, arm, species_name_ccf
         ax1.plot(drv, gaussian(drv, *popt_selected), 'r-', label='fit')
         pl.setp(ax1.get_xticklabels(), visible=False)
         ax1.set_ylabel('SNR')
+        # Annotating the arm and species on the plot
+        arm_species_text = f'Arm: {arm}, Species: {species_name_ccf}'
+        ax1.text(0.05, 0.9, arm_species_text, transform=ax1.transAxes, verticalalignment='top', fontsize=10)
+
+        # Vertical line for the Gaussian peak center
+        ax1.axvline(x=centers[selected_idx], color='b', linestyle='-', label='Center')
+
+        # Vertical lines for sigma width (center ± sigma)
+        sigma_left = centers[selected_idx] - sigmas[selected_idx]
+        sigma_right = centers[selected_idx] + sigmas[selected_idx]
+        ax1.axvline(x=sigma_left, color='purple', linestyle='--', label='- Sigma')
+        ax1.axvline(x=sigma_right, color='purple', linestyle='--', label='+ Sigma')
+
         ax1.legend()
 
         # Add the horizontal line at 4 SNR
