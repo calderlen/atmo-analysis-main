@@ -1384,109 +1384,121 @@ def make_shifted_plot(snr, planet_name, observation_epoch, arm, species_name_ccf
     plotsnr, Kp = plotsnr[keepKp, :], Kp[keepKp]
 
 # ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
-    # Fitting a Gaussian to the 1D slice during transit
+    if arm == 'red' or arm == 'blue':   
+        # Fitting a Gaussian to the 1D slice during transit
 
-    # Initializing lists to store fit parameters
-    amps = []
-    amps_err = []
-    centers = []
-    centers_err = []
-    sigmas = []
-    sigmas_err = []
+        # Initializing lists to store fit parameters
+        amps = []
+        amps_err = []
+        centers = []
+        centers_err = []
+        sigmas = []
+        sigmas_err = []
 
-    Kp_slices = []
+        Kp_slices = []
+        Kp_slice_peak = []
 
-    residuals = []
-    chi2_red = []
+        residuals = []
+        chi2_red = []
 
-    # Fitting gaussian to all 1D Kp slices
-    for i in range(plotsnr.shape[0]):
-        current_slice = plotsnr[i,:]
-        Kp_slices.append(current_slice)
-        popt, pcov = curve_fit(gaussian, drv, current_slice, p0=[5, -7, 1])
-
-        amps.append(popt[0])
-        centers.append(popt[1])
-        sigmas.append(popt[2])
-
-        # Storing errors (standard deviations)
-        amps_err.append(np.sqrt(pcov[0, 0]))
-        centers_err.append(np.sqrt(pcov[1, 1]))
-        sigmas_err.append(np.sqrt(pcov[2, 2]))
+        # Fitting gaussian to all 1D Kp slices
+        for i in range(plotsnr.shape[0]):
+            current_slice = plotsnr[i,:]
+            Kp_slices.append(current_slice)
+            Kp_slice_peak.append(np.max(current_slice[80:121]))
 
 
-    # Selecting a specific Kp slice
-    selected_idx = np.where(Kp == int((np.floor(Kp_true))))[0][0]
+            popt, pcov = curve_fit(gaussian, drv, current_slice, p0=[5, -7, 1])
 
-    # Fitting a Gaussian to the selected slice
-    popt_selected = [amps[selected_idx], centers[selected_idx], sigmas[selected_idx]]
-    print('Selected SNR:' ,amps[selected_idx], '\n Selected Vsys:', centers[selected_idx], '\n Selected sigma:', sigmas[selected_idx])
- 
-    # Computing residuals and chi-squared for selected slice
-    residual = plotsnr[selected_idx, :] - gaussian(drv, *popt_selected)
-    # chi2 = np.sum((residual / np.std(residual))**2)/(len(drv)-len(popt))
+            amps.append(popt[0])
+            centers.append(popt[1])
+            sigmas.append(popt[2])
 
-    # Initialize Figure and GridSpec objects
-    fig = pl.figure()
-    gs = gridspec.GridSpec(2, 1, height_ratios=[4, 1])
+            # Storing errors (standard deviations)
+            amps_err.append(np.sqrt(pcov[0, 0]))
+            centers_err.append(np.sqrt(pcov[1, 1]))
+            sigmas_err.append(np.sqrt(pcov[2, 2]))
 
-    # Create Axes for the main plot and the residuals plot
-    ax1 = pl.subplot(gs[0])
-    ax2 = pl.subplot(gs[1], sharex=ax1)
+
+        # Selecting a specific Kp slice
+        selected_idx = np.where(Kp == int((np.floor(Kp_true))))[0][0] #Kp slice corresponding to expected Kp
+        selected_idx = np.argmax(Kp_slice_peak)                       #Kp slice corresponding to max SNR
+        
+        # Fitting a Gaussian to the selected slice
+        popt_selected = [amps[selected_idx], centers[selected_idx], sigmas[selected_idx]]
+        print('Selected SNR:' ,amps[selected_idx], '\n Selected Vsys:', centers[selected_idx], '\n Selected sigma:', sigmas[selected_idx])
     
-    # Main Plot (ax1)
-    ax1.plot(drv, plotsnr[selected_idx, :], 'k--', label='data', markersize=2)
-    ax1.plot(drv, gaussian(drv, *popt_selected), 'r-', label='fit')
-    pl.setp(ax1.get_xticklabels(), visible=False)
-    ax1.set_ylabel('SNR')
-    ax1.legend()
+        # Computing residuals and chi-squared for selected slice
+        residual = plotsnr[selected_idx, :] - gaussian(drv, *popt_selected)
+        # chi2 = np.sum((residual / np.std(residual))**2)/(len(drv)-len(popt))
 
-    # Add the horizontal line at 4 SNR
-    ax1.axhline(y=4, color='g', linestyle='--', label=r'4 $\sigma$')    
+        # Initialize Figure and GridSpec objects
+        fig = pl.figure()
+        gs = gridspec.GridSpec(2, 1, height_ratios=[4, 1])
 
-    # Inset for residuals (ax2)
-    ax2.plot(drv, residual, 'o-', markersize=1)
-    ax2.set_xlabel('Velocity (km/s)')
-    ax2.set_ylabel('Residuals')
+        # Create Axes for the main plot and the residuals plot
+        ax1 = pl.subplot(gs[0])
+        ax2 = pl.subplot(gs[1], sharex=ax1)
+        
+        # Main Plot (ax1)
+        ax1.plot(drv, plotsnr[selected_idx, :], 'k--', label='data', markersize=2)
+        ax1.plot(drv, gaussian(drv, *popt_selected), 'r-', label='fit')
+        pl.setp(ax1.get_xticklabels(), visible=False)
+        ax1.set_ylabel('SNR')
+        ax1.legend()
 
-    # Additional text information for the main plot
-    params_str = f"Peak (a): {popt_selected[0]:.2f}\nMean (mu): {popt_selected[1]:.2f}\nSigma: {popt_selected[2]:.2f}\nKp: {Kp[selected_idx]:.0f}"
-    ax1.text(0.05, 0.95, params_str, transform=ax1.transAxes, verticalalignment='top')
+        # Add the horizontal line at 4 SNR
+        ax1.axhline(y=4, color='g', linestyle='--', label=r'4 $\sigma$')    
 
-    # Show the plot
-    pl.show()
+        # Inset for residuals (ax2)
+        ax2.plot(drv, residual, 'o-', markersize=1)
+        ax2.set_xlabel('Velocity (km/s)')
+        ax2.set_ylabel('Residuals')
 
-    if arm == 'red':
-        do_molecfit = True
-    else:
-        do_molecfit = False
+        # Additional text information for the main plot
+        params_str = f"Peak (a): {popt_selected[0]:.2f}\nMean (mu): {popt_selected[1]:.2f}\nSigma: {popt_selected[2]:.2f}\nKp: {Kp[selected_idx]:.0f}"
+        ax1.text(0.05, 0.95, params_str, transform=ax1.transAxes, verticalalignment='top')
+        
+        # Consider a clearer naming scheme
+        snr_fit = '/home/calder/Documents/atmo-analysis-main/plots/'+ planet_name + '.' + observation_epoch + '.' + arm + '.' + species_name_ccf + model_tag + '.SNR-Gaussian.pdf'
+        # Save the plot
+        fig.savefig(snr_fit, dpi=1000, bbox_inches='tight')
 
-    Period, epoch, M_star, RV_abs, i, M_p, R_p, RA, Dec, Kp_expected, half_duration_phase = get_planet_parameters(planet_name)
+        if arm == 'red':
+            do_molecfit = True
+        else:
+            do_molecfit = False
 
-    wave, fluxin, errorin, jd, snr_spectra, exptime, airmass, n_spectra, npix = get_pepsi_data(arm, observation_epoch, planet_name, do_molecfit)
+        Period, epoch, M_star, RV_abs, i, M_p, R_p, RA, Dec, Kp_expected, half_duration_phase = get_planet_parameters(planet_name)
 
-    orbital_phase = get_orbital_phase(jd, epoch, Period, RA, Dec)
+        wave, fluxin, errorin, jd, snr_spectra, exptime, airmass, n_spectra, npix = get_pepsi_data(arm, observation_epoch, planet_name, do_molecfit)
 
-    phase_min = np.min(orbital_phase)
-    phase_max = np.max(orbital_phase)
-    phase_array = np.linspace(phase_min, phase_max, np.shape(centers)[0])
+        orbital_phase = get_orbital_phase(jd, epoch, Period, RA, Dec)
 
-    fig, ax1 = pl.subplots()
+        phase_min = np.min(orbital_phase)
+        phase_max = np.max(orbital_phase)
+        phase_array = np.linspace(phase_min, phase_max, np.shape(centers)[0])
 
-    ax1.errorbar(phase_array, centers, yerr=centers_err, fmt='o-', label='Center')
-    ax1.set_xlabel('Orbital Phase')
-    ax1.set_ylabel('Vsys', color='b')
-    ax1.tick_params(axis='y', labelcolor='b')
-    ax1.set_title('Vsys and Sigma vs. Orbital Phase')
-    ax1.legend(loc='upper left')
+        fig, ax1 = pl.subplots()
 
-    ax2 = ax1.twinx()
-    ax2.plot(phase_array, sigmas, 'r-', label='Sigma')
-    ax2.set_ylabel('Sigma', color='r')
-    ax2.tick_params(axis='y', labelcolor='r')
-    ax2.legend(loc='upper right')
+        ax1.errorbar(phase_array, centers, yerr=centers_err, fmt='o-', label='Center')
+        ax1.set_xlabel('Orbital Phase')
+        ax1.set_ylabel('Vsys', color='b')
+        ax1.tick_params(axis='y', labelcolor='b')
+        ax1.set_title('Vsys and Sigma vs. Orbital Phase')
+        ax1.legend(loc='upper left')
 
-    pl.show()
+        ax2 = ax1.twinx()
+        ax2.plot(phase_array, sigmas, 'r-', label='Sigma')
+        ax2.set_ylabel('Sigma', color='r')
+        ax2.tick_params(axis='y', labelcolor='r')
+        ax2.legend(loc='upper right')
+
+
+        # Consider a clearer naming scheme
+        wind_chars = '/home/calder/Documents/atmo-analysis-main/plots/'+ planet_name + '.' + observation_epoch + '.' + arm + '.' + species_name_ccf + model_tag + '.Wind-characteristics.pdf'
+        # Save the plot
+        fig.savefig(wind_chars, dpi=1000, bbox_inches='tight')
 
 
 #-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
@@ -1893,8 +1905,6 @@ def combine_observations(observation_epochs, arms, planet_name, temperature_prof
             all_epochs += '+'+observation_epochs[i]
 
     make_shifted_plot(snr, planet_name, all_epochs, all_arms, species_name_ccf, model_tag, RV_abs, Kp_expected, V_sys_true, Kp_true, do_inject_model, True, drv, Kp, species_label, temperature_profile, method)
-
-    #import pdb; pdb.set_trace()
 
     get_peak_snr(snr, drv, Kp, do_inject_model, V_sys_true, Kp_true, RV_abs, Kp_expected, all_arms, all_epochs, f, method)
     
