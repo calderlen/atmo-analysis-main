@@ -147,6 +147,14 @@ def get_species_keys(species_label):
         species_name_inject = 'Ca'
         species_name_ccf = 'Ca'
         
+    if species_label == 'CO_all':
+        species_name_inject = 'CO_all_iso'
+        species_name_ccf = 'CO_all_iso'
+    
+    if species_label == 'CO_main':
+        species_name_inject = 'CO_main_iso'
+        species_name_ccf = 'CO_main_iso'       
+
     if species_label == 'NaH':
         species_name_inject = 'NaH'
         species_name_ccf = 'NaH'
@@ -1432,10 +1440,8 @@ def make_shifted_plot(snr, planet_name, observation_epoch, arm, species_name_ccf
         residual = plotsnr[selected_idx, :] - gaussian(drv, *popt_selected)
         # chi2 = np.sum((residual / np.std(residual))**2)/(len(drv)-len(popt))
 
-        fig, ax1 = pl.subplots(figsize=(10, 6))  # Modify figsize as needed to accommodate new features
-
         # Initialize Figure and GridSpec objects
-        fig = pl.figure()
+        fig = pl.figure(figsize=(20,20))
         gs = gridspec.GridSpec(2, 1, height_ratios=[4, 1])
 
         # Create Axes for the main plot and the residuals plot
@@ -1445,11 +1451,15 @@ def make_shifted_plot(snr, planet_name, observation_epoch, arm, species_name_ccf
         # Main Plot (ax1)
         ax1.plot(drv, plotsnr[selected_idx, :], 'k--', label='data', markersize=2)
         ax1.plot(drv, gaussian(drv, *popt_selected), 'r-', label='fit')
+
+        # Species Label
+        ax1.text(0.05, 0.99, species_label, transform=ax1.transAxes, verticalalignment='top', horizontalalignment='left', fontsize=12)
+
         pl.setp(ax1.get_xticklabels(), visible=False)
         ax1.set_ylabel('SNR')
         # Annotating the arm and species on the plot
         arm_species_text = f'Arm: {arm}, Species: {species_name_ccf}'
-        ax1.text(0.05, 0.9, arm_species_text, transform=ax1.transAxes, verticalalignment='top', fontsize=10)
+        ax1.text(0.0, 0.0, arm_species_text, transform=ax1.transAxes, verticalalignment='top', fontsize=10)
 
         # Vertical line for the Gaussian peak center
         ax1.axvline(x=centers[selected_idx], color='b', linestyle='-', label='Center')
@@ -1477,7 +1487,7 @@ def make_shifted_plot(snr, planet_name, observation_epoch, arm, species_name_ccf
         # Consider a clearer naming scheme
         snr_fit = '/home/calder/Documents/atmo-analysis-main/plots/'+ planet_name + '.' + observation_epoch + '.' + arm + '.' + species_name_ccf + model_tag + '.SNR-Gaussian.pdf'
         # Save the plot
-        fig.savefig(snr_fit, dpi=1000, bbox_inches='tight')
+        fig.savefig(snr_fit, dpi=300, bbox_inches='tight')
 
         if arm == 'red':
             do_molecfit = True
@@ -1494,7 +1504,10 @@ def make_shifted_plot(snr, planet_name, observation_epoch, arm, species_name_ccf
         phase_max = np.max(orbital_phase)
         phase_array = np.linspace(phase_min, phase_max, np.shape(centers)[0])
 
-        fig, ax1 = pl.subplots()
+        fig, ax1 = pl.subplots(figsize=(15,10))
+
+        ax1.text(0.05, 0.99, species_label, transform=ax1.transAxes, verticalalignment='top', horizontalalignment='left', fontsize=12)
+
 
         ax1.errorbar(phase_array, centers, yerr=centers_err, fmt='o-', label='Center')
         ax1.set_xlabel('Orbital Phase')
@@ -1513,8 +1526,7 @@ def make_shifted_plot(snr, planet_name, observation_epoch, arm, species_name_ccf
         # Consider a clearer naming scheme
         wind_chars = '/home/calder/Documents/atmo-analysis-main/plots/'+ planet_name + '.' + observation_epoch + '.' + arm + '.' + species_name_ccf + model_tag + '.Wind-characteristics.pdf'
         # Save the plot
-        fig.savefig(wind_chars, dpi=1000, bbox_inches='tight')
-
+        fig.savefig(wind_chars, dpi=300, bbox_inches='tight')
 
 #-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 
