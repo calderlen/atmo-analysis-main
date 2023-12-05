@@ -1441,7 +1441,7 @@ def make_shifted_plot(snr, planet_name, observation_epoch, arm, species_name_ccf
         # chi2 = np.sum((residual / np.std(residual))**2)/(len(drv)-len(popt))
 
         # Initialize Figure and GridSpec objects
-        fig = pl.figure(figsize=(20,20))
+        fig = pl.figure(figsize=(12,8))
         gs = gridspec.GridSpec(2, 1, height_ratios=[4, 1])
 
         # Create Axes for the main plot and the residuals plot
@@ -1458,17 +1458,24 @@ def make_shifted_plot(snr, planet_name, observation_epoch, arm, species_name_ccf
         pl.setp(ax1.get_xticklabels(), visible=False)
         ax1.set_ylabel('SNR')
         # Annotating the arm and species on the plot
-        arm_species_text = f'Arm: {arm}, Species: {species_name_ccf}'
-        ax1.text(0.0, 0.0, arm_species_text, transform=ax1.transAxes, verticalalignment='top', fontsize=10)
+        
+        # Additional text information for the main plot
+        params_str = f"Peak (a): {popt_selected[0]:.2f}\nMean (mu): {popt_selected[1]:.2f}\nSigma: {popt_selected[2]:.2f}\nKp: {Kp[selected_idx]:.0f}"
+        ax1.text(0.01, 0.95, params_str, transform=ax1.transAxes, verticalalignment='top', fontsize=10)
 
+        arm_species_text = f'Arm: {arm}'
+        ax1.text(0.15, 0.95, arm_species_text, transform=ax1.transAxes, verticalalignment='top', fontsize=10)
+        
         # Vertical line for the Gaussian peak center
         ax1.axvline(x=centers[selected_idx], color='b', linestyle='-', label='Center')
 
+
+
         # Vertical lines for sigma width (center ± sigma)
-        sigma_left = centers[selected_idx] - sigmas[selected_idx]
-        sigma_right = centers[selected_idx] + sigmas[selected_idx]
-        ax1.axvline(x=sigma_left, color='purple', linestyle='--', label='- Sigma')
-        ax1.axvline(x=sigma_right, color='purple', linestyle='--', label='+ Sigma')
+        #sigma_left = centers[selected_idx] - sigmas[selected_idx]
+        #sigma_right = centers[selected_idx] + sigmas[selected_idx]
+        #ax1.axvline(x=sigma_left, color='purple', linestyle='--', label='- Sigma')
+        #ax1.axvline(x=sigma_right, color='purple', linestyle='--', label='+ Sigma')
 
         ax1.legend()
 
@@ -1480,9 +1487,7 @@ def make_shifted_plot(snr, planet_name, observation_epoch, arm, species_name_ccf
         ax2.set_xlabel('Velocity (km/s)')
         ax2.set_ylabel('Residuals')
 
-        # Additional text information for the main plot
-        params_str = f"Peak (a): {popt_selected[0]:.2f}\nMean (mu): {popt_selected[1]:.2f}\nSigma: {popt_selected[2]:.2f}\nKp: {Kp[selected_idx]:.0f}"
-        ax1.text(0.05, 0.95, params_str, transform=ax1.transAxes, verticalalignment='top')
+       
         
         # Consider a clearer naming scheme
         snr_fit = '/home/calder/Documents/atmo-analysis-main/plots/'+ planet_name + '.' + observation_epoch + '.' + arm + '.' + species_name_ccf + model_tag + '.SNR-Gaussian.pdf'
