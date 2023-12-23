@@ -1470,22 +1470,23 @@ def gaussian_fit(Kp, Kp_true, drv, species_label, planet_name, observation_epoch
         ax1.set_ylabel('Vsys', color='b')
         ax1.tick_params(axis='y', labelcolor='b')
         ax1.set_title('Vsys and Sigma vs. Orbital Phase')
-        ax1.legend(loc='upper left')
+        ax1.legend(loc='upper right')
 
         ax2 = ax1.twinx()
         ax2.plot(phase_array, sigmas, 'r-', label='Sigma')
-        ax2.fill_between(phase_array, sigmas - sigmas_err, sigmas + sigmas_err, color='red', alpha=0.2)
 
         ax2.set_ylabel('Sigma', color='r')
         ax2.tick_params(axis='y', labelcolor='r')
         ax2.legend(loc='upper right')
 
+        arm_species_text = f'Arm: {arm}'
+        ax1.text(0.15, 0.99, arm_species_text, transform=ax1.transAxes, verticalalignment='top', fontsize=10)
 
         # Consider a clearer naming scheme
         wind_chars = '/home/calder/Documents/atmo-analysis-main/plots/'+ planet_name + '.' + observation_epoch + '.' + arm + '.' + species_name_ccf + model_tag + '.Wind-characteristics.pdf'
         # Save the plot
         fig.savefig(wind_chars, dpi=300, bbox_inches='tight')
-    
+
 def make_shifted_plot(snr, planet_name, observation_epoch, arm, species_name_ccf, model_tag, RV_abs, Kp_expected, V_sys_true, Kp_true, do_inject_model, do_combine, drv, Kp, species_label, temperature_profile, method, plotformat='pdf'):
     """
     Creates a shifted plot of the CCFs or likelihoods for a given planet, observation epoch, arm, and species.
@@ -1947,6 +1948,8 @@ def combine_observations(observation_epochs, arms, planet_name, temperature_prof
     make_shifted_plot(snr, planet_name, all_epochs, all_arms, species_name_ccf, model_tag, RV_abs, Kp_expected, V_sys_true, Kp_true, do_inject_model, True, drv, Kp, species_label, temperature_profile, method)
 
     get_peak_snr(snr, drv, Kp, do_inject_model, V_sys_true, Kp_true, RV_abs, Kp_expected, all_arms, all_epochs, f, method)
+
+    return Kp_true
 
 def run_all_ccfs(planet_name, temperature_profile, species_label, vmr, do_inject_model, do_run_all, do_make_new_model, method):
     """
