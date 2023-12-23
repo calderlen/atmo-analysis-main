@@ -267,8 +267,8 @@ def generate_atmospheric_model(planet_name, spectrum_type, instrument, arm, all_
 
     wav_pl, flux_pl, temperature, pressures, contribution = create_model(params, spectrum_type, False, False, atmosphere=atmosphere, ptprofile = ptprofile)
 
-    np.save('/home/calder/Documents/atmo-analysis-main/data_products/radtrans_temperature.npy', temperature)
-    np.save('/home/calder/Documents/atmo-analysis-main/data_products/radtrans_pressure.npy', pressures)
+    np.save('data_products/radtrans_temperature.npy', temperature)
+    np.save('data_products/radtrans_pressure.npy', pressures)
     
     
     flux_st = nc.b(Teff, nc.c/(wav_pl/1e8)) * u.erg / (u.cm * u.cm) / u.s / u.Hz

@@ -36,8 +36,6 @@ pl.rc('xtick', labelsize=14) #fontsize of the x tick labels
 pl.rc('ytick', labelsize=14) #fontsize of the y tick labels
 pl.rc('legend', fontsize=14) #fontsize of the legend
 
-
- 
 def get_species_keys(species_label):
     """
     Given a species label, returns the corresponding species name for injection and CCF calculation.
@@ -340,6 +338,7 @@ def get_species_keys(species_label):
 
     return species_name_inject, species_name_ccf
 
+
 def get_sysrem_parameters(arm, observation_epoch, species_label):
     if species_label == 'TiO':
         if arm == 'red': n_systematics = [1, 1]
@@ -536,7 +535,6 @@ def get_pepsi_data(arm, observation_epoch, planet_name, do_molecfit):
     i=0
     jd, snr_spectra, exptime = np.zeros(n_spectra), np.zeros(n_spectra), np.zeros(n_spectra)
     
-    
     airmass = np.zeros(n_spectra)
 
     for spectrum in spectra_files:
@@ -596,18 +594,14 @@ def get_pepsi_data(arm, observation_epoch, planet_name, do_molecfit):
             snr_spectra[i] = header['SNR']
         except KeyError:
             snr_spectra[i] = np.percentile(fluxin[i,:]/errorin[i,:], 90)
-            
         exptime_strings = header['EXPTIME'].split(':')
         exptime[i] = float(exptime_strings[0]) * 3600. + float(exptime_strings[1]) * 60. + float(exptime_strings[2])            
         airmass[i] = header['AIRMASS']
-
         hdu.close()
         i+=1
     
     #glob gets the files out of order for some reason so we have to put them in time order
-
     obs_order = np.argsort(jd)
-
 
     jd, snr_spectra, exptime, airmass = jd[obs_order], snr_spectra[obs_order], exptime[obs_order], airmass[obs_order]
 
@@ -671,7 +665,7 @@ def convolve_atmospheric_model(template_wave, template_flux, profile_width, prof
     Returns:
     numpy.ndarray: Convolved flux.
     """
-    
+
     ckms =2.9979e5
     velocities = (template_wave - np.mean(template_wave)) / template_wave * ckms
     velocities = velocities[np.abs(velocities) <= 100.]
@@ -774,7 +768,6 @@ def make_new_model(instrument, species_name_new, vmr, spectrum_type, planet_name
     - template_wave (numpy.ndarray): the wavelength array of the resulting spectrum
     - template_flux (numpy.ndarray): the flux array of the resulting spectrum
     """
-    # function code here
 
     if planet_name == 'WASP-189b':
         instrument_here = 'PEPSI-25' 
@@ -848,9 +841,6 @@ def make_new_model(instrument, species_name_new, vmr, spectrum_type, planet_name
         parameters['kappa'] = 0.01
         parameters['gamma'] = 50.
 
-
-    
-    
     parameters[species_name_new] = vmr
     template_wave, template_flux = generate_atmospheric_model(planet_name, spectrum_type, instrument, 'combined', [species_name_new], parameters, atmosphere, pressures, ptprofile = ptprofile)
 
@@ -891,9 +881,6 @@ def get_atmospheric_model(planet_name, species_name_ccf, vmr, temperature_profil
 
     return template_wave, template_flux
 
-
-
-
 def inject_model(Kp_expected, orbital_phase, wave, fluxin, template_wave_in, template_flux_in, n_spectra):
     """
     Injects a model planet spectrum into a set of observed spectra.
@@ -928,9 +915,6 @@ def inject_model(Kp_expected, orbital_phase, wave, fluxin, template_wave_in, tem
         fluxin[i,:] = fluxin[i,:] + planet_flux
 
     return fluxin, Kp_true, V_sys_true
-
-import numpy as np
-import uncertainties.unumpy as unp
 
 def regrid_data(wave, fluxin, errorin, n_spectra, template_wave, template_flux, snr_spectra, temperature_profile, do_make_new_model):
     """
@@ -998,7 +982,6 @@ def flatten_spectra(flux, npix, n_spectra):
     print('The maximum total SNR is ', np.max(total_snr))
 
     return residual_flux
-
 
 def do_sysrem(wave, residual_flux, arm, airmass, n_spectra, niter, n_systematics, do_molecfit):
     """
@@ -1133,8 +1116,6 @@ def get_ccfs(wave, corrected_flux, corrected_error, template_wave, template_flux
 
     return drv, cross_cor, sigma_cross_cor
 
-import numpy as np
-
 def get_likelihood(wave, corrected_flux, corrected_error, template_wave, template_flux, n_spectra):
     """
     Calculates the likelihood of a given set of spectra using a template spectrum.
@@ -1151,8 +1132,6 @@ def get_likelihood(wave, corrected_flux, corrected_error, template_wave, templat
     numpy.ndarray: Array of radial velocity values.
     numpy.ndarray: Array of likelihood values for each radial velocity value and each spectrum.
     """
-    rvmin, rvmax = -400., 400. #kms
-    rvspacing = 1.0 #kms
 
     alpha, beta, norm_offset = 1.0, 1.0, 0.0 #I think this is correct for this application--only set these scaling factors if do actual fits
 
@@ -1197,7 +1176,6 @@ def combine_ccfs(drv, cross_cor, sigma_cross_cor, orbital_phase, n_spectra, ccf_
     drv : array_like
         Array of Doppler velocities (km/s) at which the CCFs are sampled.
     """
-    
     Kp = np.arange(50, 350, 1)
     nKp, nv = len(Kp), len(drv)
 
@@ -1284,13 +1262,12 @@ def combine_likelihoods(drv, lnL, orbital_phase, n_spectra, half_duration_phase,
                 shifted_lnL[i,:] += temp_lnL
         i+=1
 
-    goods = np.abs(drv) <= 200.
+    goods = np.abs(drv) <= 25.
 
     drv = drv[goods]
     shifted_lnL = shifted_lnL[:,goods]
 
     return shifted_lnL, Kp, drv
-
 
 def gaussian(x, a, mu, sigma):
 
@@ -1306,7 +1283,7 @@ def gaussian(x, a, mu, sigma):
     '''
     return a * np.exp(-(x - mu)**2 / (2 * sigma**2))
 
-
+# currently unused, consider removing
 def multi_gaussian(x, *params):
     """Fit multiple Gaussians.
     
@@ -1332,66 +1309,26 @@ def multi_gaussian(x, *params):
     return y
 
 
-def make_shifted_plot(snr, planet_name, observation_epoch, arm, species_name_ccf, model_tag, RV_abs, Kp_expected, V_sys_true, Kp_true, do_inject_model, do_combine, drv, Kp, species_label, temperature_profile, method, plotformat='pdf'):
+def gaussian_fit(Kp, Kp_true, drv, species_label, planet_name, observation_epoch, arm, species_name_ccf, model_tag, plotsnr):
     """
-    Creates a shifted plot of the CCFs or likelihoods for a given planet, observation epoch, arm, and species.
+    Fits a Gaussian to the 1D slice during transit and generates plots.
 
-    Args:
-    snr (numpy.ndarray): Signal-to-noise ratio of the CCFs or likelihoods.
-    planet_name (str): Name of the planet.
-    observation_epoch (str): Observation epoch.
-    arm (str): Spectrograph arm.
-    species_name_ccf (str): Name of the species.
-    model_tag (str): Model tag.
-    RV_abs (astropy.units.Quantity): Absolute radial velocity.
-    Kp_expected (astropy.units.Quantity): Expected Kp.
-    V_sys_true (astropy.units.Quantity): True systemic velocity.
-    Kp_true (astropy.units.Quantity): True Kp.
-    do_inject_model (bool): Whether to inject the model.
-    do_combine (bool): Whether to combine the plots.
-    drv (astropy.units.Quantity): Radial velocity.
-    Kp (astropy.units.Quantity): Kp.
-    species_label (str): Species label.
-    temperature_profile (str): Temperature profile.
-    method (str): Method used to create the plot (either 'ccf' or 'likelihood').
-    plotformat (str): Format of the plot file (default is 'pdf').
+    Parameters:
+    - Kp (array): Array of Kp values.
+    - Kp_true (float): True Kp value.
+    - drv (array): Array of velocity values.
+    - species_label (str): Label for the species.
+    - planet_name (str): Name of the planet.
+    - observation_epoch (str): Observation epoch.
+    - arm (str): Arm of the spectrograph ('red' or 'blue').
+    - species_name_ccf (str): Name of the species for cross-correlation function.
+    - model_tag (str): Tag for the model.
+    - plotsnr (array): Array of SNR values.
 
     Returns:
-    None
+    - None
     """
-    
-    if method == 'ccf':
-        outtag, zlabel = 'CCFs-shifted', 'SNR'
-        plotsnr = snr[:]
-    if 'likelihood' in method:
-        outtag, zlabel = 'likelihood-shifted', '$\Delta\ln \mathcal{L}$'
-        plotsnr=snr - np.max(snr)
-    plotname = '/home/calder/Documents/atmo-analysis-main/plots/'+ planet_name + '.' + observation_epoch + '.' + arm + '.' + species_name_ccf + model_tag + '.' + outtag + '.' + plotformat
-
-    if do_combine:
-        plotname = '/home/calder/Documents/atmo-analysis-main/plots/'+ planet_name + '.' + observation_epoch + '.' + arm + '.' + species_name_ccf + model_tag + '.' + outtag + '.' + plotformat
-
-    if not do_inject_model:
-        apoints = [unp.nominal_values(RV_abs), unp.nominal_values(Kp_expected)]
-    else:
-        apoints = [V_sys_true, Kp_true]
-
-    if do_inject_model:
-        model_label = 'injected'
-    else:
-        model_label = ''
-
-    if 'transmission' in temperature_profile:
-        ctable = 'bone'
-    else:
-        ctable = 'afmhot'
-
-    keeprv = np.abs(drv-apoints[0]) <= 100.
-    plotsnr, drv = plotsnr[:, keeprv], drv[keeprv]
-    keepKp = np.abs(Kp-apoints[1]) <= 100.
-    plotsnr, Kp = plotsnr[keepKp, :], Kp[keepKp]
-
-# ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+  
     if arm == 'red' or arm == 'blue':   
         # Fitting a Gaussian to the 1D slice during transit
 
@@ -1427,6 +1364,18 @@ def make_shifted_plot(snr, planet_name, observation_epoch, arm, species_name_ccf
             centers_err.append(np.sqrt(pcov[1, 1]))
             sigmas_err.append(np.sqrt(pcov[2, 2]))
 
+        amps = np.array(amps)
+        amps_err = np.array(amps_err)
+        centers = np.array(centers)
+        centers_err = np.array(centers_err)
+        sigmas = np.array(sigmas) 
+        sigmas_err = np.array(sigmas_err)
+
+        Kp_slices = np.array(Kp_slices)
+        Kp_slice_peak = np.array(Kp_slice_peak)
+
+        residuals = np.array(residuals)
+        chi2_red = np.array(chi2_red)
 
         # Selecting a specific Kp slice
         selected_idx = np.where(Kp == int((np.floor(Kp_true))))[0][0] #Kp slice corresponding to expected Kp
@@ -1468,7 +1417,7 @@ def make_shifted_plot(snr, planet_name, observation_epoch, arm, species_name_ccf
         
         # Vertical line for the Gaussian peak center
         ax1.axvline(x=centers[selected_idx], color='b', linestyle='-', label='Center')
-
+        ax1.set_title('1D CCF Slice + Gaussian Fit')
 
 
         # Vertical lines for sigma width (center ± sigma)
@@ -1486,6 +1435,7 @@ def make_shifted_plot(snr, planet_name, observation_epoch, arm, species_name_ccf
         ax2.plot(drv, residual, 'o-', markersize=1)
         ax2.set_xlabel('Velocity (km/s)')
         ax2.set_ylabel('Residuals')
+
 
        
         
@@ -1509,12 +1459,13 @@ def make_shifted_plot(snr, planet_name, observation_epoch, arm, species_name_ccf
         phase_max = np.max(orbital_phase)
         phase_array = np.linspace(phase_min, phase_max, np.shape(centers)[0])
 
-        fig, ax1 = pl.subplots(figsize=(15,10))
+        fig, ax1 = pl.subplots(figsize=(12,8))
 
         ax1.text(0.05, 0.99, species_label, transform=ax1.transAxes, verticalalignment='top', horizontalalignment='left', fontsize=12)
 
 
-        ax1.errorbar(phase_array, centers, yerr=centers_err, fmt='o-', label='Center')
+        ax1.plot(phase_array, centers, 'o-', label='Center')
+        ax1.fill_between(phase_array, centers - centers_err, centers + centers_err, color='blue', alpha=0.2)
         ax1.set_xlabel('Orbital Phase')
         ax1.set_ylabel('Vsys', color='b')
         ax1.tick_params(axis='y', labelcolor='b')
@@ -1523,6 +1474,8 @@ def make_shifted_plot(snr, planet_name, observation_epoch, arm, species_name_ccf
 
         ax2 = ax1.twinx()
         ax2.plot(phase_array, sigmas, 'r-', label='Sigma')
+        ax2.fill_between(phase_array, sigmas - sigmas_err, sigmas + sigmas_err, color='red', alpha=0.2)
+
         ax2.set_ylabel('Sigma', color='r')
         ax2.tick_params(axis='y', labelcolor='r')
         ax2.legend(loc='upper right')
@@ -1532,12 +1485,71 @@ def make_shifted_plot(snr, planet_name, observation_epoch, arm, species_name_ccf
         wind_chars = '/home/calder/Documents/atmo-analysis-main/plots/'+ planet_name + '.' + observation_epoch + '.' + arm + '.' + species_name_ccf + model_tag + '.Wind-characteristics.pdf'
         # Save the plot
         fig.savefig(wind_chars, dpi=300, bbox_inches='tight')
+    
+def make_shifted_plot(snr, planet_name, observation_epoch, arm, species_name_ccf, model_tag, RV_abs, Kp_expected, V_sys_true, Kp_true, do_inject_model, do_combine, drv, Kp, species_label, temperature_profile, method, plotformat='pdf'):
+    """
+    Creates a shifted plot of the CCFs or likelihoods for a given planet, observation epoch, arm, and species.
 
-#-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+    Args:
+    snr (numpy.ndarray): Signal-to-noise ratio of the CCFs or likelihoods.
+    planet_name (str): Name of the planet.
+    observation_epoch (str): Observation epoch.
+    arm (str): Spectrograph arm.
+    species_name_ccf (str): Name of the species.
+    model_tag (str): Model tag.
+    RV_abs (astropy.units.Quantity): Absolute radial velocity.
+    Kp_expected (astropy.units.Quantity): Expected Kp.
+    V_sys_true (astropy.units.Quantity): True systemic velocity.
+    Kp_true (astropy.units.Quantity): True Kp.
+    do_inject_model (bool): Whether to inject the model.
+    do_combine (bool): Whether to combine the plots.
+    drv (astropy.units.Quantity): Radial velocity.
+    Kp (astropy.units.Quantity): Kp.
+    species_label (str): Species label.
+    temperature_profile (str): Temperature profile.
+    method (str): Method used to create the plot (either 'ccf' or 'likelihood').
+    plotformat (str): Format of the plot file (default is 'pdf').
+
+    Returns:
+    None
+    """
+
+    if method == 'ccf':
+        outtag, zlabel = 'CCFs-shifted', 'SNR'
+        plotsnr = snr[:]
+    if 'likelihood' in method:
+        outtag, zlabel = 'likelihood-shifted', '$\Delta\ln \mathcal{L}$'
+        plotsnr=snr - np.max(snr)
+    plotname = '/home/calder/Documents/atmo-analysis-main/plots/'+ planet_name + '.' + observation_epoch + '.' + arm + '.' + species_name_ccf + model_tag + '.' + outtag + '.' + plotformat
+
+    if do_combine:
+        plotname = '/home/calder/Documents/atmo-analysis-main/plots/'+ planet_name + '.' + observation_epoch + '.' + arm + '.' + species_name_ccf + model_tag + '.' + outtag + '.' + plotformat
+
+    if not do_inject_model:
+        apoints = [unp.nominal_values(RV_abs), unp.nominal_values(Kp_expected)]
+    else:
+        apoints = [V_sys_true, Kp_true]
+
+    if do_inject_model:
+        model_label = 'injected'
+    else:
+        model_label = ''
+
+    if 'transmission' in temperature_profile:
+        ctable = 'bone'
+    else:
+        ctable = 'afmhot'
+
+    keeprv = np.abs(drv-apoints[0]) <= 100.
+    plotsnr, drv = plotsnr[:, keeprv], drv[keeprv]
+    keepKp = np.abs(Kp-apoints[1]) <= 100.
+    plotsnr, Kp = plotsnr[keepKp, :], Kp[keepKp]
+
+    # Fit a Gaussian to the line profile
+    gaussian_fit(Kp, Kp_true, drv, species_label, planet_name, observation_epoch, arm, species_name_ccf, model_tag, plotsnr)
 
     psarr(plotsnr, drv, Kp, '$V_{\mathrm{sys}}$ (km/s)', '$K_p$ (km/s)', zlabel, filename=plotname, ctable=ctable, alines=True, apoints=apoints, acolor='cyan', textstr=species_label+' '+model_label, textloc = np.array([apoints[0]-75.,apoints[1]+75.]), textcolor='cyan', fileformat=plotformat)
 
-    
 def get_peak_snr(snr, drv, Kp, do_inject_model, V_sys_true, Kp_true, RV_abs, Kp_expected, arm, observation_epoch, f, method):
     """
     Calculates the peak signal-to-noise ratio (SNR) for a given set of data.
@@ -1644,7 +1656,6 @@ def DopplerShadowModel(vsini,
                 'obs': obs,   # name of an observatory or spectrograph
                 'sysname':'test',   # hardcoded
                 'lineshifts':'y',   # hardcoded
-            
 
                 # Required for Doppler tomographic model
                 'Pd':Period.n,    # Planetary orbital period (days)
@@ -1760,7 +1771,11 @@ def run_one_ccf(species_label, vmr, arm, observation_epoch, template_wave, templ
     #residual_flux = flux[:]
     residual_flux = flatten_spectra(flux, npix, n_spectra)
 
-    #Make some diagnostic
+    #Make some diagnostic plots
+    plotname = 'plots/' + planet_name + '.' + observation_epoch + '.' + arm + '.spectrum-resids.pdf'
+
+    #psarr(unp.nominal_values(residual_flux), wave, orbital_phase, 'wavelength (Angstroms)', 'orbital phase', 'flux residual', filename=plotname,flat=True, ctable='gist_gray')
+
     sysrem_file = '/home/calder/Documents/atmo-analysis-main/data_products/' + planet_name + '.' + observation_epoch + '.' + arm + '.SYSREM-' + str(n_systematics[0]) + '+' + str(n_systematics[1])+model_tag+'.npy'
  
     if do_sysrem:
@@ -1784,8 +1799,6 @@ def run_one_ccf(species_label, vmr, arm, observation_epoch, template_wave, templ
 
         drv, cross_cor, sigma_cross_cor = get_ccfs(wave, corrected_flux, corrected_error, template_wave, template_flux, n_spectra)
 
-        
-        
         np.save(ccf_file, cross_cor)
         np.save(ccf_file+'.sigma.npy', sigma_cross_cor)
         np.save(ccf_file+'.phase.npy', orbital_phase)
@@ -1796,8 +1809,8 @@ def run_one_ccf(species_label, vmr, arm, observation_epoch, template_wave, templ
             cross_cor[i,:]-=np.mean(cross_cor[i,:])
             sigma_cross_cor[i,:] = np.sqrt(sigma_cross_cor[i,:]**2 + np.sum(sigma_cross_cor[i,:]**2)/len(sigma_cross_cor[i,:])**2)
             cross_cor[i,:]/=np.std(cross_cor[i,:])
-            
-        # Specifically for
+
+        # Specifically for KELT-20b
         vsini = 110
         lambda_p = 0.5                  
         
@@ -1824,16 +1837,15 @@ def run_one_ccf(species_label, vmr, arm, observation_epoch, template_wave, templ
         ccf_model *= scale_factor
         cross_cor -= ccf_model
 
-        #Make a plot
-        plotname = '/home/calder/Documents/atmo-analysis-main/plots/' + planet_name + '.' + observation_epoch + '.' + species_name_ccf + model_tag + '.CCFs-raw.pdf'
-        psarr(cross_cor, drv, orbital_phase, 'v (km/s)', 'orbital phase', 'SNR', filename=plotname, ctable='gist_gray')
+        #Make a plot    
+        plotname = '/home/calder/Documents/atmo-analysis-main/plots/' + planet_name + '.' + observation_epoch + '.' + arm + '.' + species_name_ccf + model_tag + '.CCFs-raw.pdf'
+        psarr(cross_cor, drv, orbital_phase, 'v (km/s)', 'orbital phase', 'SNR', filename=plotname, ctable='inferno')
 
         snr, Kp, drv = combine_ccfs(drv, cross_cor, sigma_cross_cor, orbital_phase, n_spectra, ccf_weights, half_duration_phase, temperature_profile)
         
         make_shifted_plot(snr, planet_name, observation_epoch, arm, species_name_ccf, model_tag, RV_abs, Kp_expected, V_sys_true, Kp_true, do_inject_model, True, drv, Kp, species_label, temperature_profile, method)
 
         get_peak_snr(snr, drv, Kp, do_inject_model, V_sys_true, Kp_true, RV_abs, Kp_expected, arm, observation_epoch, f, method)
-
 
 
     if 'likelihood' in method:
@@ -1844,14 +1856,13 @@ def run_one_ccf(species_label, vmr, arm, observation_epoch, template_wave, templ
         np.save(like_file+'.phase.npy', orbital_phase)
 
         #Make a plot
-        plotname = '/home/calder/Documents/atmo-analysis-main/plots/' + planet_name + '.' + observation_epoch + '.' + species_name_ccf + model_tag + '.likelihoods-raw.pdf'
-        psarr(lnL, drv, orbital_phase, 'v (km/s)', 'orbital phase', 'ln L', filename=plotname, ctable='gist_gray')
+        plotname = '/home/calder/Documents/atmo-analysis-main/plots/' + planet_name + '.' + observation_epoch + '.' + arm + '.' + species_name_ccf + model_tag + '.likelihoods-raw.pdf'
+        psarr(lnL, drv, orbital_phase, 'v (km/s)', 'orbital phase', 'ln L', filename=plotname, ctable='inferno')
 
         #now need to combine the likelihoods along the planet orbit
         shifted_lnL, Kp, drv = combine_likelihoods(drv, lnL, orbital_phase, n_spectra, half_duration_phase, temperature_profile)
 
         make_shifted_plot(shifted_lnL, planet_name, observation_epoch, arm, species_name_ccf, model_tag, RV_abs, Kp_expected, V_sys_true, Kp_true, do_inject_model, True, drv, Kp, species_label, temperature_profile, method)
-
 
 def combine_observations(observation_epochs, arms, planet_name, temperature_profile, species_label, species_name_ccf, model_tag, RV_abs, Kp_expected, do_inject_model, f, method):
     """
@@ -1889,7 +1900,6 @@ def combine_observations(observation_epochs, arms, planet_name, temperature_prof
 
             cross_cor_2 = np.load(ccf_file_2)
             orbital_phase_2 = np.load(ccf_file_2+'.phase.npy')
-            
 
             if method == 'ccf':
                 #I don't think the below is right, this is just for display purposes for now
@@ -1897,8 +1907,6 @@ def combine_observations(observation_epochs, arms, planet_name, temperature_prof
                     cross_cor_2[i,:]-=np.mean(cross_cor_2[i,:])
                     cross_cor_2[i,:]/=np.std(cross_cor_2[i,:])
 
-            
-    
             if j == 0:
                 cross_cor, orbital_phase = cross_cor_2, orbital_phase_2
                 if method == 'ccf':
@@ -1939,9 +1947,6 @@ def combine_observations(observation_epochs, arms, planet_name, temperature_prof
     make_shifted_plot(snr, planet_name, all_epochs, all_arms, species_name_ccf, model_tag, RV_abs, Kp_expected, V_sys_true, Kp_true, do_inject_model, True, drv, Kp, species_label, temperature_profile, method)
 
     get_peak_snr(snr, drv, Kp, do_inject_model, V_sys_true, Kp_true, RV_abs, Kp_expected, all_arms, all_epochs, f, method)
-    
-                
-            
 
 def run_all_ccfs(planet_name, temperature_profile, species_label, vmr, do_inject_model, do_run_all, do_make_new_model, method):
     """
@@ -1991,7 +1996,7 @@ def run_all_ccfs(planet_name, temperature_profile, species_label, vmr, do_inject
         arms = ['blue','red']
             
     species_name_inject, species_name_ccf = get_species_keys(species_label)
-    
+
     file_out = '/home/calder/Documents/atmo-analysis-main/logs/'+ planet_name + '.' + species_name_ccf + model_tag + '.log' #edited for my own machine
     f = open(file_out,'w')
 
@@ -2019,11 +2024,7 @@ def run_all_ccfs(planet_name, temperature_profile, species_label, vmr, do_inject
     print('Now combining all of the data')
 
     Period, epoch, M_star, RV_abs, i, M_p, R_p, RA, Dec, Kp_expected, half_duration_phase = get_planet_parameters(planet_name)
-
-    
     
     combine_observations(observation_epochs, arms, planet_name, temperature_profile, species_label, species_name_ccf, model_tag, RV_abs, Kp_expected, do_inject_model, f, method)
-
     
     f.close()
-    
