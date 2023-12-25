@@ -1308,7 +1308,6 @@ def multi_gaussian(x, *params):
         y = y + a * np.exp(-(x - mu)**2 / (2 * sigma**2))
     return y
 
-
 def gaussian_fit(Kp, Kp_true, drv, species_label, planet_name, observation_epoch, arm, species_name_ccf, model_tag, plotsnr):
     """
     Fits a Gaussian to the 1D slice during transit and generates plots.
@@ -1329,163 +1328,167 @@ def gaussian_fit(Kp, Kp_true, drv, species_label, planet_name, observation_epoch
     - None
     """
   
-    if arm == 'red' or arm == 'blue':   
-        # Fitting a Gaussian to the 1D slice during transit
+    # Fitting a Gaussian to the 1D slice during transit
 
-        # Initializing lists to store fit parameters
-        amps = []
-        amps_err = []
-        centers = []
-        centers_err = []
-        sigmas = []
-        sigmas_err = []
+    # Initializing lists to store fit parameters
+    amps = []
+    amps_err = []
+    centers = []
+    centers_err = []
+    sigmas = []
+    sigmas_err = []
 
-        Kp_slices = []
-        Kp_slice_peak = []
+    Kp_slices = []
+    Kp_slice_peak = []
 
-        residuals = []
-        chi2_red = []
+    residuals = []
+    chi2_red = []
 
-        # Fitting gaussian to all 1D Kp slices
-        for i in range(plotsnr.shape[0]):
-            current_slice = plotsnr[i,:]
-            Kp_slices.append(current_slice)
-            Kp_slice_peak.append(np.max(current_slice[80:121]))
+    # Fitting gaussian to all 1D Kp slices
+    for i in range(plotsnr.shape[0]):
+        current_slice = plotsnr[i,:]
+        Kp_slices.append(current_slice)
+        Kp_slice_peak.append(np.max(current_slice[80:121]))
 
+        popt, pcov = curve_fit(gaussian, drv, current_slice, p0=[5, -7, 1])
 
-            popt, pcov = curve_fit(gaussian, drv, current_slice, p0=[5, -7, 1])
+        amps.append(popt[0])
+        centers.append(popt[1])
+        sigmas.append(popt[2])
 
-            amps.append(popt[0])
-            centers.append(popt[1])
-            sigmas.append(popt[2])
+        # Storing errors (standard deviations)
+        amps_err.append(np.sqrt(pcov[0, 0]))
+        centers_err.append(np.sqrt(pcov[1, 1]))
+        sigmas_err.append(np.sqrt(pcov[2, 2]))
 
-            # Storing errors (standard deviations)
-            amps_err.append(np.sqrt(pcov[0, 0]))
-            centers_err.append(np.sqrt(pcov[1, 1]))
-            sigmas_err.append(np.sqrt(pcov[2, 2]))
+    amps = np.array(amps)
+    amps_err = np.array(amps_err)
+    centers = np.array(centers)
+    centers_err = np.array(centers_err)
+    sigmas = np.array(sigmas) 
+    sigmas_err = np.array(sigmas_err)
 
-        amps = np.array(amps)
-        amps_err = np.array(amps_err)
-        centers = np.array(centers)
-        centers_err = np.array(centers_err)
-        sigmas = np.array(sigmas) 
-        sigmas_err = np.array(sigmas_err)
+    Kp_slices = np.array(Kp_slices)
+    Kp_slice_peak = np.array(Kp_slice_peak)
 
-        Kp_slices = np.array(Kp_slices)
-        Kp_slice_peak = np.array(Kp_slice_peak)
+    residuals = np.array(residuals)
+    chi2_red = np.array(chi2_red)
 
-        residuals = np.array(residuals)
-        chi2_red = np.array(chi2_red)
-
-        # Selecting a specific Kp slice
-        selected_idx = np.where(Kp == int((np.floor(Kp_true))))[0][0] #Kp slice corresponding to expected Kp
-        selected_idx = np.argmax(Kp_slice_peak)                       #Kp slice corresponding to max SNR
-        
-        # Fitting a Gaussian to the selected slice
-        popt_selected = [amps[selected_idx], centers[selected_idx], sigmas[selected_idx]]
-        print('Selected SNR:', amps[selected_idx], '\n Selected Vsys:', centers[selected_idx], '\n Selected sigma:', sigmas[selected_idx], '\n Selected Kp:', Kp[selected_idx])
+    # Selecting a specific Kp slice
+    selected_idx = np.where(Kp == int((np.floor(Kp_true))))[0][0] #Kp slice corresponding to expected Kp
+    selected_idx = np.argmax(Kp_slice_peak)                       #Kp slice corresponding to max SNR -- this is the one I've selected for now
     
-        # Computing residuals and chi-squared for selected slice
-        residual = plotsnr[selected_idx, :] - gaussian(drv, *popt_selected)
-        # chi2 = np.sum((residual / np.std(residual))**2)/(len(drv)-len(popt))
+    # Fitting a Gaussian to the selected slice
+    popt_selected = [amps[selected_idx], centers[selected_idx], sigmas[selected_idx]]
+    print('Selected SNR:', amps[selected_idx], '\n Selected Vsys:', centers[selected_idx], '\n Selected sigma:', sigmas[selected_idx], '\n Selected Kp:', Kp[selected_idx])
 
-        # Initialize Figure and GridSpec objects
-        fig = pl.figure(figsize=(12,8))
-        gs = gridspec.GridSpec(2, 1, height_ratios=[4, 1])
+    # Computing residuals and chi-squared for selected slice
+    residual = plotsnr[selected_idx, :] - gaussian(drv, *popt_selected)
+    # chi2 = np.sum((residual / np.std(residual))**2)/(len(drv)-len(popt))
 
-        # Create Axes for the main plot and the residuals plot
-        ax1 = pl.subplot(gs[0])
-        ax2 = pl.subplot(gs[1], sharex=ax1)
-        
-        # Main Plot (ax1)
-        ax1.plot(drv, plotsnr[selected_idx, :], 'k--', label='data', markersize=2)
-        ax1.plot(drv, gaussian(drv, *popt_selected), 'r-', label='fit')
+    # Initialize Figure and GridSpec objects
+    fig = pl.figure(figsize=(12,8))
+    gs = gridspec.GridSpec(2, 1, height_ratios=[4, 1])
 
-        # Species Label
-        ax1.text(0.05, 0.99, species_label, transform=ax1.transAxes, verticalalignment='top', horizontalalignment='left', fontsize=12)
+    # Create Axes for the main plot and the residuals plot
+    ax1 = pl.subplot(gs[0])
+    ax2 = pl.subplot(gs[1], sharex=ax1)
+    
+    # Main Plot (ax1)
+    ax1.plot(drv, plotsnr[selected_idx, :], 'k--', label='data', markersize=2)
+    ax1.plot(drv, gaussian(drv, *popt_selected), 'r-', label='fit')
 
-        pl.setp(ax1.get_xticklabels(), visible=False)
-        ax1.set_ylabel('SNR')
-        # Annotating the arm and species on the plot
-        
-        # Additional text information for the main plot
-        params_str = f"Peak (a): {popt_selected[0]:.2f}\nMean (mu): {popt_selected[1]:.2f}\nSigma: {popt_selected[2]:.2f}\nKp: {Kp[selected_idx]:.0f}"
-        ax1.text(0.01, 0.95, params_str, transform=ax1.transAxes, verticalalignment='top', fontsize=10)
+    # Species Label
+    ax1.text(0.05, 0.99, species_label, transform=ax1.transAxes, verticalalignment='top', horizontalalignment='left', fontsize=12)
 
-        arm_species_text = f'Arm: {arm}'
-        ax1.text(0.15, 0.95, arm_species_text, transform=ax1.transAxes, verticalalignment='top', fontsize=10)
-        
-        # Vertical line for the Gaussian peak center
-        ax1.axvline(x=centers[selected_idx], color='b', linestyle='-', label='Center')
-        ax1.set_title('1D CCF Slice + Gaussian Fit')
+    pl.setp(ax1.get_xticklabels(), visible=False)
+    ax1.set_ylabel('SNR')
+    # Annotating the arm and species on the plot
+    
+    # Additional text information for the main plot
+    params_str = f"Peak (a): {popt_selected[0]:.2f}\nMean (mu): {popt_selected[1]:.2f}\nSigma: {popt_selected[2]:.2f}\nKp: {Kp[selected_idx]:.0f}"
+    ax1.text(0.01, 0.95, params_str, transform=ax1.transAxes, verticalalignment='top', fontsize=10)
 
+    arm_species_text = f'Arm: {arm}'
+    ax1.text(0.15, 0.95, arm_species_text, transform=ax1.transAxes, verticalalignment='top', fontsize=10)
+    
+    # Vertical line for the Gaussian peak center
+    ax1.axvline(x=centers[selected_idx], color='b', linestyle='-', label='Center')
+    ax1.set_title('1D CCF Slice + Gaussian Fit')
 
-        # Vertical lines for sigma width (center ± sigma)
-        #sigma_left = centers[selected_idx] - sigmas[selected_idx]
-        #sigma_right = centers[selected_idx] + sigmas[selected_idx]
-        #ax1.axvline(x=sigma_left, color='purple', linestyle='--', label='- Sigma')
-        #ax1.axvline(x=sigma_right, color='purple', linestyle='--', label='+ Sigma')
+    # Vertical lines for sigma width (center ± sigma)
+    #sigma_left = centers[selected_idx] - sigmas[selected_idx]
+    #sigma_right = centers[selected_idx] + sigmas[selected_idx]
+    #ax1.axvline(x=sigma_left, color='purple', linestyle='--', label='- Sigma')
+    #ax1.axvline(x=sigma_right, color='purple', linestyle='--', label='+ Sigma')
 
-        ax1.legend()
+    ax1.legend()
 
-        # Add the horizontal line at 4 SNR
-        ax1.axhline(y=4, color='g', linestyle='--', label=r'4 $\sigma$')    
+    # Add the horizontal line at 4 SNR
+    ax1.axhline(y=4, color='g', linestyle='--', label=r'4 $\sigma$')    
 
-        # Inset for residuals (ax2)
-        ax2.plot(drv, residual, 'o-', markersize=1)
-        ax2.set_xlabel('Velocity (km/s)')
-        ax2.set_ylabel('Residuals')
+    # Inset for residuals (ax2)
+    ax2.plot(drv, residual, 'o-', markersize=1)
+    ax2.set_xlabel('Velocity (km/s)')
+    ax2.set_ylabel('Residuals')
+    
+    # Consider a clearer naming scheme
+    snr_fit = '/home/calder/Documents/atmo-analysis-main/plots/'+ planet_name + '.' + observation_epoch + '.' + arm + '.' + species_name_ccf + model_tag + '.SNR-Gaussian.pdf'
+    # Save the plot
+    fig.savefig(snr_fit, dpi=300, bbox_inches='tight')
 
+    if arm == 'red':
+        do_molecfit = True
+    else:
+        do_molecfit = False
 
-       
-        
-        # Consider a clearer naming scheme
-        snr_fit = '/home/calder/Documents/atmo-analysis-main/plots/'+ planet_name + '.' + observation_epoch + '.' + arm + '.' + species_name_ccf + model_tag + '.SNR-Gaussian.pdf'
-        # Save the plot
-        fig.savefig(snr_fit, dpi=300, bbox_inches='tight')
+    Period, epoch, M_star, RV_abs, i, M_p, R_p, RA, Dec, Kp_expected, half_duration_phase = get_planet_parameters(planet_name)
 
-        if arm == 'red':
-            do_molecfit = True
-        else:
-            do_molecfit = False
-
-        Period, epoch, M_star, RV_abs, i, M_p, R_p, RA, Dec, Kp_expected, half_duration_phase = get_planet_parameters(planet_name)
-
+    if arm == 'red' or arm == 'blue':
         wave, fluxin, errorin, jd, snr_spectra, exptime, airmass, n_spectra, npix = get_pepsi_data(arm, observation_epoch, planet_name, do_molecfit)
+    else:
+        # If arm is neither 'red' nor 'blue', use 'blue' as the default as do_molecfit will throw false when arm is 'combined'
+        wave, fluxin, errorin, jd, snr_spectra, exptime, airmass, n_spectra, npix = get_pepsi_data('blue', observation_epoch, planet_name, do_molecfit)
 
-        orbital_phase = get_orbital_phase(jd, epoch, Period, RA, Dec)
+    orbital_phase = get_orbital_phase(jd, epoch, Period, RA, Dec)
 
-        phase_min = np.min(orbital_phase)
-        phase_max = np.max(orbital_phase)
-        phase_array = np.linspace(phase_min, phase_max, np.shape(centers)[0])
+    phase_min = np.min(orbital_phase)
+    phase_max = np.max(orbital_phase)
+    phase_array = np.linspace(phase_min, phase_max, np.shape(centers)[0])
 
-        fig, ax1 = pl.subplots(figsize=(12,8))
+    fig, ax1 = pl.subplots(figsize=(12,8))
 
-        ax1.text(0.05, 0.99, species_label, transform=ax1.transAxes, verticalalignment='top', horizontalalignment='left', fontsize=12)
+    ax1.text(0.05, 0.99, species_label, transform=ax1.transAxes, verticalalignment='top', horizontalalignment='left', fontsize=12)
 
+    # Plotting Vsys
+    ax1.plot(phase_array, centers, 'o-', label='Center')
+    ax1.fill_between(phase_array, centers - centers_err, centers + centers_err, color='blue', alpha=0.2)
+    ax1.set_xlabel('Orbital Phase')
+    ax1.set_ylabel('Vsys', color='b')
+    ax1.tick_params(axis='y', labelcolor='b')
 
-        ax1.plot(phase_array, centers, 'o-', label='Center')
-        ax1.fill_between(phase_array, centers - centers_err, centers + centers_err, color='blue', alpha=0.2)
-        ax1.set_xlabel('Orbital Phase')
-        ax1.set_ylabel('Vsys', color='b')
-        ax1.tick_params(axis='y', labelcolor='b')
-        ax1.set_title('Vsys and Sigma vs. Orbital Phase')
-        ax1.legend(loc='upper right')
+    # Plotting Sigma on secondary axis
+    ax2 = ax1.twinx()
+    ax2.plot(phase_array, sigmas, 'r-', label='Sigma')
+    ax2.set_ylabel('Sigma', color='r')
+    ax2.tick_params(axis='y', labelcolor='r')
 
-        ax2 = ax1.twinx()
-        ax2.plot(phase_array, sigmas, 'r-', label='Sigma')
+    # Combining legends from both axes
+    handles1, labels1 = ax1.get_legend_handles_labels()
+    handles2, labels2 = ax2.get_legend_handles_labels()
+    handles = handles1 + handles2
+    labels = labels1 + labels2
+    ax1.legend(handles, labels, loc='upper right')
 
-        ax2.set_ylabel('Sigma', color='r')
-        ax2.tick_params(axis='y', labelcolor='r')
-        ax2.legend(loc='upper right')
+    ax1.set_title('Vsys and Sigma vs. Orbital Phase')
+    ax1.text(0.05, 0.99, species_label, transform=ax1.transAxes, verticalalignment='top', horizontalalignment='left', fontsize=12)
+    ax1.text(0.15, 0.99, f'Arm: {arm}', transform=ax1.transAxes, verticalalignment='top', fontsize=10)
 
-        arm_species_text = f'Arm: {arm}'
-        ax1.text(0.15, 0.99, arm_species_text, transform=ax1.transAxes, verticalalignment='top', fontsize=10)
-
-        # Consider a clearer naming scheme
-        wind_chars = '/home/calder/Documents/atmo-analysis-main/plots/'+ planet_name + '.' + observation_epoch + '.' + arm + '.' + species_name_ccf + model_tag + '.Wind-characteristics.pdf'
-        # Save the plot
-        fig.savefig(wind_chars, dpi=300, bbox_inches='tight')
+    # Save the plot
+    wind_chars = '/home/calder/Documents/atmo-analysis-main/plots/' + planet_name + '.' + observation_epoch + '.' + arm + '.' + species_name_ccf + model_tag + '.Wind-characteristics.pdf'
+    fig.savefig(wind_chars, dpi=300, bbox_inches='tight')
+    
+    return amps, amps_err, centers, centers_err, sigmas, sigmas_err, residuals, do_molecfit
 
 def make_shifted_plot(snr, planet_name, observation_epoch, arm, species_name_ccf, model_tag, RV_abs, Kp_expected, V_sys_true, Kp_true, do_inject_model, do_combine, drv, Kp, species_label, temperature_profile, method, plotformat='pdf'):
     """
@@ -1629,20 +1632,24 @@ def DopplerShadowModel(vsini,
 
         """
         #add translation in the function from horus for obsnam
-                #ex: if obsname = , then obsname =  pepsi/lbt
-        if obs == 'keck' : Resolve=50000.0
-        if obs == 'hjst' : Resolve=60000.0
-        if obs == 'het' : Resolve=30000.0
-        if obs == 'keck-lsi' : Resolve=20000.0
-        if obs == 'subaru' : Resolve=80000.0
-        if obs == 'aat' : Resolve=70000.0
-        if obs == 'not' : Resolve=47000.0
-        if obs == 'tres' : Resolve=44000.0
-        if obs == 'harpsn' : Resolve=120000.0
-        if obs == 'lbt' or obs == 'pepsi' : Resolve=120000.0
-        if obs == 'igrins': Resolve=40000.0
-        if obs == 'nres': Resolve=48000.0
-        
+        #ex: if obsname = , then obsname =  pepsi/lbt
+        resolve_mapping = {
+            'keck': 50000.0,
+            'hjst': 60000.0,
+            'het': 30000.0,
+            'keck-lsi': 20000.0,
+            'subaru': 80000.0,
+            'aat': 70000.0,
+            'not': 47000.0,
+            'tres': 44000.0,
+            'harpsn': 120000.0,
+            'lbt': 120000.0,
+            'pepsi': 120000.0,
+            'igrins': 40000.0,
+            'nres': 48000.0
+        }
+
+        Resolve = resolve_mapping.get(obs, 0.0)  # Default value of 0.0 if obs is not found in the mapping
         
         #get planetary parameters
         Period, epoch, M_star, RV_abs, i, M_p, R_p, RA, Dec, Kp_expected, half_duration_phase = get_planet_parameters(planet_name)
@@ -1867,7 +1874,7 @@ def run_one_ccf(species_label, vmr, arm, observation_epoch, template_wave, templ
 
 def combine_observations(observation_epochs, arms, planet_name, temperature_profile, species_label, species_name_ccf, model_tag, RV_abs, Kp_expected, do_inject_model, f, method):
     """
-    Combine observations of a planet's cross-correlation function (CCF) from different epochs and arms.
+    Combine observations of a planet's cross-correlation function (CCF) from both arms of the spectrograph.
 
     Parameters:
     observation_epochs (list): List of strings representing the observation epochs.
@@ -1884,7 +1891,7 @@ def combine_observations(observation_epochs, arms, planet_name, temperature_prof
     method (str): Method for combining the observations. Can be 'ccf' or 'likelihood'.
 
     Returns:
-    None
+    Kp_true (float): True semi-amplitude of the planet's radial velocity curve.
     """
     
     Period, epoch, M_star, RV_abs, i, M_p, R_p, RA, Dec, Kp_expected, half_duration_phase = get_planet_parameters(planet_name)
