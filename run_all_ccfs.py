@@ -28,6 +28,9 @@ from radiant import generate_atmospheric_model, get_wavelength_range
 from create_model import create_model, instantiate_radtrans
 import horus
 
+# harcoded path to data on my computer
+path_modifier_plots = '/home/calder/Documents/atmo-analysis-main/'
+path_modifier_data = '/home/calder/Documents/petitRADTRANS_data/'
 
 pl.rc('font', size=14) #controls default text size
 pl.rc('axes', titlesize=14) #fontsize of the title
@@ -532,9 +535,9 @@ def get_pepsi_data(arm, observation_epoch, planet_name, do_molecfit):
         pepsi_extend = 'avr'
         
     if not do_molecfit:
-        data_location = '/home/calder/Documents/petitRADTRANS_data/data/' + observation_epoch + '_' + planet_name + '/' + arm_file + '*.dxt.' + pepsi_extend
+        data_location = path_modifier_data + 'data/' + observation_epoch + '_' + planet_name + '/' + arm_file + '*.dxt.' + pepsi_extend
     else:
-        data_location = '/home/calder/Documents/petitRADTRANS_data/data/' + observation_epoch + '_' + planet_name + '/molecfit_weak/SCIENCE_TELLURIC_CORR_' + arm_file + '*.dxt.' + pepsi_extend + '.fits'
+        data_location = path_modifier_data + 'data/' + observation_epoch + '_' + planet_name + '/molecfit_weak/SCIENCE_TELLURIC_CORR_' + arm_file + '*.dxt.' + pepsi_extend + '.fits'
     spectra_files = glob(data_location)
     if not spectra_files:
         print('No files found at the provided location.')
@@ -756,7 +759,7 @@ def make_spectrum_plot(template_wave, template_flux, planet_name, species_name_c
 
     pl.title(species_name_ccf)
 
-    plotout = '/home/calder/Documents/atmo-analysis-main/plots/spectrum.' + planet_name + '.' + species_name_ccf + '.' + str(vmr) + '.' + temperature_profile + '.pdf'
+    plotout = path_modifier_plots + 'plots/spectrum.' + planet_name + '.' + species_name_ccf + '.' + str(vmr) + '.' + temperature_profile + '.pdf'
     pl.savefig(plotout,format='pdf')
     pl.clf()
 
@@ -878,7 +881,7 @@ def get_atmospheric_model(planet_name, species_name_ccf, vmr, temperature_profil
         tuple: A tuple containing the wavelength and flux arrays of the atmospheric model.
     """
 
-    filein = '/home/calder/Documents/atmo-analysis-main/templates/' + planet_name + '.' + species_name_ccf + '.' + str(vmr) + '.' + temperature_profile + '.combined.fits'
+    filein = path_modifier_plots + 'templates/' + planet_name + '.' + species_name_ccf + '.' + str(vmr) + '.' + temperature_profile + '.combined.fits'
     hdu = fits.open(filein)
 
     template_wave = hdu[1].data['wave']
@@ -1442,7 +1445,7 @@ def gaussian_fit(Kp, Kp_true, drv, species_label, planet_name, observation_epoch
     ax2.set_ylabel('Residuals')
     
     # Consider a clearer naming scheme
-    snr_fit = '/home/calder/Documents/atmo-analysis-main/plots/'+ planet_name + '.' + observation_epoch + '.' + arm + '.' + species_name_ccf + model_tag + '.SNR-Gaussian.pdf'
+    snr_fit = path_modifier_plots + 'plots/'+ planet_name + '.' + observation_epoch + '.' + arm + '.' + species_name_ccf + model_tag + '.SNR-Gaussian.pdf'
     # Save the plot
     fig.savefig(snr_fit, dpi=300, bbox_inches='tight')
 
@@ -1494,7 +1497,7 @@ def gaussian_fit(Kp, Kp_true, drv, species_label, planet_name, observation_epoch
     ax1.text(0.15, 0.99, f'Arm: {arm}', transform=ax1.transAxes, verticalalignment='top', fontsize=10)
 
     # Save the plot
-    wind_chars = '/home/calder/Documents/atmo-analysis-main/plots/' + planet_name + '.' + observation_epoch + '.' + arm + '.' + species_name_ccf + model_tag + '.Wind-characteristics.pdf'
+    wind_chars = path_modifier_plots + 'plots/' + planet_name + '.' + observation_epoch + '.' + arm + '.' + species_name_ccf + model_tag + '.Wind-characteristics.pdf'
     fig.savefig(wind_chars, dpi=300, bbox_inches='tight')
     
     return amps, amps_err, centers, centers_err, sigmas, sigmas_err, residuals, do_molecfit
@@ -1533,10 +1536,10 @@ def make_shifted_plot(snr, planet_name, observation_epoch, arm, species_name_ccf
     if 'likelihood' in method:
         outtag, zlabel = 'likelihood-shifted', '$\Delta\ln \mathcal{L}$'
         plotsnr=snr - np.max(snr)
-    plotname = '/home/calder/Documents/atmo-analysis-main/plots/'+ planet_name + '.' + observation_epoch + '.' + arm + '.' + species_name_ccf + model_tag + '.' + outtag + '.' + plotformat
+    plotname = path_modifier_plots + 'plots/'+ planet_name + '.' + observation_epoch + '.' + arm + '.' + species_name_ccf + model_tag + '.' + outtag + '.' + plotformat
 
     if do_combine:
-        plotname = '/home/calder/Documents/atmo-analysis-main/plots/'+ planet_name + '.' + observation_epoch + '.' + arm + '.' + species_name_ccf + model_tag + '.' + outtag + '.' + plotformat
+        plotname = path_modifier_plots + 'plots/'+ planet_name + '.' + observation_epoch + '.' + arm + '.' + species_name_ccf + model_tag + '.' + outtag + '.' + plotformat
 
     if not do_inject_model:
         apoints = [unp.nominal_values(RV_abs), unp.nominal_values(Kp_expected)]
@@ -1558,10 +1561,12 @@ def make_shifted_plot(snr, planet_name, observation_epoch, arm, species_name_ccf
     keepKp = np.abs(Kp-apoints[1]) <= 100.
     plotsnr, Kp = plotsnr[keepKp, :], Kp[keepKp]
 
-    # Fit a Gaussian to the line profile
-    gaussian_fit(Kp, Kp_true, drv, species_label, planet_name, observation_epoch, arm, species_name_ccf, model_tag, plotsnr)
+    # Fit a Gaussian to the line profile for combined arms
+    amps, amps_err, centers, centers_err, sigmas, sigmas_err, residuals, do_molecfit = gaussian_fit(Kp, Kp_true, drv, species_label, planet_name, observation_epoch, arm, species_name_ccf, model_tag, plotsnr)
 
     psarr(plotsnr, drv, Kp, '$V_{\mathrm{sys}}$ (km/s)', '$K_p$ (km/s)', zlabel, filename=plotname, ctable=ctable, alines=True, apoints=apoints, acolor='cyan', textstr=species_label+' '+model_label, textloc = np.array([apoints[0]-75.,apoints[1]+75.]), textcolor='cyan', fileformat=plotformat)
+
+    return amps, amps_err, centers, centers_err, sigmas, sigmas_err
 
 def get_peak_snr(snr, drv, Kp, do_inject_model, V_sys_true, Kp_true, RV_abs, Kp_expected, arm, observation_epoch, f, method):
     """
@@ -1793,7 +1798,7 @@ def run_one_ccf(species_label, vmr, arm, observation_epoch, template_wave, templ
 
     #psarr(unp.nominal_values(residual_flux), wave, orbital_phase, 'wavelength (Angstroms)', 'orbital phase', 'flux residual', filename=plotname,flat=True, ctable='gist_gray')
 
-    sysrem_file = '/home/calder/Documents/atmo-analysis-main/data_products/' + planet_name + '.' + observation_epoch + '.' + arm + '.SYSREM-' + str(n_systematics[0]) + '+' + str(n_systematics[1])+model_tag+'.npy'
+    sysrem_file = path_modifier_plots + 'data_products/' + planet_name + '.' + observation_epoch + '.' + arm + '.SYSREM-' + str(n_systematics[0]) + '+' + str(n_systematics[1])+model_tag+'.npy'
  
     if do_sysrem:
         
@@ -1803,7 +1808,7 @@ def run_one_ccf(species_label, vmr, arm, observation_epoch, template_wave, templ
         np.save(sysrem_file, corrected_flux)
         np.save(sysrem_file+'.corrected-error.npy', corrected_error)
 
-        plotname = '/home/calder/Documents/atmo-analysis-main/plots/' + planet_name + '.' + observation_epoch + '.' + arm + '.spectrum-SYSREM-'+ str(n_systematics[0]) + '+' + str(n_systematics[1])+'.pdf'
+        plotname = path_modifier_plots + 'plots/' + planet_name + '.' + observation_epoch + '.' + arm + '.spectrum-SYSREM-'+ str(n_systematics[0]) + '+' + str(n_systematics[1])+'.pdf'
 
         psarr(corrected_flux, wave, orbital_phase, 'wavelength (Angstroms)', 'orbital phase', 'flux residual', filename=plotname,flat=True, ctable='gist_gray')
 
@@ -1812,7 +1817,7 @@ def run_one_ccf(species_label, vmr, arm, observation_epoch, template_wave, templ
         corrected_error = np.load(sysrem_file+'.corrected-error.npy')
 
     if method == 'ccf':
-        ccf_file = '/home/calder/Documents/atmo-analysis-main/data_products/'+ planet_name + '.' + observation_epoch + '.' + arm + '.' + species_name_ccf + model_tag + '.CCFs-raw.npy'
+        ccf_file = path_modifier_plots + 'data_products/'+ planet_name + '.' + observation_epoch + '.' + arm + '.' + species_name_ccf + model_tag + '.CCFs-raw.npy'
 
         drv, cross_cor, sigma_cross_cor = get_ccfs(wave, corrected_flux, corrected_error, template_wave, template_flux, n_spectra)
 
@@ -1855,31 +1860,31 @@ def run_one_ccf(species_label, vmr, arm, observation_epoch, template_wave, templ
         cross_cor -= ccf_model
 
         #Make a plot    
-        plotname = '/home/calder/Documents/atmo-analysis-main/plots/' + planet_name + '.' + observation_epoch + '.' + arm + '.' + species_name_ccf + model_tag + '.CCFs-raw.pdf'
+        plotname = path_modifier_plots + 'plots/' + planet_name + '.' + observation_epoch + '.' + arm + '.' + species_name_ccf + model_tag + '.CCFs-raw.pdf'
         psarr(cross_cor, drv, orbital_phase, 'v (km/s)', 'orbital phase', 'SNR', filename=plotname, ctable='inferno')
 
         snr, Kp, drv = combine_ccfs(drv, cross_cor, sigma_cross_cor, orbital_phase, n_spectra, ccf_weights, half_duration_phase, temperature_profile)
         
-        make_shifted_plot(snr, planet_name, observation_epoch, arm, species_name_ccf, model_tag, RV_abs, Kp_expected, V_sys_true, Kp_true, do_inject_model, True, drv, Kp, species_label, temperature_profile, method)
+        amps, amps_err, centers, centers_err, sigmas, sigmas_err = make_shifted_plot(snr, planet_name, observation_epoch, arm, species_name_ccf, model_tag, RV_abs, Kp_expected, V_sys_true, Kp_true, do_inject_model, True, drv, Kp, species_label, temperature_profile, method)
 
         get_peak_snr(snr, drv, Kp, do_inject_model, V_sys_true, Kp_true, RV_abs, Kp_expected, arm, observation_epoch, f, method)
 
 
     if 'likelihood' in method:
-        like_file = '/home/calder/Documents/atmo-analysis-main/data_products/'+ planet_name + '.' + observation_epoch + '.' + arm + '.' + species_name_ccf + model_tag + '.likelihood-raw.npy'
+        like_file = path_modifier_plots + 'data_products/'+ planet_name + '.' + observation_epoch + '.' + arm + '.' + species_name_ccf + model_tag + '.likelihood-raw.npy'
         drv, lnL = get_likelihood(wave, corrected_flux, corrected_error, template_wave, template_flux, n_spectra)
 
         np.save(like_file, lnL)
         np.save(like_file+'.phase.npy', orbital_phase)
 
         #Make a plot
-        plotname = '/home/calder/Documents/atmo-analysis-main/plots/' + planet_name + '.' + observation_epoch + '.' + arm + '.' + species_name_ccf + model_tag + '.likelihoods-raw.pdf'
+        plotname = path_modifier_plots + 'plots/' + planet_name + '.' + observation_epoch + '.' + arm + '.' + species_name_ccf + model_tag + '.likelihoods-raw.pdf'
         psarr(lnL, drv, orbital_phase, 'v (km/s)', 'orbital phase', 'ln L', filename=plotname, ctable='inferno')
 
         #now need to combine the likelihoods along the planet orbit
         shifted_lnL, Kp, drv = combine_likelihoods(drv, lnL, orbital_phase, n_spectra, half_duration_phase, temperature_profile)
 
-        make_shifted_plot(shifted_lnL, planet_name, observation_epoch, arm, species_name_ccf, model_tag, RV_abs, Kp_expected, V_sys_true, Kp_true, do_inject_model, True, drv, Kp, species_label, temperature_profile, method)
+        amps, amps_err, centers, centers_err, sigmas, sigmas_err = make_shifted_plot(shifted_lnL, planet_name, observation_epoch, arm, species_name_ccf, model_tag, RV_abs, Kp_expected, V_sys_true, Kp_true, do_inject_model, True, drv, Kp, species_label, temperature_profile, method)
 
 def combine_observations(observation_epochs, arms, planet_name, temperature_profile, species_label, species_name_ccf, model_tag, RV_abs, Kp_expected, do_inject_model, f, method):
     """
@@ -1909,9 +1914,9 @@ def combine_observations(observation_epochs, arms, planet_name, temperature_prof
     for observation_epoch in observation_epochs:
         for arm in arms:
             if 'likelihood' in method:
-                ccf_file_2 = '/home/calder/Documents/atmo-analysis-main/data_products/'+ planet_name + '.' + observation_epoch + '.' + arm + '.' + species_name_ccf + model_tag + '.likelihood-raw.npy'
+                ccf_file_2 = path_modifier_plots + 'data_products/'+ planet_name + '.' + observation_epoch + '.' + arm + '.' + species_name_ccf + model_tag + '.likelihood-raw.npy'
             if method == 'ccf':
-                ccf_file_2 = '/home/calder/Documents/atmo-analysis-main/data_products/'+ planet_name + '.' + observation_epoch + '.' + arm + '.' + species_name_ccf + model_tag + '.CCFs-raw.npy'
+                ccf_file_2 = path_modifier_plots + 'data_products/'+ planet_name + '.' + observation_epoch + '.' + arm + '.' + species_name_ccf + model_tag + '.CCFs-raw.npy'
                 sigma_cross_cor_2 = np.load(ccf_file_2+'.sigma.npy')
                 ccf_weights_2 = np.load(ccf_file_2+'.ccf_weights.npy')
 
@@ -1961,11 +1966,11 @@ def combine_observations(observation_epochs, arms, planet_name, temperature_prof
         for i in range (1, len(observation_epochs)):
             all_epochs += '+'+observation_epochs[i]
 
-    make_shifted_plot(snr, planet_name, all_epochs, all_arms, species_name_ccf, model_tag, RV_abs, Kp_expected, V_sys_true, Kp_true, do_inject_model, True, drv, Kp, species_label, temperature_profile, method)
+    amps, amps_err, centers, centers_err, sigmas, sigmas_err = make_shifted_plot(snr, planet_name, all_epochs, all_arms, species_name_ccf, model_tag, RV_abs, Kp_expected, V_sys_true, Kp_true, do_inject_model, True, drv, Kp, species_label, temperature_profile, method)
 
     get_peak_snr(snr, drv, Kp, do_inject_model, V_sys_true, Kp_true, RV_abs, Kp_expected, all_arms, all_epochs, f, method)
 
-    return Kp_true
+    return Kp_true, amps, amps_err, centers, centers_err, sigmas, sigmas_err
 
 def run_all_ccfs(planet_name, temperature_profile, species_label, vmr, do_inject_model, do_run_all, do_make_new_model, method):
     """
@@ -2016,7 +2021,7 @@ def run_all_ccfs(planet_name, temperature_profile, species_label, vmr, do_inject
             
     species_name_inject, species_name_ccf = get_species_keys(species_label)
 
-    file_out = '/home/calder/Documents/atmo-analysis-main/logs/'+ planet_name + '.' + species_name_ccf + model_tag + '.log' #edited for my own machine
+    file_out = path_modifier_plots + 'logs/'+ planet_name + '.' + species_name_ccf + model_tag + '.log' #edited for my own machine
     f = open(file_out,'w')
 
     f.write('Log file for ' + planet_name + ' for ' + species_name_ccf + ' \n')
@@ -2044,6 +2049,37 @@ def run_all_ccfs(planet_name, temperature_profile, species_label, vmr, do_inject
 
     Period, epoch, M_star, RV_abs, i, M_p, R_p, RA, Dec, Kp_expected, half_duration_phase = get_planet_parameters(planet_name)
     
-    combine_observations(observation_epochs, arms, planet_name, temperature_profile, species_label, species_name_ccf, model_tag, RV_abs, Kp_expected, do_inject_model, f, method)
+    Kp_true, amps, amps_err, centers, centers_err, sigmas, sigmas_err = combine_observations(observation_epochs, arms, planet_name, temperature_profile, species_label, species_name_ccf, model_tag, RV_abs, Kp_expected, do_inject_model, f, method)
+
+    return amps, amps_err, centers, centers_err, sigmas, sigmas_err
+
+def species_combination(planet_name, temperature_profile, species_vmr_dict, do_inject_model, do_run_all, do_make_new_model, method):
     
+    ccf_dict = {}
+    
+    """
+    Runs all cross-correlation functions (CCFs) for a given planet, temperature profile, and all species labels and VMRs given in dict.
+    """
+
+    for species_label, vmr in species_vmr_dict.items():
+        amps, amps_err, centers, centers_err, sigmas, sigmas_err = run_all_ccfs(planet_name, temperature_profile, species_label, vmr, do_inject_model, do_run_all, do_make_new_model, method)
+
+        # Store the results in the dictionary with species_label as the key
+        ccf_dict[species_label] = {
+            'amps': amps,
+            'amps_err': amps_err,
+            'centers': centers,
+            'centers_err': centers_err,
+            'sigmas': sigmas,
+            'sigmas_err': sigmas_err
+        }
+
+    breakpoint()
+
+    # todo: boxplot of species_label vs Vsys
+    fig, ax1 = pl.subplots(figsize=(12,8))
+    fig.canvas.manager.set_window_title('Species vs. Planet-frame Doppler Shift:  $V_{sys}$')
+    bp = ax1.boxplot([ccf_dict[species_label]['centers'] for species_label in species_vmr_dict.keys()], labels=species_vmr_dict.keys(), showfliers=False)
+    # todo: overlay
+    #plotname = 
     f.close()
