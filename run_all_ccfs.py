@@ -343,6 +343,15 @@ def get_sysrem_parameters(arm, observation_epoch, species_label):
     if species_label == 'TiO':
         if arm == 'red': n_systematics = [1, 1]
         if arm == 'blue': n_systematics = [2, 0]
+    elif species_label == 'Ni I':
+        if arm == 'red': n_systematics = [2,3]
+        if arm == 'blue': n_systematics = [0,5]
+    elif species_label == 'Cr I':
+        if arm == 'red': n_systematics = [0,5]
+        if arm == 'blue': n_systematics = [0,5]
+    elif species_label == 'V I':
+        if arm == 'red': n_systematics = [2,5]
+        if arm == 'blue': n_systematics = [1,8]
     elif species_label == 'VO':
         if arm == 'red': n_systematics = [1, 2]
         if arm == 'blue': n_systematics = [3, 0]
@@ -351,10 +360,10 @@ def get_sysrem_parameters(arm, observation_epoch, species_label):
     elif species_label == 'CaH':
         if arm == 'blue': n_systematics = [2, 0]
     else:
-        if arm == 'blue':
-            n_systematics = [0,5]
         if arm == 'red':
             n_systematics = [0,10]
+        if arm == 'blue':
+            n_systematics = [0,5]
 
     return n_systematics
 
