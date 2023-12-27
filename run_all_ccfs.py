@@ -1500,7 +1500,7 @@ def gaussian_fit(Kp, Kp_true, drv, species_label, planet_name, observation_epoch
     wind_chars = path_modifier_plots + 'plots/' + planet_name + '.' + observation_epoch + '.' + arm + '.' + species_name_ccf + model_tag + '.Wind-characteristics.pdf'
     fig.savefig(wind_chars, dpi=300, bbox_inches='tight')
     
-    return amps, amps_err, centers, centers_err, sigmas, sigmas_err, residuals, do_molecfit
+    return amps, amps_err, centers, centers_err, sigmas, sigmas_err, residuals, do_molecfit, selected_idx
 
 def make_shifted_plot(snr, planet_name, observation_epoch, arm, species_name_ccf, model_tag, RV_abs, Kp_expected, V_sys_true, Kp_true, do_inject_model, do_combine, drv, Kp, species_label, temperature_profile, method, plotformat='pdf'):
     """
@@ -1562,11 +1562,11 @@ def make_shifted_plot(snr, planet_name, observation_epoch, arm, species_name_ccf
     plotsnr, Kp = plotsnr[keepKp, :], Kp[keepKp]
 
     # Fit a Gaussian to the line profile for combined arms
-    amps, amps_err, centers, centers_err, sigmas, sigmas_err, residuals, do_molecfit = gaussian_fit(Kp, Kp_true, drv, species_label, planet_name, observation_epoch, arm, species_name_ccf, model_tag, plotsnr)
+    amps, amps_err, centers, centers_err, sigmas, sigmas_err, residuals, do_molecfit, selected_idx = gaussian_fit(Kp, Kp_true, drv, species_label, planet_name, observation_epoch, arm, species_name_ccf, model_tag, plotsnr)
 
     psarr(plotsnr, drv, Kp, '$V_{\mathrm{sys}}$ (km/s)', '$K_p$ (km/s)', zlabel, filename=plotname, ctable=ctable, alines=True, apoints=apoints, acolor='cyan', textstr=species_label+' '+model_label, textloc = np.array([apoints[0]-75.,apoints[1]+75.]), textcolor='cyan', fileformat=plotformat)
 
-    return amps, amps_err, centers, centers_err, sigmas, sigmas_err
+    return amps, amps_err, centers, centers_err, sigmas, sigmas_err, selected_idx
 
 def get_peak_snr(snr, drv, Kp, do_inject_model, V_sys_true, Kp_true, RV_abs, Kp_expected, arm, observation_epoch, f, method):
     """
@@ -1865,7 +1865,7 @@ def run_one_ccf(species_label, vmr, arm, observation_epoch, template_wave, templ
 
         snr, Kp, drv = combine_ccfs(drv, cross_cor, sigma_cross_cor, orbital_phase, n_spectra, ccf_weights, half_duration_phase, temperature_profile)
         
-        amps, amps_err, centers, centers_err, sigmas, sigmas_err = make_shifted_plot(snr, planet_name, observation_epoch, arm, species_name_ccf, model_tag, RV_abs, Kp_expected, V_sys_true, Kp_true, do_inject_model, True, drv, Kp, species_label, temperature_profile, method)
+        amps, amps_err, centers, centers_err, sigmas, sigmas_err, selected_idx = make_shifted_plot(snr, planet_name, observation_epoch, arm, species_name_ccf, model_tag, RV_abs, Kp_expected, V_sys_true, Kp_true, do_inject_model, True, drv, Kp, species_label, temperature_profile, method)
 
         get_peak_snr(snr, drv, Kp, do_inject_model, V_sys_true, Kp_true, RV_abs, Kp_expected, arm, observation_epoch, f, method)
 
@@ -1884,7 +1884,7 @@ def run_one_ccf(species_label, vmr, arm, observation_epoch, template_wave, templ
         #now need to combine the likelihoods along the planet orbit
         shifted_lnL, Kp, drv = combine_likelihoods(drv, lnL, orbital_phase, n_spectra, half_duration_phase, temperature_profile)
 
-        amps, amps_err, centers, centers_err, sigmas, sigmas_err = make_shifted_plot(shifted_lnL, planet_name, observation_epoch, arm, species_name_ccf, model_tag, RV_abs, Kp_expected, V_sys_true, Kp_true, do_inject_model, True, drv, Kp, species_label, temperature_profile, method)
+        amps, amps_err, centers, centers_err, sigmas, sigmas_err, selected_idx = make_shifted_plot(shifted_lnL, planet_name, observation_epoch, arm, species_name_ccf, model_tag, RV_abs, Kp_expected, V_sys_true, Kp_true, do_inject_model, True, drv, Kp, species_label, temperature_profile, method)
 
 def combine_observations(observation_epochs, arms, planet_name, temperature_profile, species_label, species_name_ccf, model_tag, RV_abs, Kp_expected, do_inject_model, f, method):
     """
@@ -1966,11 +1966,11 @@ def combine_observations(observation_epochs, arms, planet_name, temperature_prof
         for i in range (1, len(observation_epochs)):
             all_epochs += '+'+observation_epochs[i]
 
-    amps, amps_err, centers, centers_err, sigmas, sigmas_err = make_shifted_plot(snr, planet_name, all_epochs, all_arms, species_name_ccf, model_tag, RV_abs, Kp_expected, V_sys_true, Kp_true, do_inject_model, True, drv, Kp, species_label, temperature_profile, method)
+    amps, amps_err, centers, centers_err, sigmas, sigmas_err, selected_idx = make_shifted_plot(snr, planet_name, all_epochs, all_arms, species_name_ccf, model_tag, RV_abs, Kp_expected, V_sys_true, Kp_true, do_inject_model, True, drv, Kp, species_label, temperature_profile, method)
 
     get_peak_snr(snr, drv, Kp, do_inject_model, V_sys_true, Kp_true, RV_abs, Kp_expected, all_arms, all_epochs, f, method)
 
-    return Kp_true, amps, amps_err, centers, centers_err, sigmas, sigmas_err
+    return Kp_true, amps, amps_err, centers, centers_err, sigmas, sigmas_err, selected_idx
 
 def run_all_ccfs(planet_name, temperature_profile, species_label, vmr, do_inject_model, do_run_all, do_make_new_model, method):
     """
@@ -2049,23 +2049,24 @@ def run_all_ccfs(planet_name, temperature_profile, species_label, vmr, do_inject
 
     Period, epoch, M_star, RV_abs, i, M_p, R_p, RA, Dec, Kp_expected, half_duration_phase = get_planet_parameters(planet_name)
     
-    Kp_true, amps, amps_err, centers, centers_err, sigmas, sigmas_err = combine_observations(observation_epochs, arms, planet_name, temperature_profile, species_label, species_name_ccf, model_tag, RV_abs, Kp_expected, do_inject_model, f, method)
+    Kp_true, amps, amps_err, centers, centers_err, sigmas, sigmas_err, selected_idx = combine_observations(observation_epochs, arms, planet_name, temperature_profile, species_label, species_name_ccf, model_tag, RV_abs, Kp_expected, do_inject_model, f, method)
 
-    return amps, amps_err, centers, centers_err, sigmas, sigmas_err
+    return amps, amps_err, centers, centers_err, sigmas, sigmas_err, selected_idx
 
 def species_combination(planet_name, temperature_profile, species_vmr_dict, do_inject_model, do_run_all, do_make_new_model, method):
     
-    ccf_dict = {}
+    ccf_arrays = {}
+    ccf_params = {}
     
     """
     Runs all cross-correlation functions (CCFs) for a given planet, temperature profile, and all species labels and VMRs given in dict.
     """
 
     for species_label, vmr in species_vmr_dict.items():
-        amps, amps_err, centers, centers_err, sigmas, sigmas_err = run_all_ccfs(planet_name, temperature_profile, species_label, vmr, do_inject_model, do_run_all, do_make_new_model, method)
+        amps, amps_err, centers, centers_err, sigmas, sigmas_err, selected_idx = run_all_ccfs(planet_name, temperature_profile, species_label, vmr, do_inject_model, do_run_all, do_make_new_model, method)
 
         # Store the results in the dictionary with species_label as the key
-        ccf_dict[species_label] = {
+        ccf_arrays[species_label] = {
             'amps': amps,
             'amps_err': amps_err,
             'centers': centers,
@@ -2074,12 +2075,49 @@ def species_combination(planet_name, temperature_profile, species_vmr_dict, do_i
             'sigmas_err': sigmas_err
         }
 
-    breakpoint()
+        ccf_params[species_label] = {
+            'amps': amps[selected_idx],
+            'amps_err': amps_err[selected_idx],
+            'centers': centers[selected_idx],
+            'centers_err': centers_err[selected_idx],
+            'sigmas': sigmas[selected_idx],
+            'sigmas_err': sigmas_err[selected_idx]
+        }
 
-    # todo: boxplot of species_label vs Vsys
-    fig, ax1 = pl.subplots(figsize=(12,8))
-    fig.canvas.manager.set_window_title('Species vs. Planet-frame Doppler Shift:  $V_{sys}$')
-    bp = ax1.boxplot([ccf_dict[species_label]['centers'] for species_label in species_vmr_dict.keys()], labels=species_vmr_dict.keys(), showfliers=False)
-    # todo: overlay
-    #plotname = 
-    f.close()
+
+    species_labels = list(ccf_arrays.keys())
+
+    # Extracting 'centers' for each species
+    boxplot_data = [ccf_arrays[species]['centers'] for species in species_labels]
+
+    # Prepare colors based on 'amps' in ccf_params
+    amps = [ccf_params[species]['amps'] for species in species_labels]
+    norm = pl.Normalize(min(amps), max(amps))
+    cmap = pl.cm.viridis
+
+    fig, ax = pl.subplots()
+
+    # Create a horizontal boxplot for each species
+    bp = ax.boxplot(boxplot_data,
+                    vert=False,
+                    patch_artist=True)
+    
+    # Apply color to each box
+    for patch, color in zip(bp['boxes'], cmap(norm(amps))):
+        patch.set_facecolor(color)
+
+    ax.set_yticklabels(species_labels)
+    ax.set_xlabel('Planet-frame Doppler shift (km/s)')      #Vsys
+    ax.set_ylabel('Species')
+
+    # Adding a colorbar
+    sm = pl.cm.ScalarMappable(cmap=cmap, norm=norm)
+    sm.set_array([])
+    cbar = pl.colorbar(sm, ax=ax)
+    cbar.set_label('SNR of species detection for combined arms')
+
+    # Save the plot
+    plotname = path_modifier_plots + 'plots/' + planet_name + '.' + temperature_profile + '.CombinedSpeciesSNRs.pdf'
+    fig.savefig(plotname, dpi=300, bbox_inches='tight')
+
+# species_combination('KELT-20b', 'inverted-transmission-better', {'Fe I' : 5.39e-05, 'Fe II' : 5.39e-05, 'Ni I' :  2.676e-06, 'V I' :  5.623e-09, 'Ca I' :  2.101e-08}, False, True, True, 'ccf')
