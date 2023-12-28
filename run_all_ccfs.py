@@ -2207,8 +2207,8 @@ def combinedWindCharacteristics(planet_name, temperature_profile, species_dict, 
         amps, amps_err, centers, centers_err, sigmas, sigmas_err, selected_idx, orbital_phase, fit_params = run_all_ccfs(planet_name, temperature_profile, species_label, vmr, do_inject_model, do_run_all, do_make_new_model, method)
 
         # Mask 'centers' values exceeding ±10
-        centers_masked = np.where(np.abs(centers) <= 10, centers, 0)
-        centers_err_masked = np.where(np.abs(centers_err) <= 10, centers_err, 0)
+        centers_masked = np.where(np.abs(centers) <= 20, centers, 0)
+        centers_err_masked = np.where(np.abs(centers_err) <= 20, centers_err, 0)
         # ############################################################################################################################################################################################
         # This will do for now, but later on I need to pare down the outputs of run_all_ccfs to fit_params and change how the outputs are processes in multiSpeciesCCF and combinedWindCharacteristics
         
@@ -2254,12 +2254,25 @@ def combinedWindCharacteristics(planet_name, temperature_profile, species_dict, 
     ax.set_xlabel('Orbital Phase')
     ax.set_ylabel('$V_{sys}$ (km/s)')
     ax.set_title('Planet-frame Doppler Shift vs. Orbital Phase by species')
-    ax.legend()
+    
+    # Create a color bar
+    cbar = pl.colorbar(scalar_map, ax=ax)
+    cbar.set_label('SNR')
+
+    # After populating all_amps and species labels
+    amps_and_labels = list(zip(wind_chars.keys(), all_amps))
+
+    # Create custom lines for legend
+    custom_lines = [pl.Line2D([0], [0], color=scalar_map.to_rgba(amp), lw=4) for _, amp in amps_and_labels]
+
+    # Create the legend
+    ax.legend(custom_lines, [f'{species}: {amp:.2f}' for species, amp in amps_and_labels])
 
     # Save the plot
     plotname = path_modifier_plots + 'plots/' + planet_name + '.' + temperature_profile + '.CombinedWindCharacteristics.pdf'
-    fig.savefig(plotname, dpi=300, bbox_inches='tight')
+    fig.savefig(plotname, dpi=300, bbox_inches='tight') 
     
 # example usage
 # combinedWindCharacteristics('KELT-20b', 'inverted-transmission-better', {'Fe I' : 5.39e-05, 'Fe II' : 5.39e-05, 'Ni I' :  2.676e-06, 'V I' :  5.623e-09, 'Ca I' :  2.101e-08, 'Co I' : 1.669e-07, 'Mn I' : 2.350e-07, 'Na I' : 2.937e-06, 'H I' : 2.646e-04}, False, True, True, 'ccf')
 # combinedWindCharacteristics('KELT-20b', 'inverted-transmission-better', {'Fe I' : 5.39e-05, 'Fe II' : 5.39e-05, 'Ni I' :  2.676e-06}, False, True, True, 'ccf')
+# combinedWindCharacteristics('KELT-20b', 'inverted-transmission-better', {'Fe I' : 5.39e-05, 'Fe II' : 5.39e-05, 'V I' :  5.623e-09, 'Co I' : 1.669e-07, 'Mn I' : 2.350e-07}, False, True, True, 'ccf')
