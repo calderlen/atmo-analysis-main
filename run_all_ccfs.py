@@ -28,7 +28,7 @@ from radiant import generate_atmospheric_model, get_wavelength_range
 from create_model import create_model, instantiate_radtrans
 import horus
 
-# harcoded path to data on my computer
+# global varaibles defined for harcoded path to data on my computer
 path_modifier_plots = '/home/calder/Documents/atmo-analysis-main/'
 path_modifier_data = '/home/calder/Documents/petitRADTRANS_data/'
 
@@ -1500,7 +1500,7 @@ def gaussian_fit(Kp, Kp_true, drv, species_label, planet_name, observation_epoch
     wind_chars = path_modifier_plots + 'plots/' + planet_name + '.' + observation_epoch + '.' + arm + '.' + species_name_ccf + model_tag + '.Wind-characteristics.pdf'
     fig.savefig(wind_chars, dpi=300, bbox_inches='tight')
     
-    return amps, amps_err, centers, centers_err, sigmas, sigmas_err, residuals, do_molecfit, selected_idx
+    return amps, amps_err, centers, centers_err, sigmas, sigmas_err, residuals, do_molecfit, selected_idx, wind_chars
 
 def make_shifted_plot(snr, planet_name, observation_epoch, arm, species_name_ccf, model_tag, RV_abs, Kp_expected, V_sys_true, Kp_true, do_inject_model, do_combine, drv, Kp, species_label, temperature_profile, method, plotformat='pdf'):
     """
@@ -1562,7 +1562,7 @@ def make_shifted_plot(snr, planet_name, observation_epoch, arm, species_name_ccf
     plotsnr, Kp = plotsnr[keepKp, :], Kp[keepKp]
 
     # Fit a Gaussian to the line profile for combined arms
-    amps, amps_err, centers, centers_err, sigmas, sigmas_err, residuals, do_molecfit, selected_idx = gaussian_fit(Kp, Kp_true, drv, species_label, planet_name, observation_epoch, arm, species_name_ccf, model_tag, plotsnr)
+    amps, amps_err, centers, centers_err, sigmas, sigmas_err, residuals, do_molecfit, selected_idx, wind_chars = gaussian_fit(Kp, Kp_true, drv, species_label, planet_name, observation_epoch, arm, species_name_ccf, model_tag, plotsnr)
 
     psarr(plotsnr, drv, Kp, '$V_{\mathrm{sys}}$ (km/s)', '$K_p$ (km/s)', zlabel, filename=plotname, ctable=ctable, alines=True, apoints=apoints, acolor='cyan', textstr=species_label+' '+model_label, textloc = np.array([apoints[0]-75.,apoints[1]+75.]), textcolor='cyan', fileformat=plotformat)
 
@@ -1970,7 +1970,7 @@ def combine_observations(observation_epochs, arms, planet_name, temperature_prof
 
     get_peak_snr(snr, drv, Kp, do_inject_model, V_sys_true, Kp_true, RV_abs, Kp_expected, all_arms, all_epochs, f, method)
 
-    return Kp_true, amps, amps_err, centers, centers_err, sigmas, sigmas_err, selected_idx
+    return Kp_true, amps, amps_err, centers, centers_err, sigmas, sigmas_err, selected_idx, orbital_phase
 
 def run_all_ccfs(planet_name, temperature_profile, species_label, vmr, do_inject_model, do_run_all, do_make_new_model, method):
     """
@@ -2049,11 +2049,11 @@ def run_all_ccfs(planet_name, temperature_profile, species_label, vmr, do_inject
 
     Period, epoch, M_star, RV_abs, i, M_p, R_p, RA, Dec, Kp_expected, half_duration_phase = get_planet_parameters(planet_name)
     
-    Kp_true, amps, amps_err, centers, centers_err, sigmas, sigmas_err, selected_idx = combine_observations(observation_epochs, arms, planet_name, temperature_profile, species_label, species_name_ccf, model_tag, RV_abs, Kp_expected, do_inject_model, f, method)
+    Kp_true, amps, amps_err, centers, centers_err, sigmas, sigmas_err, selected_idx, orbital_phase = combine_observations(observation_epochs, arms, planet_name, temperature_profile, species_label, species_name_ccf, model_tag, RV_abs, Kp_expected, do_inject_model, f, method)
 
-    return amps, amps_err, centers, centers_err, sigmas, sigmas_err, selected_idx
+    return amps, amps_err, centers, centers_err, sigmas, sigmas_err, selected_idx, orbital_phase
 
-def species_combination(planet_name, temperature_profile, species_vmr_dict, do_inject_model, do_run_all, do_make_new_model, method):
+def multiSpeciesCCF(planet_name, temperature_profile, species_vmr_dict, do_inject_model, do_run_all, do_make_new_model, method):
     
     ccf_arrays = {}
     ccf_params = {}
@@ -2083,7 +2083,6 @@ def species_combination(planet_name, temperature_profile, species_vmr_dict, do_i
             'sigmas': sigmas[selected_idx],
             'sigmas_err': sigmas_err[selected_idx]
         }
-
 
     species_labels = list(ccf_arrays.keys())
 
@@ -2120,4 +2119,63 @@ def species_combination(planet_name, temperature_profile, species_vmr_dict, do_i
     plotname = path_modifier_plots + 'plots/' + planet_name + '.' + temperature_profile + '.CombinedSpeciesSNRs.pdf'
     fig.savefig(plotname, dpi=300, bbox_inches='tight')
 
-# species_combination('KELT-20b', 'inverted-transmission-better', {'Fe I' : 5.39e-05, 'Fe II' : 5.39e-05, 'Ni I' :  2.676e-06, 'V I' :  5.623e-09, 'Ca I' :  2.101e-08}, False, True, True, 'ccf')
+# example usage
+# multiSpeciesCCF('KELT-20b', 'inverted-transmission-better', {'Fe I' : 5.39e-05, 'Fe II' : 5.39e-05, 'Ni I' :  2.676e-06, 'V I' :  5.623e-09, 'Ca I' :  2.101e-08, 'Co I' : 1.669e-07, 'Mn I' : 2.350e-07, 'Na I' : 2.937e-06, 'H I' : 2.646e-04}, False, True, True, 'ccf')
+
+def combinedWindCharacteristics(planet_name, temperature_profile, species_dict, do_inject_model, do_run_all, do_make_new_model, method):
+    """
+    Plot the combined 'centers vs. orbital phase' Wind-characterstics for each arm (red, blue, combined) of all species in species_dict.
+    """
+
+
+    # Initialize dicts
+    wind_chars = {}
+
+    # Loop through each species
+    for species_label, vmr in species_dict.items():
+        amps, amps_err, centers, centers_err, sigmas, sigmas_err, selected_idx, orbital_phase = run_all_ccfs(planet_name, temperature_profile, species_label, vmr, do_inject_model, do_run_all, do_make_new_model, method)
+
+        # Mask 'centers' values exceeding ±10
+        centers_masked = np.where(np.abs(centers) <= 10, centers, 0)
+
+        wind_chars[species_label] = {
+            'amps': amps,
+            'amps_err': amps_err,
+            'centers': centers,
+            'centers_err': centers_err,
+            'sigmas': sigmas,
+            'sigmas_err': sigmas_err
+        }
+
+
+    # Initialize the figure
+    fig, ax = pl.subplots(figsize=(12, 8))
+    
+    # Create a colormap 
+    colors = pl.cm.viridis(np.linspace(0, 1, len(wind_chars.keys())))
+
+    # x-axis for plot
+    phase_min = np.min(orbital_phase)
+    phase_max = np.max(orbital_phase)
+    phase_array = np.linspace(phase_min, phase_max, np.shape(centers)[0])
+
+    # Plotting for each species
+    for (species, data), color in zip(wind_chars.items(), colors):
+        centers = data['centers']
+        centers_err = data['centers_err']
+        ax.plot(phase_array, centers, 'o-', label=species, color=color)
+        ax.fill_between(phase_array, centers - centers_err, centers + centers_err, color=color, alpha=0.2)
+
+    # Labeling and finalizing the plot
+    ax.set_xlabel('Orbital Phase')
+    ax.set_ylabel('Planet-frame Doppler shift (km/s)')
+    ax.set_title('Wind Characteristics for Multiple Species')
+    ax.legend()
+
+    # Save the plot
+    plotname = path_modifier_plots + 'plots/' + planet_name + '.' + temperature_profile + '.CombinedWindCharacteristics.pdf'
+    fig.savefig(plotname, dpi=300, bbox_inches='tight')
+    
+# example usage
+# combinedWindCharacteristics('KELT-20b', 'inverted-transmission-better', {'Fe I' : 5.39e-05, 'Fe II' : 5.39e-05, 'Ni I' :  2.676e-06, 'V I' :  5.623e-09, 'Ca I' :  2.101e-08, 'Co I' : 1.669e-07, 'Mn I' : 2.350e-07, 'Na I' : 2.937e-06, 'H I' : 2.646e-04}, False, True, True, 'ccf')
+# combinedWindCharacteristics('KELT-20b', 'inverted-transmission-better', {'Fe I' : 5.39e-05, 'Fe II' : 5.39e-05, 'Ni I' :  2.676e-06}, False, True, True, 'ccf')
