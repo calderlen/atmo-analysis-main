@@ -2,6 +2,7 @@
 import numpy as np
 import matplotlib.pyplot as pl
 import matplotlib.gridspec as gridspec
+from matplotlib import cm, colors
 
 from glob import glob
 from astropy.io import fits
@@ -1886,6 +1887,8 @@ def run_one_ccf(species_label, vmr, arm, observation_epoch, template_wave, templ
 
         amps, amps_err, centers, centers_err, sigmas, sigmas_err, selected_idx = make_shifted_plot(shifted_lnL, planet_name, observation_epoch, arm, species_name_ccf, model_tag, RV_abs, Kp_expected, V_sys_true, Kp_true, do_inject_model, True, drv, Kp, species_label, temperature_profile, method)
 
+    return amps, amps_err, centers, centers_err, sigmas, sigmas_err, selected_idx, orbital_phase
+
 def combine_observations(observation_epochs, arms, planet_name, temperature_profile, species_label, species_name_ccf, model_tag, RV_abs, Kp_expected, do_inject_model, f, method):
     """
     Combine observations of a planet's cross-correlation function (CCF) from both arms of the spectrograph.
@@ -1989,6 +1992,8 @@ def run_all_ccfs(planet_name, temperature_profile, species_label, vmr, do_inject
     Returns:
     None
     """
+    fit_params = {}
+
     initial_time=time.time()
     ckms = 2.9979e5
 
@@ -2039,32 +2044,82 @@ def run_all_ccfs(planet_name, temperature_profile, species_label, vmr, do_inject
     else:
         template_wave_in, template_flux_in = template_wave, template_flux
 
+    # Ensure species_label key is initialized in fit_params
+    if species_label not in fit_params:
+        fit_params[species_label] = {}
+
     if do_run_all:
         for observation_epoch in observation_epochs:
             for arm in arms:
                 print('Now running the ',arm,' data for ',observation_epoch)
-                run_one_ccf(species_label, vmr, arm, observation_epoch, template_wave, template_flux, template_wave_in, template_flux_in, planet_name, temperature_profile, do_inject_model, species_name_ccf, model_tag, f, method, do_make_new_model)
+                amps, amps_err, centers, centers_err, sigmas, sigmas_err, selected_idx, orbital_phase = run_one_ccf(species_label, vmr, arm, observation_epoch, template_wave, template_flux, template_wave_in, template_flux_in, planet_name, temperature_profile, do_inject_model, species_name_ccf, model_tag, f, method, do_make_new_model)
+
+                # Ensure observation_epoch key is initialized in fit_params[species_label]
+                if observation_epoch not in fit_params[species_label]:
+                    fit_params[species_label][observation_epoch] = {}
+
+                # Assign the values
+                fit_params[species_label][observation_epoch][arm] = {
+                    'amps': amps,
+                    'amps_err': amps_err,
+                    'centers': centers,
+                    'centers_err': centers_err,
+                    'sigmas': sigmas,
+                    'sigmas_err': sigmas_err,
+                    'selected_idx': selected_idx,
+                    'orbital_phase': orbital_phase
+                }
 
     print('Now combining all of the data')
 
     Period, epoch, M_star, RV_abs, i, M_p, R_p, RA, Dec, Kp_expected, half_duration_phase = get_planet_parameters(planet_name)
     
+    # ############################################################################################################################################################################################
+    # This will do for now, but later on I need to pare down the outputs of run_all_ccfs to fit_params and change how the outputs are processes in multiSpeciesCCF and combinedWindCharacteristics
     Kp_true, amps, amps_err, centers, centers_err, sigmas, sigmas_err, selected_idx, orbital_phase = combine_observations(observation_epochs, arms, planet_name, temperature_profile, species_label, species_name_ccf, model_tag, RV_abs, Kp_expected, do_inject_model, f, method)
+    
+    # Ensure 'combined' key is initialized in fit_params[species_label]
 
-    return amps, amps_err, centers, centers_err, sigmas, sigmas_err, selected_idx, orbital_phase
+    if 'combined' not in fit_params[species_label]:
+        fit_params[species_label]['combined'] = {}
+
+    fit_params[species_label]['combined']['combined'] = {
+        'amps': amps,
+        'amps_err': amps_err,
+        'centers': centers,
+        'centers_err': centers_err,
+        'sigmas': sigmas,
+        'sigmas_err': sigmas_err,
+        'selected_idx': selected_idx,
+        'orbital_phase': orbital_phase
+    }
+    return amps, amps_err, centers, centers_err, sigmas, sigmas_err, selected_idx, orbital_phase, fit_params
 
 def multiSpeciesCCF(planet_name, temperature_profile, species_vmr_dict, do_inject_model, do_run_all, do_make_new_model, method):
-    
-    ccf_arrays = {}
-    ccf_params = {}
-    
     """
     Runs all cross-correlation functions (CCFs) for a given planet, temperature profile, and all species labels and VMRs given in dict.
+
+    Args:
+        planet_name (str): The name of the planet.
+        temperature_profile (str): The temperature profile.
+        species_vmr_dict (dict): A dictionary containing species labels as keys and VMRs (Volume Mixing Ratios) as values.
+        do_inject_model (bool): Flag indicating whether to inject a model.
+        do_run_all (bool): Flag indicating whether to run all CCFs.
+        do_make_new_model (bool): Flag indicating whether to make a new model.
+        method (str): The method to use for the CCF.
+
+    Returns:
+        None
     """
 
-    for species_label, vmr in species_vmr_dict.items():
-        amps, amps_err, centers, centers_err, sigmas, sigmas_err, selected_idx = run_all_ccfs(planet_name, temperature_profile, species_label, vmr, do_inject_model, do_run_all, do_make_new_model, method)
+    ccf_arrays = {}
+    ccf_params = {}
 
+    for species_label, vmr in species_vmr_dict.items():
+        amps, amps_err, centers, centers_err, sigmas, sigmas_err, selected_idx, fit_params = run_all_ccfs(planet_name, temperature_profile, species_label, vmr, do_inject_model, do_run_all, do_make_new_model, method)
+        
+        # ############################################################################################################################################################################################
+        # This will do for now, but later on I need to pare down the outputs of run_all_ccfs to fit_params and change how the outputs are processes in multiSpeciesCCF and combinedWindCharacteristics
         # Store the results in the dictionary with species_label as the key
         ccf_arrays[species_label] = {
             'amps': amps,
@@ -2075,6 +2130,8 @@ def multiSpeciesCCF(planet_name, temperature_profile, species_vmr_dict, do_injec
             'sigmas_err': sigmas_err
         }
 
+        # ############################################################################################################################################################################################
+        # This will do for now, but later on I need to pare down the outputs of run_all_ccfs to fit_params and change how the outputs are processes in multiSpeciesCCF and combinedWindCharacteristics
         ccf_params[species_label] = {
             'amps': amps[selected_idx],
             'amps_err': amps_err[selected_idx],
@@ -2106,9 +2163,10 @@ def multiSpeciesCCF(planet_name, temperature_profile, species_vmr_dict, do_injec
         patch.set_facecolor(color)
 
     ax.set_yticklabels(species_labels)
-    ax.set_xlabel('Planet-frame Doppler shift (km/s)')      #Vsys
+    ax.set_xlabel('$V_{sys}$ (km/s)')      #Vsys
     ax.set_ylabel('Species')
-
+    ax.set_title('Variation in $V_{sys}$ for each species across all observations by SNR')
+    
     # Adding a colorbar
     sm = pl.cm.ScalarMappable(cmap=cmap, norm=norm)
     sm.set_array([])
@@ -2124,52 +2182,78 @@ def multiSpeciesCCF(planet_name, temperature_profile, species_vmr_dict, do_injec
 
 def combinedWindCharacteristics(planet_name, temperature_profile, species_dict, do_inject_model, do_run_all, do_make_new_model, method):
     """
-    Plot the combined 'centers vs. orbital phase' Wind-characterstics for each arm (red, blue, combined) of all species in species_dict.
+    Calculate and plot the combined wind characteristics for different species.
+
+    Parameters:
+    planet_name (str): The name of the planet.
+    temperature_profile (str): The temperature profile.
+    species_dict (dict): A dictionary containing species labels and their corresponding volume mixing ratios.
+    do_inject_model (bool): Flag indicating whether to inject a model.
+    do_run_all (bool): Flag indicating whether to run all calculations.
+    do_make_new_model (bool): Flag indicating whether to make a new model.
+    method (str): The method to use for calculations.
+
+    Returns:
+    None
     """
-
-
+    
     # Initialize dicts
     wind_chars = {}
+    wind_params = {}
+    all_amps = []
 
     # Loop through each species
     for species_label, vmr in species_dict.items():
-        amps, amps_err, centers, centers_err, sigmas, sigmas_err, selected_idx, orbital_phase = run_all_ccfs(planet_name, temperature_profile, species_label, vmr, do_inject_model, do_run_all, do_make_new_model, method)
+        amps, amps_err, centers, centers_err, sigmas, sigmas_err, selected_idx, orbital_phase, fit_params = run_all_ccfs(planet_name, temperature_profile, species_label, vmr, do_inject_model, do_run_all, do_make_new_model, method)
 
         # Mask 'centers' values exceeding ±10
         centers_masked = np.where(np.abs(centers) <= 10, centers, 0)
-
+        centers_err_masked = np.where(np.abs(centers_err) <= 10, centers_err, 0)
+        # ############################################################################################################################################################################################
+        # This will do for now, but later on I need to pare down the outputs of run_all_ccfs to fit_params and change how the outputs are processes in multiSpeciesCCF and combinedWindCharacteristics
+        
         wind_chars[species_label] = {
             'amps': amps,
             'amps_err': amps_err,
-            'centers': centers,
-            'centers_err': centers_err,
+            'centers': centers_masked,
+            'centers_err': centers_err_masked,
             'sigmas': sigmas,
             'sigmas_err': sigmas_err
         }
 
+        wind_params[species_label] = {
+            'amps': amps[selected_idx],
+            'amps_err': amps_err[selected_idx],
+            'centers': centers[selected_idx],
+            'centers_err': centers_err[selected_idx],
+            'sigmas': sigmas[selected_idx],
+            'sigmas_err': sigmas_err[selected_idx]
+        }
+
+        all_amps.append(amps[selected_idx])
+
+    # Normalize all_amps for color mapping
+    norm = colors.Normalize(vmin=np.min(all_amps), vmax=np.max(all_amps))
+    scalar_map = cm.ScalarMappable(norm=norm, cmap=cm.viridis)
 
     # Initialize the figure
     fig, ax = pl.subplots(figsize=(12, 8))
     
-    # Create a colormap 
-    colors = pl.cm.viridis(np.linspace(0, 1, len(wind_chars.keys())))
-
     # x-axis for plot
     phase_min = np.min(orbital_phase)
     phase_max = np.max(orbital_phase)
     phase_array = np.linspace(phase_min, phase_max, np.shape(centers)[0])
 
     # Plotting for each species
-    for (species, data), color in zip(wind_chars.items(), colors):
-        centers = data['centers']
-        centers_err = data['centers_err']
-        ax.plot(phase_array, centers, 'o-', label=species, color=color)
-        ax.fill_between(phase_array, centers - centers_err, centers + centers_err, color=color, alpha=0.2)
+    for species, data in wind_chars.items():
+        color_val = scalar_map.to_rgba(data['amps'][selected_idx])
+        ax.plot(phase_array, data['centers'], 'o-', label=species, color=color_val)
+        ax.fill_between(phase_array, data['centers'] - data['centers_err'], data['centers'] + data['centers_err'], color=color_val, alpha=0.2)
 
     # Labeling and finalizing the plot
     ax.set_xlabel('Orbital Phase')
-    ax.set_ylabel('Planet-frame Doppler shift (km/s)')
-    ax.set_title('Wind Characteristics for Multiple Species')
+    ax.set_ylabel('$V_{sys}$ (km/s)')
+    ax.set_title('Planet-frame Doppler Shift vs. Orbital Phase by species')
     ax.legend()
 
     # Save the plot
