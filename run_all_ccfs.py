@@ -1,5 +1,9 @@
 #import packages
 import numpy as np
+
+import matplotlib
+matplotlib.use('Agg') # setting the backend of matplotlib for compatability with WSL2
+
 import matplotlib.pyplot as pl
 import matplotlib.gridspec as gridspec
 from matplotlib import cm, colors
@@ -337,6 +341,14 @@ def get_species_keys(species_label):
     if species_label == 'V I':
         species_name_inject = 'V'
         species_name_ccf = 'V'
+    
+    if species_label == 'V II':
+        species_name_inject = 'V+'
+        species_name_ccf = 'V+'
+    
+    if species_label == 'Ca II':
+        species_name_inject = 'Ca+'
+        species_name_ccf = 'Ca+'
 
 
 
@@ -363,6 +375,14 @@ def get_sysrem_parameters(arm, observation_epoch, species_label):
         if arm == 'red': n_systematics = [1, 0]
     elif species_label == 'CaH':
         if arm == 'blue': n_systematics = [2, 0]
+    elif species_label == 'Na I':
+        if arm == 'red': n_systematics = [0,10]
+        if arm == 'blue': n_systematics = [1,2]
+    elif species_label == 'Mn I':
+        if arm == 'red': n_systematics = [2,2]
+        if arm == 'blue': n_systematics = [1,1]
+     
+        
     else:
         if arm == 'red':
             n_systematics = [0,10]
@@ -1361,7 +1381,7 @@ def gaussian_fit(Kp, Kp_true, drv, species_label, planet_name, observation_epoch
         Kp_slices.append(current_slice)
         Kp_slice_peak.append(np.max(current_slice[80:121]))
 
-        popt, pcov = curve_fit(gaussian, drv, current_slice, p0=[5, -7, 1])
+        popt, pcov = curve_fit(gaussian, drv, current_slice, p0=[4, 0, 5])
 
         amps.append(popt[0])
         centers.append(popt[1])
@@ -1472,7 +1492,7 @@ def gaussian_fit(Kp, Kp_true, drv, species_label, planet_name, observation_epoch
     ax1.text(0.05, 0.99, species_label, transform=ax1.transAxes, verticalalignment='top', horizontalalignment='left', fontsize=12)
 
     # Plotting Vsys
-    ax1.plot(phase_array, centers, 'o-', label='Center')
+    ax1.plot(phase_array, centers, 'o', label='Center')
     ax1.fill_between(phase_array, centers - centers_err, centers + centers_err, color='blue', alpha=0.2)
     ax1.set_xlabel('Orbital Phase')
     ax1.set_ylabel('Vsys', color='b')
@@ -2114,7 +2134,7 @@ def multiSpeciesCCF(planet_name, temperature_profile, species_vmr_dict, do_injec
     ccf_params = {}
 
     for species_label, vmr in species_vmr_dict.items():
-        amps, amps_err, centers, centers_err, sigmas, sigmas_err, selected_idx, fit_params, observation_epochs = run_all_ccfs(planet_name, temperature_profile, species_label, vmr, do_inject_model, do_run_all, do_make_new_model, method)
+        amps, amps_err, centers, centers_err, sigmas, sigmas_err, selected_idx, orbital_phase, fit_params, observation_epochs = run_all_ccfs(planet_name, temperature_profile, species_label, vmr, do_inject_model, do_run_all, do_make_new_model, method)
         
         # ############################################################################################################################################################################################
         # This will do for now, but later on I need to pare down the outputs of run_all_ccfs to fit_params and change how the outputs are processed in multiSpeciesCCF and combinedWindCharacteristics
@@ -2170,7 +2190,7 @@ def multiSpeciesCCF(planet_name, temperature_profile, species_vmr_dict, do_injec
     sm = pl.cm.ScalarMappable(cmap=cmap, norm=norm)
     sm.set_array([])
     cbar = pl.colorbar(sm, ax=ax)
-    cbar.set_label('SNR of species detection for combined arms')
+    cbar.set_label('SNR')
 
     # Save the plot
     plotname = path_modifier_plots + 'plots/' + planet_name + '.' + temperature_profile + '.CombinedSpeciesSNRs.pdf'
@@ -2269,14 +2289,14 @@ def combinedWindCharacteristics(planet_name, temperature_profile, species_dict, 
 
         # Use 'combined' data for plotting
         color_val = scalar_map.to_rgba(combined_data['amps'][selected_idx])
-        ax.plot(phase_array, combined_data['centers'], 'o-', label=f'{species} (Combined)', color=color_val)
+        ax.plot(phase_array, combined_data['centers'], 'o', label=f'{species} (Combined)', color=color_val)
         ax.fill_between(phase_array, combined_data['centers'] - combined_data['centers_err'], combined_data['centers'] + combined_data['centers_err'], color=color_val, alpha=0.2)
 
         # Plotting for individual observation epochs and arms
         for observation_epoch, epoch_data in species_data.items():
             if observation_epoch != 'combined':
                 for arm, arm_data in epoch_data.items():
-                    ax.plot(phase_array, arm_data['centers'], 'o-', label=f'{species} ({observation_epoch} - {arm})', color=color_val)
+                    ax.plot(phase_array, arm_data['centers'], 'o', label=f'{species} ({observation_epoch} - {arm})', color=color_val)
                     ax.fill_between(phase_array, arm_data['centers'] - arm_data['centers_err'], arm_data['centers'] + arm_data['centers_err'], color=color_val, alpha=0.2)
 
 
@@ -2299,9 +2319,8 @@ def combinedWindCharacteristics(planet_name, temperature_profile, species_dict, 
     ax.legend(custom_lines, [f'{species}: {amp:.2f}' for species, amp in amps_and_labels])
 
     # Save the plot
-    plotname_combined = path_modifier_plots + 'plots/' + planet_name + '.' + temperature_profile + '.CombinedWindCharacteristics_Combined.pdf'
+    plotname_combined = path_modifier_plots + 'plots/' + planet_name + '.' + temperature_profile + '.CombinedWindCharacteristics_Combined.pdf'   
     fig.savefig(plotname_combined, dpi=300, bbox_inches='tight')
-
     # Save the plot for each arm
     for arm in ['blue', 'red']:
         plotname_arm = path_modifier_plots + 'plots/' + planet_name + '.' + temperature_profile + f'.CombinedWindCharacteristics_{arm}.pdf'
@@ -2312,109 +2331,3 @@ def combinedWindCharacteristics(planet_name, temperature_profile, species_dict, 
 # combinedWindCharacteristics('KELT-20b', 'inverted-transmission-better', {'Fe I' : 5.39e-05, 'Fe II' : 5.39e-05, 'Ni I' :  2.676e-06, 'V I' :  5.623e-09, 'Ca I' :  2.101e-08, 'Co I' : 1.669e-07, 'Mn I' : 2.350e-07, 'Na I' : 2.937e-06, 'H I' : 2.646e-04}, False, True, True, 'ccf')
 # combinedWindCharacteristics('KELT-20b', 'inverted-transmission-better', {'Fe I' : 5.39e-05, 'Fe II' : 5.39e-05, 'Ni I' :  2.676e-06}, False, True, True, 'ccf')
 # combinedWindCharacteristics('KELT-20b', 'inverted-transmission-better', {'Fe I' : 5.39e-05, 'Fe II' : 5.39e-05, 'V I' :  5.623e-09, 'Co I' : 1.669e-07, 'Mn I' : 2.350e-07}, False, True, True, 'ccf')
-
-"""
-def combinedWindCharacteristics(planet_name, temperature_profile, species_dict, do_inject_model, do_run_all, do_make_new_model, method):
-
-    Calculate and plot the combined wind characteristics for different species.
-    
-    Parameters:
-    planet_name (str): The name of the planet.
-    temperature_profile (str): The temperature profile.
-    species_dict (dict): A dictionary containing species labels and their corresponding volume mixing ratios.
-    do_inject_model (bool): Flag indicating whether to inject a model.
-    do_run_all (bool): Flag indicating whether to run all calculations.
-    do_make_new_model (bool): Flag indicating whether to make a new model.
-    method (str): The method to use for calculations.
-
-    Returns:
-    None
-    
-    
-    # Initialize dicts
-    wind_chars = {}
-    all_amps_combined = []
-    all_amps_blue = []
-    all_amps_red = []
-
-    # Loop through each species
-    for species_label, vmr in species_dict.items():
-        amps, amps_err, centers, centers_err, sigmas, sigmas_err, selected_idx, orbital_phase, fit_params, observation_epochs = run_all_ccfs(planet_name, temperature_profile, species_label, vmr, do_inject_model, do_run_all, do_make_new_model, method)
-
-        wind_chars[species_label] = {'combined': {}, 'blue': {}, 'red': {}}
-
-        for observation_epoch in observation_epochs:
-            for arm in ['blue', 'red']:
-                arm_data = fit_params[species_label][observation_epoch][arm]
-                wind_chars[species_label][arm][observation_epoch] = {
-                    'amps': arm_data['amps'],
-                    'amps_err': arm_data['amps_err'],
-                    'centers': np.where(np.abs(arm_data['centers']) <= 20, arm_data['centers'], 0),
-                    'centers_err': np.where(np.abs(arm_data['centers_err']) <= 20, arm_data['centers_err'], 0),
-                    'sigmas': arm_data['sigmas'],
-                    'sigmas_err': arm_data['sigmas_err']
-                }
-
-                if arm == 'blue':
-                    all_amps_blue.append(arm_data['amps'][selected_idx])
-                elif arm == 'red':
-                    all_amps_red.append(arm_data['amps'][selected_idx])
-
-        wind_chars[species_label]['combined'] = {
-            'amps': amps[selected_idx],
-            'amps_err': amps_err[selected_idx],
-            'centers': np.where(np.abs(centers) <= 20, centers, 0),
-            'centers_err': np.where(np.abs(centers_err) <= 20, centers_err, 0),
-            'sigmas': sigmas,
-            'sigmas_err': sigmas_err
-        }
-
-        all_amps_combined.append(amps[selected_idx])
-
-    # Normalize all_amps for color mapping
-    norm_combined = colors.Normalize(vmin=np.min(all_amps_combined), vmax=np.max(all_amps_combined))
-    norm_blue = colors.Normalize(vmin=np.min(all_amps_blue), vmax=np.max(all_amps_blue))
-    norm_red = colors.Normalize(vmin=np.min(all_amps_red), vmax=np.max(all_amps_red))
-    scalar_map_combined = cm.ScalarMappable(norm=norm_combined, cmap=cm.viridis)
-    scalar_map_blue = cm.ScalarMappable(norm=norm_blue, cmap=cm.viridis)
-    scalar_map_red = cm.ScalarMappable(norm=norm_red, cmap=cm.viridis)
-
-    # Create plots for combined, blue, and red
-    for plot_type, norm, scalar_map in [('combined', norm_combined, scalar_map_combined), ('blue', norm_blue, scalar_map_blue), ('red', norm_red, scalar_map_red)]:
-        fig, ax = pl.subplots(figsize=(12, 8))
-
-        # Plotting for each species
-        for species in wind_chars.keys():
-            data = wind_chars[species][plot_type]
-            if plot_type == 'combined':
-                color_val = scalar_map.to_rgba(data['amps'])
-                ax.plot(phase_array, data['centers'], 'o-', label=f'{species} (Combined)', color=color_val)
-                ax.fill_between(phase_array, data['centers'] - data['centers_err'], data['centers'] + data['centers_err'], color=color_val, alpha=0.2)
-            else:
-                for observation_epoch in observation_epochs:
-                    color_val = scalar_map.to_rgba(data[observation_epoch]['amps'])
-                    ax.plot(phase_array, data[observation_epoch]['centers'], 'o-', label=f'{species} ({observation_epoch} - {plot_type})', color=color_val)
-                    ax.fill_between(phase_array, data[observation_epoch]['centers'] - data[observation_epoch]['centers_err'], data[observation_epoch]['centers'] + data[observation_epoch]['centers_err'], color=color_val, alpha=0.2)
-
-        # Labeling and finalizing the plot
-        ax.set_xlabel('Orbital Phase')
-        ax.set_ylabel('$V_{sys}$ (km/s)')
-        ax.set_title(f'Planet-frame Doppler Shift vs. Orbital Phase by species ({plot_type})')
-
-        # Create a color bar
-        cbar = pl.colorbar(scalar_map, ax=ax)
-        cbar.set_label('SNR')
-
-        # Create custom lines for legend
-        amps_list = all_amps_combined if plot_type == 'combined' else (all_amps_blue if plot_type == 'blue' else all_amps_red)
-        custom_lines = [pl.Line2D([0], [0], color=scalar_map.to_rgba(amp), lw=4) for amp in amps_list]
-
-        # Create the legend
-        ax.legend(custom_lines, [f'{species}: {amp:.2f}' for species, amp in zip(wind_chars.keys(), amps_list)])
-
-        # Save the plot
-        plotname = path_modifier_plots + 'plots/' + planet_name + '.' + temperature_profile + f'.CombinedWindCharacteristics_{plot_type}.pdf'
-        fig.savefig(plotname, dpi=300, bbox_inches='tight')
-"""
-# Example usage
-# combinedWindCharacteristics('KELT-20b', 'inverted-transmission-better', {'Fe I' : 5.39e-05, 'Fe II' : 5.39e-05, 'Ni I' :  2.676e-06, 'V I' :  5.623e-09, 'Ca I' :  2.101e-08, 'Co I' : 1.669e-07, 'Mn I' : 2.350e-07, 'Na I' : 2.937e-06, 'H I' : 
