@@ -33,6 +33,8 @@ from radiant import generate_atmospheric_model, get_wavelength_range
 from create_model import create_model, instantiate_radtrans
 import horus
 
+from make_alias import make_alias
+
 # global varaibles defined for harcoded path to data on my computer
 path_modifier_plots = '/home/calder/Documents/atmo-analysis-main/'
 path_modifier_data = '/home/calder/Documents/petitRADTRANS_data/'
@@ -2111,6 +2113,8 @@ def run_all_ccfs(planet_name, temperature_profile, species_label, vmr, do_inject
         'selected_idx': selected_idx,
         'orbital_phase': orbital_phase
     }
+    
+    make_alias()    
     return amps, amps_err, centers, centers_err, sigmas, sigmas_err, selected_idx, orbital_phase, fit_params, observation_epochs
 
 def multiSpeciesCCF(planet_name, temperature_profile, species_vmr_dict, do_inject_model, do_run_all, do_make_new_model, method):
@@ -2331,3 +2335,4 @@ def combinedWindCharacteristics(planet_name, temperature_profile, species_dict, 
 # combinedWindCharacteristics('KELT-20b', 'inverted-transmission-better', {'Fe I' : 5.39e-05, 'Fe II' : 5.39e-05, 'Ni I' :  2.676e-06, 'V I' :  5.623e-09, 'Ca I' :  2.101e-08, 'Co I' : 1.669e-07, 'Mn I' : 2.350e-07, 'Na I' : 2.937e-06, 'H I' : 2.646e-04}, False, True, True, 'ccf')
 # combinedWindCharacteristics('KELT-20b', 'inverted-transmission-better', {'Fe I' : 5.39e-05, 'Fe II' : 5.39e-05, 'Ni I' :  2.676e-06}, False, True, True, 'ccf')
 # combinedWindCharacteristics('KELT-20b', 'inverted-transmission-better', {'Fe I' : 5.39e-05, 'Fe II' : 5.39e-05, 'V I' :  5.623e-09, 'Co I' : 1.669e-07, 'Mn I' : 2.350e-07}, False, True, True, 'ccf')
+
