@@ -33,8 +33,6 @@ from radiant import generate_atmospheric_model, get_wavelength_range
 from create_model import create_model, instantiate_radtrans
 import horus
 
-from make_alias import make_alias
-
 # global varaibles defined for harcoded path to data on my computer
 path_modifier_plots = '/home/calder/Documents/atmo-analysis-main/'
 path_modifier_data = '/home/calder/Documents/petitRADTRANS_data/'
