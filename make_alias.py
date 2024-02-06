@@ -1,4 +1,5 @@
-from run_all_ccfs import *
+from run_all_ccfs import make_new_model, get_planet_parameters, inject_model, get_ccfs, combine_ccfs, make_shifted_plot
+import numpy as np
 
 def make_alias(instrument="PEPSI", planet_name="KELT-20b", spectrum_type="transmission", temperature_profile="inverted-transmission-better", model_tag="alias", spec_one="Fe+", vmr_one = 5.39e-5,  spec_two="Ni", vmr_two = 2.676e-06):
     '''
