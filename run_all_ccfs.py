@@ -2370,7 +2370,8 @@ def make_alias(instrument="PEPSI", planet_name="KELT-20b", spectrum_type="transm
     fluxin, Kp_true, V_sys_true = inject_model(Kp_expected, orbital_phase, mock_wave, mock_spectra, template_wave_two, template_flux_two, n_spectra)
 
     #do the cross-correlation and associated processing
-    drv, cross_cor, sigma_cross_cor = get_ccfs(mock_wave, mock_spectra, np.ones_like(mock_spectra), template_wave_two, template_flux_two, n_spectra, mock_spectra, np.where(template_wave_one > 0.))
+    #drv, cross_cor, sigma_cross_cor = get_ccfs(mock_wave, mock_spectra, np.ones_like(mock_spectra), template_wave_two, template_flux_two, n_spectra, mock_spectra, np.where(template_wave_one > 0.))
+    drv, cross_cor, sigma_cross_cor = get_ccfs(mock_wave, mock_spectra, np.ones_like(mock_spectra), template_wave_two, template_flux_two, n_spectra)
 
     for i in range (n_spectra): 
         cross_cor[i,:]-=np.mean(cross_cor[i,:])
