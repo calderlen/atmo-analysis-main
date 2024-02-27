@@ -548,8 +548,9 @@ def get_pepsi_data(arm, observation_epoch, planet_name, do_molecfit):
     
     
     #change 'avr' to 'nor' below for more recent data
-    if float(observation_epoch[0:4]) >= 2019:
-        pepsi_extend = 'nor'
+    if observation_epoch != 'mock-obs':
+        if float(observation_epoch[0:4]) >= 2019:
+            pepsi_extend = 'nor'
     else:
         pepsi_extend = 'avr'
         
@@ -2379,13 +2380,14 @@ def make_alias(instrument="PEPSI", planet_name="KELT-20b", spectrum_type="transm
         #I guess the following is OK as long as there isn't a strong peak, which there shouldn't be in any of the individual CCFs
         cross_cor[i,:]/=np.std(cross_cor[i,:])
 
-    snr, Kp, drv, cross_cor_display = combine_ccfs(drv, cross_cor, sigma_cross_cor, orbital_phase, n_spectra, np.ones_like(orbital_phase), half_duration_phase, temperature_profile)
+    snr, Kp, drv = combine_ccfs(drv, cross_cor, sigma_cross_cor, orbital_phase, n_spectra, np.ones_like(orbital_phase), half_duration_phase, temperature_profile)
 
-    make_shifted_plot(snr, planet_name, 'mock-obs', 'blue', spec_two + 'ACF', model_tag, RV_abs, Kp_expected, V_sys_true, Kp_true, True, True, drv, Kp, spec_two + 'ACF', temperature_profile, 'ccf')
+    make_shifted_plot(snr, planet_name, '20190504', 'blue', spec_two + 'ACF', model_tag, RV_abs, Kp_expected, V_sys_true, Kp_true, True, True, drv, Kp, spec_two + 'ACF', temperature_profile, 'ccf')
+    make_shifted_plot(snr, planet_name, '20190504', 'red', spec_two + 'ACF', model_tag, RV_abs, Kp_expected, V_sys_true, Kp_true, True, True, drv, Kp, spec_two + 'ACF', temperature_profile, 'ccf')
+    make_shifted_plot(snr, planet_name, '20190504', 'combined', spec_two + 'ACF', model_tag, RV_abs, Kp_expected, V_sys_true, Kp_true, True, True, drv, Kp, spec_two + 'ACF', temperature_profile, 'ccf')
 
-    breakpoint()
 
-    keep = Kp == np.round(Kp_expected)
+    keep = Kp == np.round(unp.nominal_values(Kp_expected))
     ccf_1d = snr[keep,:]
 
     np.save('alias-drv.npy',drv)
