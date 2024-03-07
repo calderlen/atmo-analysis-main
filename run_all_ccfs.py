@@ -363,8 +363,8 @@ def get_sysrem_parameters(arm, observation_epoch, species_label):
         if arm == 'red': n_systematics = [2,3]
         if arm == 'blue': n_systematics = [0,5]
     elif species_label == 'Cr I':
-        if arm == 'red': n_systematics = [0,5]
-        if arm == 'blue': n_systematics = [0,5]
+        if arm == 'red': n_systematics = [0,10]
+        if arm == 'blue': n_systematics = [0,10]
     elif species_label == 'V I':
         if arm == 'red': n_systematics = [2,5]
         if arm == 'blue': n_systematics = [1,8]
@@ -1340,7 +1340,7 @@ def multi_gaussian(x, *params):
         y = y + a * np.exp(-(x - mu)**2 / (2 * sigma**2))
     return y
 
-def gaussian_fit(Kp, Kp_true, drv, species_label, planet_name, observation_epoch, arm, species_name_ccf, model_tag, plotsnr):
+def gaussian_fit(Kp, Kp_true, drv, species_label, planet_name, observation_epoch, arm, species_name_ccf, model_tag, plotsnr, p0_gaussian):
     """
     Fits a Gaussian to the 1D slice during transit and generates plots.
 
@@ -1382,7 +1382,7 @@ def gaussian_fit(Kp, Kp_true, drv, species_label, planet_name, observation_epoch
         Kp_slices.append(current_slice)
         Kp_slice_peak.append(np.max(current_slice[80:121]))
 
-        popt, pcov = curve_fit(gaussian, drv, current_slice, p0=[4, 0, 5])
+        popt, pcov = curve_fit(gaussian, drv, current_slice, p0=p0_gaussian)
 
         amps.append(popt[0])
         centers.append(popt[1])
@@ -1500,19 +1500,21 @@ def gaussian_fit(Kp, Kp_true, drv, species_label, planet_name, observation_epoch
     ax1.tick_params(axis='y', labelcolor='b')
 
     # Plotting Sigma on secondary axis
-    ax2 = ax1.twinx()
-    ax2.plot(phase_array, sigmas, 'r-', label='Sigma')
-    ax2.set_ylabel('Sigma', color='r')
-    ax2.tick_params(axis='y', labelcolor='r')
+    #ax2 = ax1.twinx()
+    #ax2.plot(phase_array, sigmas, 'r-', label='Sigma')
+    #ax2.set_ylabel('Sigma', color='r')
+    #ax2.tick_params(axis='y', labelcolor='r')
 
     # Combining legends from both axes
     handles1, labels1 = ax1.get_legend_handles_labels()
-    handles2, labels2 = ax2.get_legend_handles_labels()
-    handles = handles1 + handles2
-    labels = labels1 + labels2
-    ax1.legend(handles, labels, loc='upper right')
+    #handles2, labels2 = ax2.get_legend_handles_labels()
+    #handles = handles1 + handles2
+    #labels = labels1 + labels2
+    ax1.legend(handles1, labels1, loc='upper right')
 
-    ax1.set_title('Vsys and Sigma vs. Orbital Phase')
+    # ax1.set_title('Vsys and Sigma vs. Orbital Phase')
+    ax1.set_title('Vsys vs. Orbital Phase')
+
     ax1.text(0.05, 0.99, species_label, transform=ax1.transAxes, verticalalignment='top', horizontalalignment='left', fontsize=12)
     ax1.text(0.15, 0.99, f'Arm: {arm}', transform=ax1.transAxes, verticalalignment='top', fontsize=10)
 
@@ -1522,7 +1524,7 @@ def gaussian_fit(Kp, Kp_true, drv, species_label, planet_name, observation_epoch
     
     return amps, amps_err, centers, centers_err, sigmas, sigmas_err, residuals, do_molecfit, selected_idx, wind_chars
 
-def make_shifted_plot(snr, planet_name, observation_epoch, arm, species_name_ccf, model_tag, RV_abs, Kp_expected, V_sys_true, Kp_true, do_inject_model, do_combine, drv, Kp, species_label, temperature_profile, method, plotformat='pdf'):
+def make_shifted_plot(snr, planet_name, observation_epoch, arm, species_name_ccf, model_tag, RV_abs, Kp_expected, V_sys_true, Kp_true, do_inject_model, do_combine, drv, Kp, species_label, temperature_profile, method, plotformat='pdf', p0_gaussian=[0,5,1]):
     """
     Creates a shifted plot of the CCFs or likelihoods for a given planet, observation epoch, arm, and species.
 
@@ -1549,7 +1551,6 @@ def make_shifted_plot(snr, planet_name, observation_epoch, arm, species_name_ccf
     Returns:
     None
     """
-
     if method == 'ccf':
         outtag, zlabel = 'CCFs-shifted', 'SNR'
         plotsnr = snr[:]
@@ -1582,7 +1583,7 @@ def make_shifted_plot(snr, planet_name, observation_epoch, arm, species_name_ccf
     plotsnr, Kp = plotsnr[keepKp, :], Kp[keepKp]
 
     # Fit a Gaussian to the line profile for combined arms
-    amps, amps_err, centers, centers_err, sigmas, sigmas_err, residuals, do_molecfit, selected_idx, wind_chars = gaussian_fit(Kp, Kp_true, drv, species_label, planet_name, observation_epoch, arm, species_name_ccf, model_tag, plotsnr)
+    amps, amps_err, centers, centers_err, sigmas, sigmas_err, residuals, do_molecfit, selected_idx, wind_chars = gaussian_fit(Kp, Kp_true, drv, species_label, planet_name, observation_epoch, arm, species_name_ccf, model_tag, plotsnr, p0_gaussian=p0_gaussian)
 
     psarr(plotsnr, drv, Kp, '$V_{\mathrm{sys}}$ (km/s)', '$K_p$ (km/s)', zlabel, filename=plotname, ctable=ctable, alines=True, apoints=apoints, acolor='cyan', textstr=species_label+' '+model_label, textloc = np.array([apoints[0]-75.,apoints[1]+75.]), textcolor='cyan', fileformat=plotformat)
 
@@ -1762,7 +1763,7 @@ def DopplerShadowModel(vsini,
        
         return ccf_model
 
-def run_one_ccf(species_label, vmr, arm, observation_epoch, template_wave, template_flux, template_wave_in, template_flux_in, planet_name, temperature_profile, do_inject_model, species_name_ccf, model_tag, f, method, do_make_new_model):
+def run_one_ccf(species_label, vmr, arm, observation_epoch, template_wave, template_flux, template_wave_in, template_flux_in, planet_name, temperature_profile, do_inject_model, species_name_ccf, model_tag, f, method, do_make_new_model, p0_gaussian):
     """
     Runs the cross-correlation function (CCF) for a given set of input parameters.
 
@@ -1885,7 +1886,7 @@ def run_one_ccf(species_label, vmr, arm, observation_epoch, template_wave, templ
 
         snr, Kp, drv = combine_ccfs(drv, cross_cor, sigma_cross_cor, orbital_phase, n_spectra, ccf_weights, half_duration_phase, temperature_profile)
         
-        amps, amps_err, centers, centers_err, sigmas, sigmas_err, selected_idx = make_shifted_plot(snr, planet_name, observation_epoch, arm, species_name_ccf, model_tag, RV_abs, Kp_expected, V_sys_true, Kp_true, do_inject_model, True, drv, Kp, species_label, temperature_profile, method)
+        amps, amps_err, centers, centers_err, sigmas, sigmas_err, selected_idx = make_shifted_plot(snr, planet_name, observation_epoch, arm, species_name_ccf, model_tag, RV_abs, Kp_expected, V_sys_true, Kp_true, do_inject_model, True, drv, Kp, species_label, temperature_profile, method, p0_gaussian=p0_gaussian)
 
         get_peak_snr(snr, drv, Kp, do_inject_model, V_sys_true, Kp_true, RV_abs, Kp_expected, arm, observation_epoch, f, method)
 
@@ -1994,7 +1995,7 @@ def combine_observations(observation_epochs, arms, planet_name, temperature_prof
 
     return Kp_true, amps, amps_err, centers, centers_err, sigmas, sigmas_err, selected_idx, orbital_phase
 
-def run_all_ccfs(planet_name, temperature_profile, species_label, vmr, do_inject_model, do_run_all, do_make_new_model, method):
+def run_all_ccfs(planet_name, temperature_profile, species_label, vmr, do_inject_model, do_run_all, do_make_new_model, method, p0_gaussian):
     """
     Runs all cross-correlation functions (CCFs) for a given planet, temperature profile, and species label.
 
@@ -2071,7 +2072,7 @@ def run_all_ccfs(planet_name, temperature_profile, species_label, vmr, do_inject
         for observation_epoch in observation_epochs:
             for arm in arms:
                 print('Now running the ',arm,' data for ',observation_epoch)
-                amps, amps_err, centers, centers_err, sigmas, sigmas_err, selected_idx, orbital_phase = run_one_ccf(species_label, vmr, arm, observation_epoch, template_wave, template_flux, template_wave_in, template_flux_in, planet_name, temperature_profile, do_inject_model, species_name_ccf, model_tag, f, method, do_make_new_model)
+                amps, amps_err, centers, centers_err, sigmas, sigmas_err, selected_idx, orbital_phase = run_one_ccf(species_label, vmr, arm, observation_epoch, template_wave, template_flux, template_wave_in, template_flux_in, planet_name, temperature_profile, do_inject_model, species_name_ccf, model_tag, f, method, do_make_new_model, p0_gaussian=p0_gaussian)
 
                 # Ensure observation_epoch key is initialized in fit_params[species_label]
                 if observation_epoch not in fit_params[species_label]:
@@ -2113,7 +2114,6 @@ def run_all_ccfs(planet_name, temperature_profile, species_label, vmr, do_inject
         'orbital_phase': orbital_phase
     }
     
-    make_alias()    
     return amps, amps_err, centers, centers_err, sigmas, sigmas_err, selected_idx, orbital_phase, fit_params, observation_epochs
 
 def multiSpeciesCCF(planet_name, temperature_profile, species_vmr_dict, do_inject_model, do_run_all, do_make_new_model, method):
@@ -2332,63 +2332,3 @@ def combinedWindCharacteristics(planet_name, temperature_profile, species_dict, 
 
 # example usage
 # combinedWindCharacteristics('KELT-20b', 'inverted-transmission-better', {'Fe I' : 5.39e-05, 'Fe II' : 5.39e-05, 'Ni I' :  2.676e-06, 'V I' :  5.623e-09, 'Ca I' :  2.101e-08, 'Co I' : 1.669e-07, 'Mn I' : 2.350e-07, 'Na I' : 2.937e-06, 'H I' : 2.646e-04}, False, True, True, 'ccf')
-# combinedWindCharacteristics('KELT-20b', 'inverted-transmission-better', {'Fe I' : 5.39e-05, 'Fe II' : 5.39e-05, 'Ni I' :  2.676e-06}, False, True, True, 'ccf')
-# combinedWindCharacteristics('KELT-20b', 'inverted-transmission-better', {'Fe I' : 5.39e-05, 'Fe II' : 5.39e-05, 'V I' :  5.623e-09, 'Co I' : 1.669e-07, 'Mn I' : 2.350e-07}, False, True, True, 'ccf')
-
-def make_alias(instrument="PEPSI", planet_name="KELT-20b", spectrum_type="transmission", temperature_profile="inverted-transmission-better", model_tag="alias", spec_one="Fe+", vmr_one = 5.39e-5,  spec_two="Ni", vmr_two = 2.676e-06):
-    '''
-    '''
-    
-    #make the models for the two species of interest
-    template_wave_one, template_flux_one = make_new_model(instrument, spec_one, vmr_one, spectrum_type, planet_name, temperature_profile, do_plot=True)
-    template_wave_two, template_flux_two = make_new_model(instrument, spec_two, vmr_two, spectrum_type, planet_name, temperature_profile, do_plot=True)
-
-    #load in the orbital phases of the data
-    orbital_phase = np.load('data_products/KELT-20b.20190504.blue.' + spec_two + '.CCFs-raw.npy.phase.npy')
-
-    Period, epoch, M_star, RV_abs, i, M_p, R_p, RA, Dec, Kp_expected, half_duration_phase = get_planet_parameters(planet_name)
-
-    n_spectra = len(orbital_phase)
-
-    #limit to the wavelength range of one PEPSI CD
-
-    goods = (template_wave_one >= 4800.) & (template_wave_one < 5441.)
-    template_wave_one, template_flux_one = template_wave_one[goods], template_flux_one[goods]
-
-    goods = (template_wave_two >= 4800.) & (template_wave_two < 5441.)
-    template_wave_two, template_flux_two = template_wave_two[goods], template_flux_two[goods]
-
-    mock_spectra = np.zeros((n_spectra, len(template_wave_one)))
-
-    mock_wave = np.zeros((n_spectra, len(template_wave_one)))
-
-    for i in range (n_spectra): mock_wave[i,:] = template_wave_one
-
-    #fluxin, Kp_true, V_sys_true = inject_model(Kp_expected, orbital_phase, mock_wave, mock_spectra, template_wave_one, template_flux_one + np.interp(template_wave_one, template_wave_two, template_flux_two), n_spectra)
-    #fluxin, Kp_true, V_sys_true = inject_model(Kp_expected, orbital_phase, mock_wave, mock_spectra, template_wave_one, template_flux_one, n_spectra)
-
-    #make a model spectrum with the template appropriately shifted to the planetary orbital motion
-    fluxin, Kp_true, V_sys_true = inject_model(Kp_expected, orbital_phase, mock_wave, mock_spectra, template_wave_two, template_flux_two, n_spectra)
-
-    #do the cross-correlation and associated processing
-    #drv, cross_cor, sigma_cross_cor = get_ccfs(mock_wave, mock_spectra, np.ones_like(mock_spectra), template_wave_two, template_flux_two, n_spectra, mock_spectra, np.where(template_wave_one > 0.))
-    drv, cross_cor, sigma_cross_cor = get_ccfs(mock_wave, mock_spectra, np.ones_like(mock_spectra), template_wave_two, template_flux_two, n_spectra)
-
-    for i in range (n_spectra): 
-        cross_cor[i,:]-=np.mean(cross_cor[i,:])
-        sigma_cross_cor[i,:] = np.sqrt(sigma_cross_cor[i,:]**2 + np.sum(sigma_cross_cor[i,:]**2)/len(sigma_cross_cor[i,:])**2)
-        #I guess the following is OK as long as there isn't a strong peak, which there shouldn't be in any of the individual CCFs
-        cross_cor[i,:]/=np.std(cross_cor[i,:])
-
-    snr, Kp, drv = combine_ccfs(drv, cross_cor, sigma_cross_cor, orbital_phase, n_spectra, np.ones_like(orbital_phase), half_duration_phase, temperature_profile)
-
-    make_shifted_plot(snr, planet_name, '20190504', 'blue', spec_two + 'ACF', model_tag, RV_abs, Kp_expected, V_sys_true, Kp_true, True, True, drv, Kp, spec_two + 'ACF', temperature_profile, 'ccf')
-    make_shifted_plot(snr, planet_name, '20190504', 'red', spec_two + 'ACF', model_tag, RV_abs, Kp_expected, V_sys_true, Kp_true, True, True, drv, Kp, spec_two + 'ACF', temperature_profile, 'ccf')
-    make_shifted_plot(snr, planet_name, '20190504', 'combined', spec_two + 'ACF', model_tag, RV_abs, Kp_expected, V_sys_true, Kp_true, True, True, drv, Kp, spec_two + 'ACF', temperature_profile, 'ccf')
-
-
-    keep = Kp == np.round(unp.nominal_values(Kp_expected))
-    ccf_1d = snr[keep,:]
-
-    np.save('alias-drv.npy',drv)
-    np.save(spec_two + '-alias-ccf.npy', ccf_1d)
