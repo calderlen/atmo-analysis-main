@@ -373,10 +373,12 @@ def get_sysrem_parameters(arm, observation_epoch, species_label):
         if arm == 'blue': n_systematics = [3, 0]
     elif species_label == 'FeH':
         if arm == 'red': n_systematics = [1, 0]
+        if arm == 'blue': n_systematics = [0, 5]
     elif species_label == 'CaH':
+        if arm == 'red': n_systematics = [0, 10]
         if arm == 'blue': n_systematics = [2, 0]
     elif species_label == 'Na I':
-        if arm == 'red': n_systematics = [0,10]
+        if arm == 'red': n_systematics = [0, 10]
         if arm == 'blue': n_systematics = [1,2]
     elif species_label == 'Mn I':
         if arm == 'red': n_systematics = [2,2]
@@ -1361,7 +1363,7 @@ def gaussian_fit(Kp, Kp_true, drv, species_label, planet_name, observation_epoch
     """
   
     # Fitting a Gaussian to the 1D slice during transit
-
+    mask = (drv >= -25) & (drv <= 25)
     # Initializing lists to store fit parameters
     amps = []
     amps_err = []
@@ -1416,19 +1418,25 @@ def gaussian_fit(Kp, Kp_true, drv, species_label, planet_name, observation_epoch
 
     # Computing residuals and chi-squared for selected slice
     residual = plotsnr[selected_idx, :] - gaussian(drv, *popt_selected)
+    residual_restricted = residual[mask]
     # chi2 = np.sum((residual / np.std(residual))**2)/(len(drv)-len(popt))
 
     # Initialize Figure and GridSpec objects
-    fig = pl.figure(figsize=(12,8))
+    fig = pl.figure(figsize=(8,8))
     gs = gridspec.GridSpec(2, 1, height_ratios=[4, 1])
 
     # Create Axes for the main plot and the residuals plot
     ax1 = pl.subplot(gs[0])
     ax2 = pl.subplot(gs[1], sharex=ax1)
     
+    # Restrict arrays to the region of interest for plotting
+    drv_restricted = drv[mask]
+    plotsnr_restricted = plotsnr[selected_idx, mask]
+    
+    plotsnr
     # Main Plot (ax1)
-    ax1.plot(drv, plotsnr[selected_idx, :], 'k--', label='data', markersize=2)
-    ax1.plot(drv, gaussian(drv, *popt_selected), 'r-', label='fit')
+    ax1.plot(drv_restricted, plotsnr_restricted, 'k--', label='data', markersize=2)
+    ax1.plot(drv_restricted, gaussian(drv_restricted, *popt_selected), 'r-', label='fit')
 
     # Species Label
     ax1.text(0.05, 0.99, species_label, transform=ax1.transAxes, verticalalignment='top', horizontalalignment='left', fontsize=12)
@@ -1460,7 +1468,7 @@ def gaussian_fit(Kp, Kp_true, drv, species_label, planet_name, observation_epoch
     ax1.axhline(y=4, color='g', linestyle='--', label=r'4 $\sigma$')    
 
     # Inset for residuals (ax2)
-    ax2.plot(drv, residual, 'o-', markersize=1)
+    ax2.plot(drv_restricted, residual_restricted, 'o-', markersize=1)
     ax2.set_xlabel('Velocity (km/s)')
     ax2.set_ylabel('Residuals')
     
@@ -1488,7 +1496,7 @@ def gaussian_fit(Kp, Kp_true, drv, species_label, planet_name, observation_epoch
     phase_max = np.max(orbital_phase)
     phase_array = np.linspace(phase_min, phase_max, np.shape(centers)[0])
 
-    fig, ax1 = pl.subplots(figsize=(12,8))
+    fig, ax1 = pl.subplots(figsize=(8,8))
 
     ax1.text(0.05, 0.99, species_label, transform=ax1.transAxes, verticalalignment='top', horizontalalignment='left', fontsize=12)
 
@@ -1789,7 +1797,7 @@ def run_one_ccf(species_label, vmr, arm, observation_epoch, template_wave, templ
         None
     """
     
-    niter = 10
+    niter = 1
     n_systematics = np.array(get_sysrem_parameters(arm, observation_epoch, species_label))
     ckms = 2.9979e5
 
@@ -2116,7 +2124,7 @@ def run_all_ccfs(planet_name, temperature_profile, species_label, vmr, do_inject
     
     return amps, amps_err, centers, centers_err, sigmas, sigmas_err, selected_idx, orbital_phase, fit_params, observation_epochs
 
-def multiSpeciesCCF(planet_name, temperature_profile, species_vmr_dict, do_inject_model, do_run_all, do_make_new_model, method):
+def multiSpeciesCCF(planet_name, temperature_profile, species_vmr_dict, do_inject_model, do_run_all, do_make_new_model, method, p0_gaussian):
     """
     Runs all cross-correlation functions (CCFs) for a given planet, temperature profile, and all species labels and VMRs given in dict.
 
@@ -2137,7 +2145,7 @@ def multiSpeciesCCF(planet_name, temperature_profile, species_vmr_dict, do_injec
     ccf_params = {}
 
     for species_label, vmr in species_vmr_dict.items():
-        amps, amps_err, centers, centers_err, sigmas, sigmas_err, selected_idx, orbital_phase, fit_params, observation_epochs = run_all_ccfs(planet_name, temperature_profile, species_label, vmr, do_inject_model, do_run_all, do_make_new_model, method)
+        amps, amps_err, centers, centers_err, sigmas, sigmas_err, selected_idx, orbital_phase, fit_params, observation_epochs = run_all_ccfs(planet_name, temperature_profile, species_label, vmr, do_inject_model, do_run_all, do_make_new_model, method, p0_gaussian=p0_gaussian)
         
         # ############################################################################################################################################################################################
         # This will do for now, but later on I need to pare down the outputs of run_all_ccfs to fit_params and change how the outputs are processed in multiSpeciesCCF and combinedWindCharacteristics
@@ -2202,7 +2210,7 @@ def multiSpeciesCCF(planet_name, temperature_profile, species_vmr_dict, do_injec
 # example usage
 # multiSpeciesCCF('KELT-20b', 'inverted-transmission-better', {'Fe I' : 5.39e-05, 'Fe II' : 5.39e-05, 'Ni I' :  2.676e-06, 'V I' :  5.623e-09, 'Ca I' :  2.101e-08, 'Co I' : 1.669e-07, 'Mn I' : 2.350e-07, 'Na I' : 2.937e-06, 'H I' : 2.646e-04}, False, True, True, 'ccf')
 
-def combinedWindCharacteristics(planet_name, temperature_profile, species_dict, do_inject_model, do_run_all, do_make_new_model, method):
+def combinedWindCharacteristics(planet_name, temperature_profile, species_dict, do_inject_model, do_run_all, do_make_new_model, method, p0_gaussian):
     """
     Calculate and plot the combined wind characteristics for different species.
 
@@ -2225,7 +2233,7 @@ def combinedWindCharacteristics(planet_name, temperature_profile, species_dict, 
 
     # Loop through each species
     for species_label, vmr in species_dict.items():
-        amps, amps_err, centers, centers_err, sigmas, sigmas_err, selected_idx, orbital_phase, fit_params, observation_epochs = run_all_ccfs(planet_name, temperature_profile, species_label, vmr, do_inject_model, do_run_all, do_make_new_model, method)
+        amps, amps_err, centers, centers_err, sigmas, sigmas_err, selected_idx, orbital_phase, fit_params, observation_epochs = run_all_ccfs(planet_name, temperature_profile, species_label, vmr, do_inject_model, do_run_all, do_make_new_model, method, p0_gaussian=p0_gaussian)
 
         # Initialize 'combined' key for each species
         if species_label not in wind_chars:
@@ -2278,7 +2286,7 @@ def combinedWindCharacteristics(planet_name, temperature_profile, species_dict, 
     scalar_map = cm.ScalarMappable(norm=norm, cmap=cm.viridis)
 
     # Initialize the figure
-    fig, ax = pl.subplots(figsize=(12, 8))
+    fig, ax = pl.subplots(figsize=(8, 8))
 
     # x-axis for plot
     phase_min = np.min(orbital_phase)
