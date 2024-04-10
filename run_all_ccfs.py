@@ -1797,7 +1797,7 @@ def run_one_ccf(species_label, vmr, arm, observation_epoch, template_wave, templ
         None
     """
     
-    niter = 1
+    niter = 3
     n_systematics = np.array(get_sysrem_parameters(arm, observation_epoch, species_label))
     ckms = 2.9979e5
 
@@ -2210,7 +2210,7 @@ def multiSpeciesCCF(planet_name, temperature_profile, species_vmr_dict, do_injec
 # example usage
 # multiSpeciesCCF('KELT-20b', 'inverted-transmission-better', {'Fe I' : 5.39e-05, 'Fe II' : 5.39e-05, 'Ni I' :  2.676e-06, 'V I' :  5.623e-09, 'Ca I' :  2.101e-08, 'Co I' : 1.669e-07, 'Mn I' : 2.350e-07, 'Na I' : 2.937e-06, 'H I' : 2.646e-04}, False, True, True, 'ccf')
 
-def combinedWindCharacteristics(planet_name, temperature_profile, species_dict, do_inject_model, do_run_all, do_make_new_model, method, p0_gaussian):
+def combinedWindCharacteristics(planet_name, temperature_profile, species_dict, do_inject_model, do_run_all, do_make_new_model, method, p0_gaussian, snr_coloring=True):
     """
     Calculate and plot the combined wind characteristics for different species.
 
@@ -2280,63 +2280,97 @@ def combinedWindCharacteristics(planet_name, temperature_profile, species_dict, 
 
         all_amps.append(amps[selected_idx])
 
-
-    # Normalize all_amps for color mapping
-    norm = colors.Normalize(vmin=np.min(all_amps), vmax=np.max(all_amps))
-    scalar_map = cm.ScalarMappable(norm=norm, cmap=cm.viridis)
-
     # Initialize the figure
-    fig, ax = pl.subplots(figsize=(8, 8))
+        fig, ax = pl.subplots(figsize=(8, 8))
 
-    # x-axis for plot
-    phase_min = np.min(orbital_phase)
-    phase_max = np.max(orbital_phase)
-    phase_array = np.linspace(phase_min, phase_max, np.shape(centers)[0])
+        # x-axis for plot
+        phase_min = np.min(orbital_phase)
+        phase_max = np.max(orbital_phase)
+        phase_array = np.linspace(phase_min, phase_max, np.shape(centers)[0])
 
-    # Plotting for each species
-    for species, species_data in wind_chars.items():
-        # Access the 'combined' data
-        combined_data = species_data['combined']['combined']
+    if snr_coloring:
+        # Assuming 'all_amps' is a flattened list of all amplitude values across all species and observations
+        # Normalize the amplitude values to get a continuous range of colors
+        norm = colors.Normalize(vmin=min(all_amps), vmax=max(all_amps))
+        scalar_map = cm.ScalarMappable(norm=norm, cmap=cm.viridis)
 
-        # Use 'combined' data for plotting
-        color_val = scalar_map.to_rgba(combined_data['amps'][selected_idx])
-        ax.plot(phase_array, combined_data['centers'], 'o', label=f'{species} (Combined)', color=color_val)
-        ax.fill_between(phase_array, combined_data['centers'] - combined_data['centers_err'], combined_data['centers'] + combined_data['centers_err'], color=color_val, alpha=0.2)
+        # Plotting for each species
+        for species, species_data in wind_chars.items():
+            combined_data = species_data['combined']['combined']
+            
+            # Iterate over each point, applying a color based on its amplitude
+            for i in range(len(phase_array)):
+                point_amp = combined_data['amps'][i]
+                color_val = scalar_map.to_rgba(point_amp)
+                
+                # Plotting the point with its unique color
+                ax.plot(phase_array[i], combined_data['centers'][i], 'o', color=color_val, markeredgecolor='k', markersize=5)  # 'k' for black edge
+                ax.fill_between(phase_array[i:i+2], combined_data['centers'][i] - combined_data['centers_err'][i], combined_data['centers'][i] + combined_data['centers_err'][i], color=color_val, alpha=0.2)
 
-        # Plotting for individual observation epochs and arms
-        for observation_epoch, epoch_data in species_data.items():
-            if observation_epoch != 'combined':
-                for arm, arm_data in epoch_data.items():
-                    ax.plot(phase_array, arm_data['centers'], 'o', label=f'{species} ({observation_epoch} - {arm})', color=color_val)
-                    ax.fill_between(phase_array, arm_data['centers'] - arm_data['centers_err'], arm_data['centers'] + arm_data['centers_err'], color=color_val, alpha=0.2)
+            # Additional plotting for individual observation epochs and arms, if necessary
 
+        # Create a color bar
+        cbar = pl.colorbar(scalar_map, ax=ax)
+        cbar.set_label('SNR')
 
-    # Labeling and finalizing the plot
-    ax.set_xlabel('Orbital Phase')
-    ax.set_ylabel('$V_{sys}$ (km/s)')
-    ax.set_title('Planet-frame Doppler Shift vs. Orbital Phase by species')
+        # After this, the rest of your plotting code remains the same
 
-    # Create a color bar
-    cbar = pl.colorbar(scalar_map, ax=ax)
-    cbar.set_label('SNR')
-
-    # After populating all_amps and species labels
-    amps_and_labels = list(zip(wind_chars.keys(), all_amps))
-
-    # Create custom lines for legend
-    custom_lines = [pl.Line2D([0], [0], color=scalar_map.to_rgba(amp), lw=4) for _, amp in amps_and_labels]
-
-    # Create the legend
-    ax.legend(custom_lines, [f'{species}: {amp:.2f}' for species, amp in amps_and_labels])
-
-    # Save the plot
-    plotname_combined = path_modifier_plots + 'plots/' + planet_name + '.' + temperature_profile + '.CombinedWindCharacteristics_Combined.pdf'   
-    fig.savefig(plotname_combined, dpi=300, bbox_inches='tight')
-    # Save the plot for each arm
-    for arm in ['blue', 'red']:
-        plotname_arm = path_modifier_plots + 'plots/' + planet_name + '.' + temperature_profile + f'.CombinedWindCharacteristics_{arm}.pdf'
-        fig.savefig(plotname_arm, dpi=300, bbox_inches='tight')
+        norm = colors.Normalize(vmin=np.min(all_amps), vmax=np.max(all_amps))
+        scalar_map = cm.ScalarMappable(norm=norm, cmap=cm.viridis)
 
 
-# example usage
-# combinedWindCharacteristics('KELT-20b', 'inverted-transmission-better', {'Fe I' : 5.39e-05, 'Fe II' : 5.39e-05, 'Ni I' :  2.676e-06, 'V I' :  5.623e-09, 'Ca I' :  2.101e-08, 'Co I' : 1.669e-07, 'Mn I' : 2.350e-07, 'Na I' : 2.937e-06, 'H I' : 2.646e-04}, False, True, True, 'ccf')
+        # After populating all_amps and species labels
+        amps_and_labels = list(zip(wind_chars.keys(), all_amps))
+
+        # Create custom lines for legend
+        custom_lines = [pl.Line2D([0], [0], color=scalar_map.to_rgba(amp), lw=4) for _, amp in amps_and_labels]
+
+        # Create the legend
+        ax.legend(custom_lines, [f'{species}: {amp:.2f}' for species, amp in amps_and_labels])
+
+        # Save the plot
+        plotname_combined = path_modifier_plots + 'plots/' + planet_name + '.' + temperature_profile + '.CombinedWindCharacteristics_Combined.pdf'   
+        fig.savefig(plotname_combined, dpi=300, bbox_inches='tight')
+        # Save the plot for each arm
+        for arm in ['blue', 'red']:
+            plotname_arm = path_modifier_plots + 'plots/' + planet_name + '.' + temperature_profile + f'.CombinedWindCharacteristics_{arm}.pdf'
+            fig.savefig(plotname_arm, dpi=300, bbox_inches='tight')
+     
+    else:
+        # Set up a color cycle using a matplotlib colormap
+        num_species = len(wind_chars)
+        color_map = pl.cm.get_cmap('nipy_spectral', num_species)  # Choosing a colormap with sufficient distinct colors
+        
+        species_colors = {species: color_map(i) for i, species in enumerate(wind_chars.keys())}
+        
+        # Plotting for each species with assigned color
+        for species, species_data in enumerate(wind_chars.items()):
+            # Access the 'combined' data
+            combined_data = species_data['combined']['combined']
+            species_color = species_colors[species]
+
+            # Use the assigned color for plotting
+            ax.plot(phase_array, combined_data['centers'], 'o', label=f'{species} (Combined)', color=species_color)
+            ax.fill_between(phase_array, combined_data['centers'] - combined_data['centers_err'], combined_data['centers'] + combined_data['centers_err'], color=species_color, alpha=0.2)
+
+            # Plotting for individual observation epochs and arms
+            for observation_epoch, epoch_data in species_data.items():
+                if observation_epoch != 'combined':
+                    for arm, arm_data in epoch_data.items():
+                        ax.plot(phase_array, arm_data['centers'], 'o', label=f'{species} ({observation_epoch} - {arm})', color=species_color)
+                        ax.fill_between(phase_array, arm_data['centers'] - arm_data['centers_err'], arm_data['centers'] + arm_data['centers_err'], color=species_color, alpha=0.2)
+
+        # Create custom lines for the legend to match the species' colors
+        custom_lines = [pl.Line2D([0], [0], color=species_colors[species], lw=4) for species in wind_chars.keys()]
+
+        # Create the legend
+        ax.legend(custom_lines, [f'{species}' for species in wind_chars.keys()])
+
+        # Save the plot
+        plotname_combined = path_modifier_plots + 'plots/' + planet_name + '.' + temperature_profile + '.CombinedWindCharacteristics_Combined.pdf'   
+        fig.savefig(plotname_combined, dpi=300, bbox_inches='tight')
+
+        # Save the plot for each arm
+        for arm in ['blue', 'red']:
+            plotname_arm = path_modifier_plots + 'plots/' + planet_name + '.' + temperature_profile + f'.CombinedWindCharacteristics_{arm}.pdf'
+            fig.savefig(plotname_arm, dpi=300, bbox_inches='tight')
