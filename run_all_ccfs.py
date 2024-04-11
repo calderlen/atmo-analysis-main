@@ -7,6 +7,7 @@ matplotlib.use('Agg') # setting the backend of matplotlib for compatability with
 import matplotlib.pyplot as pl
 import matplotlib.gridspec as gridspec
 from matplotlib import cm, colors
+from matplotlib import patheffects
 
 from glob import glob
 from astropy.io import fits
@@ -1317,31 +1318,6 @@ def gaussian(x, a, mu, sigma):
     '''
     return a * np.exp(-(x - mu)**2 / (2 * sigma**2))
 
-# currently unused, consider removing
-def multi_gaussian(x, *params):
-    """Fit multiple Gaussians.
-    
-    Inputs:
-    x: x values
-    a: amplitude
-    mu: mean
-    sigma: standard deviation
-
-    Output:
-    Gaussian function
-
-    
-    Params should contain tuples of (a, mu, sigma) for each Gaussian.
-    For example, for two Gaussians, params should be (a1, mu1, sigma1, a2, mu2, sigma2).
-    """
-    y = np.zeros_like(x)
-    for i in range(0, len(params), 3):
-        a = params[i]
-        mu = params[i+1]
-        sigma = params[i+2]
-        y = y + a * np.exp(-(x - mu)**2 / (2 * sigma**2))
-    return y
-
 def gaussian_fit(Kp, Kp_true, drv, species_label, planet_name, observation_epoch, arm, species_name_ccf, model_tag, plotsnr, p0_gaussian):
     """
     Fits a Gaussian to the 1D slice during transit and generates plots.
@@ -1433,7 +1409,6 @@ def gaussian_fit(Kp, Kp_true, drv, species_label, planet_name, observation_epoch
     drv_restricted = drv[mask]
     plotsnr_restricted = plotsnr[selected_idx, mask]
     
-    plotsnr
     # Main Plot (ax1)
     ax1.plot(drv_restricted, plotsnr_restricted, 'k--', label='data', markersize=2)
     ax1.plot(drv_restricted, gaussian(drv_restricted, *popt_selected), 'r-', label='fit')
@@ -1446,15 +1421,15 @@ def gaussian_fit(Kp, Kp_true, drv, species_label, planet_name, observation_epoch
     # Annotating the arm and species on the plot
     
     # Additional text information for the main plot
-    params_str = f"Peak (a): {popt_selected[0]:.2f}\nMean (mu): {popt_selected[1]:.2f}\nSigma: {popt_selected[2]:.2f}\nKp: {Kp[selected_idx]:.0f}"
-    ax1.text(0.01, 0.95, params_str, transform=ax1.transAxes, verticalalignment='top', fontsize=10)
+    #params_str = f"Peak (a): {popt_selected[0]:.2f}\nMean (mu): {popt_selected[1]:.2f}\nSigma: {popt_selected[2]:.2f}\nKp: {Kp[selected_idx]:.0f}"
+    #ax1.text(0.01, 0.95, params_str, transform=ax1.transAxes, verticalalignment='top', fontsize=10)
 
     arm_species_text = f'Arm: {arm}'
     ax1.text(0.15, 0.95, arm_species_text, transform=ax1.transAxes, verticalalignment='top', fontsize=10)
     
     # Vertical line for the Gaussian peak center
     ax1.axvline(x=centers[selected_idx], color='b', linestyle='-', label='Center')
-    ax1.set_title('1D CCF Slice + Gaussian Fit')
+    #ax1.set_title('1D CCF Slice + Gaussian Fit')
 
     # Vertical lines for sigma width (center ± sigma)
     #sigma_left = centers[selected_idx] - sigmas[selected_idx]
@@ -1462,7 +1437,7 @@ def gaussian_fit(Kp, Kp_true, drv, species_label, planet_name, observation_epoch
     #ax1.axvline(x=sigma_left, color='purple', linestyle='--', label='- Sigma')
     #ax1.axvline(x=sigma_right, color='purple', linestyle='--', label='+ Sigma')
 
-    ax1.legend()
+    #ax1.legend()
 
     # Add the horizontal line at 4 SNR
     ax1.axhline(y=4, color='g', linestyle='--', label=r'4 $\sigma$')    
@@ -1518,10 +1493,10 @@ def gaussian_fit(Kp, Kp_true, drv, species_label, planet_name, observation_epoch
     #handles2, labels2 = ax2.get_legend_handles_labels()
     #handles = handles1 + handles2
     #labels = labels1 + labels2
-    ax1.legend(handles1, labels1, loc='upper right')
+    #ax1.legend(handles1, labels1, loc='upper right')
 
     # ax1.set_title('Vsys and Sigma vs. Orbital Phase')
-    ax1.set_title('Vsys vs. Orbital Phase')
+    #ax1.set_title('Vsys vs. Orbital Phase')
 
     ax1.text(0.05, 0.99, species_label, transform=ax1.transAxes, verticalalignment='top', horizontalalignment='left', fontsize=12)
     ax1.text(0.15, 0.99, f'Arm: {arm}', transform=ax1.transAxes, verticalalignment='top', fontsize=10)
@@ -2124,14 +2099,16 @@ def run_all_ccfs(planet_name, temperature_profile, species_label, vmr, do_inject
     
     return amps, amps_err, centers, centers_err, sigmas, sigmas_err, selected_idx, orbital_phase, fit_params, observation_epochs
 
-def multiSpeciesCCF(planet_name, temperature_profile, species_vmr_dict, do_inject_model, do_run_all, do_make_new_model, method, p0_gaussian):
+def multiSpeciesCCF(planet_name, temperature_profile, species_dict, do_inject_model, do_run_all, do_make_new_model, method):
     """
-    Runs all cross-correlation functions (CCFs) for a given planet, temperature profile, and all species labels and VMRs given in dict.
+    Runs all cross-correlation functions (CCFs) for a given planet, temperature profile, and all species labels with their
+    respective VMRs and p0_gaussian values given in the species_dict.
 
     Args:
         planet_name (str): The name of the planet.
         temperature_profile (str): The temperature profile.
-        species_vmr_dict (dict): A dictionary containing species labels as keys and VMRs (Volume Mixing Ratios) as values.
+        species_dict (dict): A dictionary where each key is a species label and its value is another dictionary
+                             containing 'vmr' and 'p0_gaussian' for the species.
         do_inject_model (bool): Flag indicating whether to inject a model.
         do_run_all (bool): Flag indicating whether to run all CCFs.
         do_make_new_model (bool): Flag indicating whether to make a new model.
@@ -2144,12 +2121,12 @@ def multiSpeciesCCF(planet_name, temperature_profile, species_vmr_dict, do_injec
     ccf_arrays = {}
     ccf_params = {}
 
-    for species_label, vmr in species_vmr_dict.items():
-        amps, amps_err, centers, centers_err, sigmas, sigmas_err, selected_idx, orbital_phase, fit_params, observation_epochs = run_all_ccfs(planet_name, temperature_profile, species_label, vmr, do_inject_model, do_run_all, do_make_new_model, method, p0_gaussian=p0_gaussian)
+    for species_label, params in species_dict.items():
+        vmr = params.get('vmr')
+        p0_gaussian = params.get('p0_gaussian')
+        amps, amps_err, centers, centers_err, sigmas, sigmas_err, selected_idx, orbital_phase, fit_params, observation_epochs = run_all_ccfs(
+            planet_name, temperature_profile, species_label, vmr, do_inject_model, do_run_all, do_make_new_model, method, p0_gaussian=p0_gaussian)
         
-        # ############################################################################################################################################################################################
-        # This will do for now, but later on I need to pare down the outputs of run_all_ccfs to fit_params and change how the outputs are processed in multiSpeciesCCF and combinedWindCharacteristics
-
         # Store the results in the dictionary with species_label as the key
         ccf_arrays[species_label] = {
             'amps': amps,
@@ -2160,8 +2137,6 @@ def multiSpeciesCCF(planet_name, temperature_profile, species_vmr_dict, do_injec
             'sigmas_err': sigmas_err
         }
 
-        # ############################################################################################################################################################################################
-        # This will do for now, but later on I need to pare down the outputs of run_all_ccfs to fit_params and change how the outputs are processed in multiSpeciesCCF and combinedWindCharacteristics
         ccf_params[species_label] = {
             'amps': amps[selected_idx],
             'amps_err': amps_err[selected_idx],
@@ -2210,18 +2185,19 @@ def multiSpeciesCCF(planet_name, temperature_profile, species_vmr_dict, do_injec
 # example usage
 # multiSpeciesCCF('KELT-20b', 'inverted-transmission-better', {'Fe I' : 5.39e-05, 'Fe II' : 5.39e-05, 'Ni I' :  2.676e-06, 'V I' :  5.623e-09, 'Ca I' :  2.101e-08, 'Co I' : 1.669e-07, 'Mn I' : 2.350e-07, 'Na I' : 2.937e-06, 'H I' : 2.646e-04}, False, True, True, 'ccf')
 
-def combinedWindCharacteristics(planet_name, temperature_profile, species_dict, do_inject_model, do_run_all, do_make_new_model, method, p0_gaussian, snr_coloring=True):
+def combinedWindCharacteristics(planet_name, temperature_profile, species_dict, do_inject_model, do_run_all, do_make_new_model, method, snr_coloring=True):
     """
     Calculate and plot the combined wind characteristics for different species.
 
     Parameters:
     planet_name (str): The name of the planet.
     temperature_profile (str): The temperature profile.
-    species_dict (dict): A dictionary containing species labels and their corresponding volume mixing ratios.
+    species_dict (dict): A dictionary containing species labels and their corresponding parameters.
     do_inject_model (bool): Flag indicating whether to inject a model.
     do_run_all (bool): Flag indicating whether to run all calculations.
     do_make_new_model (bool): Flag indicating whether to make a new model.
     method (str): The method to use for calculations.
+    snr_coloring (bool): If True, color points by SNR.
 
     Returns:
     None
@@ -2232,7 +2208,9 @@ def combinedWindCharacteristics(planet_name, temperature_profile, species_dict, 
     all_amps = []
 
     # Loop through each species
-    for species_label, vmr in species_dict.items():
+    for species_label, params in species_dict.items():
+        vmr = params['vmr']
+        p0_gaussian = params['p0_gaussian']
         amps, amps_err, centers, centers_err, sigmas, sigmas_err, selected_idx, orbital_phase, fit_params, observation_epochs = run_all_ccfs(planet_name, temperature_profile, species_label, vmr, do_inject_model, do_run_all, do_make_new_model, method, p0_gaussian=p0_gaussian)
 
         # Initialize 'combined' key for each species
@@ -2289,53 +2267,39 @@ def combinedWindCharacteristics(planet_name, temperature_profile, species_dict, 
         phase_array = np.linspace(phase_min, phase_max, np.shape(centers)[0])
 
     if snr_coloring:
-        # Assuming 'all_amps' is a flattened list of all amplitude values across all species and observations
         # Normalize the amplitude values to get a continuous range of colors
         norm = colors.Normalize(vmin=min(all_amps), vmax=max(all_amps))
-        scalar_map = cm.ScalarMappable(norm=norm, cmap=cm.viridis)
+        scalar_map = cm.ScalarMappable(norm=norm, cmap=cm.magma)  # Using the 'plasma' colormap
 
         # Plotting for each species
         for species, species_data in wind_chars.items():
             combined_data = species_data['combined']['combined']
             
+            # Generate a color for each data point based on its amplitude
+            colors_array = [scalar_map.to_rgba(amp) for amp in combined_data['amps']]
+
             # Iterate over each point, applying a color based on its amplitude
             for i in range(len(phase_array)):
-                point_amp = combined_data['amps'][i]
-                color_val = scalar_map.to_rgba(point_amp)
+                color_val = colors_array[i]
                 
-                # Plotting the point with its unique color
-                ax.plot(phase_array[i], combined_data['centers'][i], 'o', color=color_val, markeredgecolor='k', markersize=5)  # 'k' for black edge
-                ax.fill_between(phase_array[i:i+2], combined_data['centers'][i] - combined_data['centers_err'][i], combined_data['centers'][i] + combined_data['centers_err'][i], color=color_val, alpha=0.2)
+                # Plotting the point with the same color for fill and edge
+                ax.plot(phase_array[i], combined_data['centers'][i], 'o', color=color_val, markeredgecolor=color_val, markersize=5)
 
-            # Additional plotting for individual observation epochs and arms, if necessary
+            # Creating a gradient fill
+            for i in range(len(phase_array) - 1):
+                ax.fill_betweenx([combined_data['centers'][i] - combined_data['centers_err'][i], combined_data['centers'][i] + combined_data['centers_err'][i]], phase_array[i], phase_array[i + 1], color=colors_array[i], alpha=0.5)
+
+            # Labeling the species at the beginning of the curve with offset and style
+            start_phase = phase_array[0] - 0.05 * (phase_max - phase_min)  # Adjusting horizontal offset
+            start_center = combined_data['centers'][0]
+            ax.text(start_phase, start_center, species, color='red', fontsize=12, 
+                    path_effects=[patheffects.withStroke(linewidth=3, foreground='black')],
+                    ha='right', va='center')
 
         # Create a color bar
         cbar = pl.colorbar(scalar_map, ax=ax)
         cbar.set_label('SNR')
 
-        # After this, the rest of your plotting code remains the same
-
-        norm = colors.Normalize(vmin=np.min(all_amps), vmax=np.max(all_amps))
-        scalar_map = cm.ScalarMappable(norm=norm, cmap=cm.viridis)
-
-
-        # After populating all_amps and species labels
-        amps_and_labels = list(zip(wind_chars.keys(), all_amps))
-
-        # Create custom lines for legend
-        custom_lines = [pl.Line2D([0], [0], color=scalar_map.to_rgba(amp), lw=4) for _, amp in amps_and_labels]
-
-        # Create the legend
-        ax.legend(custom_lines, [f'{species}: {amp:.2f}' for species, amp in amps_and_labels])
-
-        # Save the plot
-        plotname_combined = path_modifier_plots + 'plots/' + planet_name + '.' + temperature_profile + '.CombinedWindCharacteristics_Combined.pdf'   
-        fig.savefig(plotname_combined, dpi=300, bbox_inches='tight')
-        # Save the plot for each arm
-        for arm in ['blue', 'red']:
-            plotname_arm = path_modifier_plots + 'plots/' + planet_name + '.' + temperature_profile + f'.CombinedWindCharacteristics_{arm}.pdf'
-            fig.savefig(plotname_arm, dpi=300, bbox_inches='tight')
-     
     else:
         # Set up a color cycle using a matplotlib colormap
         num_species = len(wind_chars)
@@ -2366,11 +2330,11 @@ def combinedWindCharacteristics(planet_name, temperature_profile, species_dict, 
         # Create the legend
         ax.legend(custom_lines, [f'{species}' for species in wind_chars.keys()])
 
-        # Save the plot
-        plotname_combined = path_modifier_plots + 'plots/' + planet_name + '.' + temperature_profile + '.CombinedWindCharacteristics_Combined.pdf'   
-        fig.savefig(plotname_combined, dpi=300, bbox_inches='tight')
+    # Save the plot
+    plotname_combined = path_modifier_plots + 'plots/' + planet_name + '.' + temperature_profile + '.CombinedWindCharacteristics_Combined.pdf'   
+    fig.savefig(plotname_combined, dpi=300, bbox_inches='tight')
 
-        # Save the plot for each arm
-        for arm in ['blue', 'red']:
-            plotname_arm = path_modifier_plots + 'plots/' + planet_name + '.' + temperature_profile + f'.CombinedWindCharacteristics_{arm}.pdf'
-            fig.savefig(plotname_arm, dpi=300, bbox_inches='tight')
+    # Save the plot for each arm
+    for arm in ['blue', 'red']:
+        plotname_arm = path_modifier_plots + 'plots/' + planet_name + '.' + temperature_profile + f'.CombinedWindCharacteristics_{arm}.pdf'
+        fig.savefig(plotname_arm, dpi=300, bbox_inches='tight')
