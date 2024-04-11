@@ -1444,7 +1444,7 @@ def gaussian_fit(Kp, Kp_true, drv, species_label, planet_name, observation_epoch
 
     # Inset for residuals (ax2)
     ax2.plot(drv_restricted, residual_restricted, 'o-', markersize=1)
-    ax2.set_xlabel('Velocity (km/s)')
+    ax2.set_xlabel('$v_{sys}$ (km/s)')
     ax2.set_ylabel('Residuals')
     
     # Consider a clearer naming scheme
@@ -1479,7 +1479,7 @@ def gaussian_fit(Kp, Kp_true, drv, species_label, planet_name, observation_epoch
     ax1.plot(phase_array, centers, 'o', label='Center')
     ax1.fill_between(phase_array, centers - centers_err, centers + centers_err, color='blue', alpha=0.2)
     ax1.set_xlabel('Orbital Phase')
-    ax1.set_ylabel('Vsys', color='b')
+    ax1.set_ylabel('v_{sys}$ (km/s)', color='b')
     ax1.tick_params(axis='y', labelcolor='b')
 
     # Plotting Sigma on secondary axis
@@ -1772,7 +1772,7 @@ def run_one_ccf(species_label, vmr, arm, observation_epoch, template_wave, templ
         None
     """
     
-    niter = 3
+    niter = 0
     n_systematics = np.array(get_sysrem_parameters(arm, observation_epoch, species_label))
     ckms = 2.9979e5
 
@@ -2029,7 +2029,7 @@ def run_all_ccfs(planet_name, temperature_profile, species_label, vmr, do_inject
             
     species_name_inject, species_name_ccf = get_species_keys(species_label)
 
-    file_out = path_modifier_plots + 'logs/'+ planet_name + '.' + species_name_ccf + model_tag + '.log' #edited for my own machine
+    file_out = path_modifier_plots + 'logs/'+ planet_name + '.' + species_name_ccf + model_tag + '.log'
     f = open(file_out,'w')
 
     f.write('Log file for ' + planet_name + ' for ' + species_name_ccf + ' \n')
@@ -2168,7 +2168,7 @@ def multiSpeciesCCF(planet_name, temperature_profile, species_dict, do_inject_mo
         patch.set_facecolor(color)
 
     ax.set_yticklabels(species_labels)
-    ax.set_xlabel('$V_{sys}$ (km/s)')      #Vsys
+    ax.set_xlabel('$v_{sys}$ (km/s)')      #Vsys
     ax.set_ylabel('Species')
     ax.set_title('Variation in $V_{sys}$ for each species across all observations by SNR')
     
