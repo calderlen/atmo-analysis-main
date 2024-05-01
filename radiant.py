@@ -26,6 +26,7 @@ from run_all_ccfs import *
 import emcee
 import argparse
 import os
+import horus
 
 from matplotlib.backends.backend_pdf import PdfPages
 
@@ -35,6 +36,12 @@ pl.rc('axes', labelsize=14) #fontsize of the x and y labels
 pl.rc('xtick', labelsize=14) #fontsize of the x tick labels
 pl.rc('ytick', labelsize=14) #fontsize of the y tick labels
 pl.rc('legend', fontsize=14) #fontsize of the legend
+
+# global varaibles defined for harcoded path to data on my computer
+path_modifier_plots = '/home/calder/Documents/atmo-analysis-main/'  #linux
+path_modifier_data = '/home/calder/Documents/petitRADTRANS_data/'   #linux
+path_modifier_plots = '/Users/calder/Documents/atmo-analysis-main/' #mac
+path_modifier_data = '/Users/calder/Documents/petitRADTRANS_data/'  #mac
 
 def get_species_keys(species_label):
 
@@ -165,6 +172,34 @@ def get_sysrem_parameters(arm, observation_epoch, species_label, planet_name):
     elif species_label == 'Fe I' and planet_name == 'KELT-9 b':
         if arm == 'red': n_systematics = [5, 5]
         if arm == 'blue': n_systematics = [6, 0]
+    if species_label == 'TiO':
+        if arm == 'red': n_systematics = [1, 1]
+        if arm == 'blue': n_systematics = [2, 0]
+    elif species_label == 'Ni I':
+        if arm == 'red': n_systematics = [2,3]
+        if arm == 'blue': n_systematics = [0,5]
+    elif species_label == 'Cr I':
+        if arm == 'red': n_systematics = [0,10]
+        if arm == 'blue': n_systematics = [0,10]
+    elif species_label == 'V I':
+        if arm == 'red': n_systematics = [2,5]
+        if arm == 'blue': n_systematics = [1,8]
+    elif species_label == 'VO':
+        if arm == 'red': n_systematics = [1, 2]
+        if arm == 'blue': n_systematics = [3, 0]
+    elif species_label == 'FeH':
+        if arm == 'red': n_systematics = [1, 0]
+        if arm == 'blue': n_systematics = [0, 5]
+    elif species_label == 'CaH':
+        if arm == 'red': n_systematics = [0, 10]
+        if arm == 'blue': n_systematics = [2, 0]
+    elif species_label == 'Na I':
+        if arm == 'red': n_systematics = [0, 10]
+        if arm == 'blue': n_systematics = [1,2]
+    elif species_label == 'Mn I':
+        if arm == 'red': n_systematics = [2,2]
+        if arm == 'blue': n_systematics = [1,1]
+     
     else:
         if arm == 'blue':
             n_systematics = [3, 0]
@@ -415,16 +450,15 @@ def get_pepsi_data(arm, observation_epoch, planet_name, do_molecfit):
         pepsi_extend = 'avr'
         
     if not do_molecfit:
-        data_location = 'data/' + observation_epoch + '_' + planet_name + '/' + arm_file + '*.dxt.' + pepsi_extend
+        data_location = path_modifier_data + 'data/' + observation_epoch + '_' + planet_name + '/' + arm_file + '*.dxt.' + pepsi_extend
     else:
-        data_location = 'data/' + observation_epoch + '_' + planet_name + '/molecfit_weak/SCIENCE_TELLURIC_CORR_' + arm_file + '*.dxt.' + pepsi_extend + '.fits'
+        data_location = path_modifier_data + 'data/' + observation_epoch + '_' + planet_name + '/molecfit_weak/SCIENCE_TELLURIC_CORR_' + arm_file + '*.dxt.' + pepsi_extend + '.fits'
     spectra_files = glob(data_location)
 
     n_spectra = len(spectra_files)
     i=0
     jd, snr_spectra, exptime = np.zeros(n_spectra), np.zeros(n_spectra), np.zeros(n_spectra)
     airmass = np.zeros(n_spectra)
-
     for spectrum in spectra_files:
 
         hdu = fits.open(spectrum)
@@ -517,9 +551,6 @@ def get_pepsi_data(arm, observation_epoch, planet_name, do_molecfit):
 
         wave[i,:] *= doppler_shift
 
-            
-        
-        
         jd[i] = header['JD-OBS']
             
         try:
@@ -534,14 +565,9 @@ def get_pepsi_data(arm, observation_epoch, planet_name, do_molecfit):
             exptime[i] = header['EXPTIME']
         airmass[i] = header['AIRMASS']
 
-        
-            
-        
-    
-    
         hdu.close()
         i+=1
-    
+
     #glob gets the files out of order for some reason so we have to put them in time order
     obs_order = np.argsort(jd)
 
@@ -552,7 +578,7 @@ def get_pepsi_data(arm, observation_epoch, planet_name, do_molecfit):
     wave, fluxin, errorin = wave[obs_order,:], fluxin[obs_order,:], errorin[obs_order,:]
 
     #protect against single missing pixels at the end:
-    npixmin = np.int(npixmin)
+    npixmin = int(npixmin)
     if npixmin < npix:
         wave, fluxin, errorin = wave[:,:npixmin], fluxin[:,:npixmin], errorin[:,:npixmin]
         npix = npixmin
@@ -1158,8 +1184,6 @@ def combine_ccfs_binned(drv, cross_cor, sigma_cross_cor, orbital_phase, n_spectr
 
     rvs, widths, rverrors, widtherrors = np.zeros(nphase), np.zeros(nphase), np.zeros(nphase), np.zeros(nphase)
 
-    #breakpoint()
-
     drvfit = drv[good]
     ccffit = binned_ccfs[:,good]
     sigmafit = sigma_shifted_ccfs[:,good]
@@ -1209,8 +1233,6 @@ def combine_ccfs_binned(drv, cross_cor, sigma_cross_cor, orbital_phase, n_spectr
     secax.set_ylabel('orbital phase (degrees)')
     pl.savefig('plots/'+planet_name+'.'+species_name_ccf+'.phase-binned+RVs.pdf', format='pdf')
     pl.clf()
-
-    breakpoint()
 
     return(binned_ccfs)
         
@@ -1276,44 +1298,47 @@ def gaussian_fit(Kp, Kp_true, drv, species_label, planet_name, observation_epoch
     """
   
     # Fitting a Gaussian to the 1D slice during transit
-    mask = (drv >= -25) & (drv <= 25)
+    mask = np.abs(drv) < 25
     # Initializing lists to store fit parameters
     amps = []
-    amps_err = []
-    centers = []
-    centers_err = []
-    sigmas = []
-    sigmas_err = []
+    amps_error = []
+    rv = []
+    rv_error = []
+    width = []
+    width_error = []
 
     Kp_slices = []
     Kp_slice_peak = []
 
     residuals = []
     chi2_red = []
+    
 
     # Fitting gaussian to all 1D Kp slices
     for i in range(plotsnr.shape[0]):
         current_slice = plotsnr[i,:]
+        current_slice_errors = sigmafit[i,:]
+        peak = np.argmax(current_slice)
         Kp_slices.append(current_slice)
         Kp_slice_peak.append(np.max(current_slice[80:121]))
 
-        popt, pcov = curve_fit(gaussian, drv, current_slice, p0=p0_gaussian)
 
-        amps.append(popt[0])
-        centers.append(popt[1])
-        sigmas.append(popt[2])
+        popt, pcov = curve_fit(gaussian, drv, current_slice, p0=[current_slice[peak], drv[peak], 2.5], sigma = current_slice_errors)
+        amps[i] = popt[0]
+        rv[i] = popt[1]
+        width[i] = popt[2]
 
         # Storing errors (standard deviations)
-        amps_err.append(np.sqrt(pcov[0, 0]))
-        centers_err.append(np.sqrt(pcov[1, 1]))
-        sigmas_err.append(np.sqrt(pcov[2, 2]))
+        amps_error[i] = np.sqrt(pcov[0, 0])
+        rv_error[i] = np.sqrt(pcov[1,1])
+        width_error[i] = np.sqrt(pcov[2,2])
 
     amps = np.array(amps)
-    amps_err = np.array(amps_err)
-    centers = np.array(centers)
-    centers_err = np.array(centers_err)
-    sigmas = np.array(sigmas) 
-    sigmas_err = np.array(sigmas_err)
+    amps_error = np.array(amps_error)
+    rv = np.array(rv)
+    rv_error = np.array(rv_error)
+    width = np.array(width) 
+    width_error = np.array(width_error)
 
     Kp_slices = np.array(Kp_slices)
     Kp_slice_peak = np.array(Kp_slice_peak)
@@ -1326,8 +1351,8 @@ def gaussian_fit(Kp, Kp_true, drv, species_label, planet_name, observation_epoch
     selected_idx = np.argmax(Kp_slice_peak)                       #Kp slice corresponding to max SNR -- this is the one I've selected for now
     
     # Fitting a Gaussian to the selected slice
-    popt_selected = [amps[selected_idx], centers[selected_idx], sigmas[selected_idx]]
-    print('Selected SNR:', amps[selected_idx], '\n Selected Vsys:', centers[selected_idx], '\n Selected sigma:', sigmas[selected_idx], '\n Selected Kp:', Kp[selected_idx])
+    popt_selected = [amps[selected_idx], rv[selected_idx], width[selected_idx]]
+    print('Selected SNR:', amps[selected_idx], '\n Selected Vsys:', rv[selected_idx], '\n Selected sigma:', width[selected_idx], '\n Selected Kp:', Kp[selected_idx])
 
     # Computing residuals and chi-squared for selected slice
     residual = plotsnr[selected_idx, :] - gaussian(drv, *popt_selected)
@@ -1365,12 +1390,12 @@ def gaussian_fit(Kp, Kp_true, drv, species_label, planet_name, observation_epoch
     ax1.text(0.15, 0.95, arm_species_text, transform=ax1.transAxes, verticalalignment='top', fontsize=10)
     
     # Vertical line for the Gaussian peak center
-    ax1.axvline(x=centers[selected_idx], color='b', linestyle='-', label='Center')
+    ax1.axvline(x=rv[selected_idx], color='b', linestyle='-', label='Center')
     #ax1.set_title('1D CCF Slice + Gaussian Fit')
 
     # Vertical lines for sigma width (center ± sigma)
-    #sigma_left = centers[selected_idx] - sigmas[selected_idx]
-    #sigma_right = centers[selected_idx] + sigmas[selected_idx]
+    #sigma_left = rv[selected_idx] - width[selected_idx]
+    #sigma_right = rv[selected_idx] + width[selected_idx]
     #ax1.axvline(x=sigma_left, color='purple', linestyle='--', label='- Sigma')
     #ax1.axvline(x=sigma_right, color='purple', linestyle='--', label='+ Sigma')
 
@@ -1402,22 +1427,22 @@ def gaussian_fit(Kp, Kp_true, drv, species_label, planet_name, observation_epoch
 
     phase_min = np.min(orbital_phase)
     phase_max = np.max(orbital_phase)
-    phase_array = np.linspace(phase_min, phase_max, np.shape(centers)[0])
+    phase_array = np.linspace(phase_min, phase_max, np.shape(rv)[0])
 
     fig, ax1 = pl.subplots(figsize=(8,8))
 
     ax1.text(0.05, 0.99, species_label, transform=ax1.transAxes, verticalalignment='top', horizontalalignment='left', fontsize=12)
 
     # Plotting Vsys
-    ax1.plot(phase_array, centers, 'o', label='Center')
-    ax1.fill_between(phase_array, centers - centers_err, centers + centers_err, color='blue', alpha=0.2)
+    ax1.plot(phase_array, rv, 'o', label='Center')
+    ax1.fill_between(phase_array, rv - rv_error, rv + rv_error, color='blue', alpha=0.2)
     ax1.set_xlabel('Orbital Phase')
     ax1.set_ylabel('v_{sys}$ (km/s)', color='b')
     ax1.tick_params(axis='y', labelcolor='b')
 
     # Plotting Sigma on secondary axis
     #ax2 = ax1.twinx()
-    #ax2.plot(phase_array, sigmas, 'r-', label='Sigma')
+    #ax2.plot(phase_array, width, 'r-', label='Sigma')
     #ax2.set_ylabel('Sigma', color='r')
     #ax2.tick_params(axis='y', labelcolor='r')
 
@@ -1438,7 +1463,7 @@ def gaussian_fit(Kp, Kp_true, drv, species_label, planet_name, observation_epoch
     wind_chars = path_modifier_plots + 'plots/' + planet_name + '.' + observation_epoch + '.' + arm + '.' + species_name_ccf + model_tag + '.Wind-characteristics.pdf'
     fig.savefig(wind_chars, dpi=300, bbox_inches='tight')
     
-    return amps, amps_err, centers, centers_err, sigmas, sigmas_err, residuals, do_molecfit, selected_idx, wind_chars
+    return amps, amps_error, rv, rv_error, width, width_error, residuals, do_molecfit, selected_idx, wind_chars
 
 def make_shifted_plot(snr, planet_name, observation_epoch, arm, species_name_ccf, model_tag, RV_abs, Kp_expected, V_sys_true, Kp_true, do_inject_model, do_combine, drv, Kp, species_label, temperature_profile, method, plotformat='pdf'):
     if method == 'ccf':
@@ -1471,7 +1496,144 @@ def make_shifted_plot(snr, planet_name, observation_epoch, arm, species_name_ccf
     plotsnr, drv = plotsnr[:, keeprv], drv[keeprv]
     keepKp = np.abs(Kp-apoints[1]) <= 100.
     plotsnr, Kp = plotsnr[keepKp, :], Kp[keepKp]
+
+    # Fit a Gaussian to the line profile for combined arms
+    #amps, amps_error, rv, rv_error, width, width_error, residuals, do_molecfit, selected_idx, wind_chars = gaussian_fit(Kp, Kp_true, drv, species_label, planet_name, observation_epoch, arm, species_name_ccf, model_tag, plotsnr
+
     psarr(plotsnr, drv, Kp, '$V_{\mathrm{sys}}$ (km/s)', '$K_p$ (km/s)', zlabel, filename=plotname, ctable=ctable, alines=True, apoints=apoints, acolor='cyan', textstr=species_label+' '+model_label, textloc = np.array([apoints[0]-75.,apoints[1]+75.]), textcolor='cyan', fileformat=plotformat)
+    #return amps, amps_error, rv, rv_error, width, width_error, selected_idx
+
+def DopplerShadowModel(vsini, 
+                        lambda_p, 
+                        drv, 
+                        planet_name, 
+                        exptime,
+                        orbital_phase,
+                        obs,
+                        inputs = {
+                                    'mode':'spec',  
+                                    'res':'medium', 
+                                    'resnum': 0,    
+                                    'onespec':'n',
+                                    'convol':'n',
+                                    'macroturb':'n',
+                                    'diffrot':'n',
+                                    'gravd':'n',
+                                    'image':'n',
+                                    'path':'y',
+                                    'amode':'a',
+                                    'emode':'simple',
+                                    'lineshifts':'y',
+                                    'starspot': False
+                                    }
+                        ):
+        """
+        Inputs: vsini - the projected rotational velocity (km/s)
+                lambda_p - the spin-orbit misalignment (degrees)
+                drv -  array containing the velocities at which the line profile will be calculated, in km/s, double check this
+                planet_name - string containing the planet name
+                exptime -  
+                oribital_phase - 
+                obs - string containing the observatory name
+                inputs - dictionary containing the optional parameters
+
+        """
+        #add translation in the function from horus for obsnam
+        #ex: if obsname = , then obsname =  pepsi/lbt
+        resolve_mapping = {
+            'keck': 50000.0,
+            'hjst': 60000.0,
+            'het': 30000.0,
+            'keck-lsi': 20000.0,
+            'subaru': 80000.0,
+            'aat': 70000.0,
+            'not': 47000.0,
+            'tres': 44000.0,
+            'harpsn': 120000.0,
+            'lbt': 120000.0,
+            'pepsi': 120000.0,
+            'igrins': 40000.0,
+            'nres': 48000.0
+        }
+
+        Resolve = resolve_mapping.get(obs, 0.0)  # Default value of 0.0 if obs is not found in the mapping
+        
+        #get planetary parameters
+        Period, epoch, M_star, RV_abs, i, M_p, R_p, RA, Dec, Kp_expected, half_duration_phase, Ks_expected = get_planet_parameters(planet_name)
+        # put into horus struc
+
+        struc = {
+                'vsini': vsini,
+                'width':3.0,    # hardcoded  
+                'gamma1':0.2, # linear limb-darkening coefficient, hardcoded
+                'gamma2':0.2, # quadratic limb-darkening coefficient, hardcoded
+                'vabsfine': drv,  # array containing the velocities at which the line profile will be calculated, in km/s, double check this
+                'obs': obs,   # name of an observatory or spectrograph
+                'sysname':'test',   # hardcoded
+                'lineshifts':'y',   # hardcoded
+
+                # Required for Doppler tomographic model
+                'Pd':Period.n,    # Planetary orbital period (days)
+                'lambda':lambda_p,  # spin-orbit misalignment (deg)
+                'b':0.503,       # transit impact parameter, hardcoded
+                'rplanet': 0.11440, # the Rp/Rstar value for the transit. hardcoded
+                't':orbital_phase * Period.n * 24*60 
+                , # minutes since center of transit
+                'times': np.float64(exptime) * 1/60,    # exposure time (in minutes), array length must match 't'    
+                'a': 7.466,     # scaled semimajor axis of the orbit, a/Rstar, hardcoded?
+                'dur': half_duration_phase*2*Period.n, # duration of transit (days), optional?
+                'e': 0.0,     # 
+                'periarg': 90.0,   #  (deg)
+                # Required for macroturbulence
+                'zeta': 2.0,    # the macroturbulent velocity dispersion (km/s)
+
+                # Required for differential rotation
+                'inc': 25.0,    # the inclination of the stellar rotation axis wrt the line of sight (deg)
+                'alpha': 0.1,   # differential rotation parameter
+                
+                # Required for gravity darkening
+                #'inc':         # already used in differential rotation, comment out otherwise
+                'beta': 0.1,    # gravity darkening parameter
+                'Omega':7.27e-5,# stellar rotation rate (rad/s)
+                'logg': 4.292,  # stellar logg
+                'rstar': 1.561, # called Reqcm in docs, stellar radius (solar radii)
+                'f': 1.0    ,
+                'psi': 5.0      # doesn't say in docs to input this
+                }
+        
+
+        # call horus
+        model = horus.model(
+        struc,
+        inputs['mode'],
+        inputs['convol'],
+        inputs['gravd'],
+        inputs['res'],
+        inputs['resnum'],
+        inputs['image'],
+        inputs['onespec'],
+        inputs['diffrot'],
+        inputs['macroturb'],
+        inputs['emode'],
+        inputs['amode'],
+        inputs['path'],
+        inputs['lineshifts'],
+        inputs['starspot']
+        )
+
+        
+        # check if the below loops are even necessary
+        if inputs['mode'] == 'spec':
+            if inputs['onespec'] != 'y':
+                profarr = model['profarr']
+                basearr = model['basearr']
+                baseline = model['baseline']
+                z1 = model['z1']
+                z2 = model['z2']    
+
+        ccf_model = np.matrix(profarr-basearr)
+       
+        return ccf_model
 
 def get_peak_snr(snr, drv, Kp, do_inject_model, V_sys_true, Kp_true, RV_abs, Kp_expected, arm, observation_epoch, f, method):
 
@@ -1511,7 +1673,8 @@ def str2bool(inval):
         return False
 
 def get_species_mass(species_name):
-
+    # Add AMUs here for new species
+    
     if 'TiO' in species_name: return 47.867+15.999
     if 'Ti' in species_name: return 47.867
     if 'VO' in species_name: return 50.9415+15.999
@@ -1808,20 +1971,20 @@ def make_mocked_data(struc1, index, invals, instruc, atmosphere, pressures, lamb
         
             n_pix = len(wave)
 
-            fluxin = np.zeros((np.int(struc1['n_spectra']), n_pix)) + np.random.randn(np.int(struc1['n_spectra']), n_pix)/np.float(struc1['snr'])
-            errorin = np.zeros((np.int(struc1['n_spectra']), n_pix)) + 1./np.float(struc1['snr'])
+            fluxin = np.zeros((int(struc1['n_spectra']), n_pix)) + np.random.randn(int(struc1['n_spectra']), n_pix)/np.float(struc1['snr'])
+            errorin = np.zeros((int(struc1['n_spectra']), n_pix)) + 1./np.float(struc1['snr'])
             wavein = np.zeros_like(fluxin)
-            for i in range (0, np.int(struc1['n_spectra'])):
+            for i in range (0, int(struc1['n_spectra'])):
                 wavein[i,:] = wave
 
-            orbital_phase = np.linspace(np.float(struc1['phasemin']), np.float(struc1['phasemax']), np.int(struc1['n_spectra']))
+            orbital_phase = np.linspace(np.float(struc1['phasemin']), np.float(struc1['phasemax']), int(struc1['n_spectra']))
 
-            fluxin, Kp_true, V_sys_true = inject_model(Kp_expected, orbital_phase, wavein, fluxin, template_wave, template_flux, np.int(struc1['n_spectra']))
+            fluxin, Kp_true, V_sys_true = inject_model(Kp_expected, orbital_phase, wavein, fluxin, template_wave, template_flux, int(struc1['n_spectra']))
 
             datastruc['observation_epoch'+countstr], datastruc['arm'+countstr] = struc1['dataset0'], arm
             datastruc['wave'+countstr], datastruc['flux'+countstr], datastruc['error'+countstr] = wave, fluxin, errorin
             datastruc['orbital_phase'+countstr] = orbital_phase
-            datastruc['n_spectra'+countstr] = np.int(struc1['n_spectra'])
+            datastruc['n_spectra'+countstr] = int(struc1['n_spectra'])
 
             count+=1
 
