@@ -35,8 +35,10 @@ from create_model import create_model, instantiate_radtrans
 import horus
 
 # global varaibles defined for harcoded path to data on my computer
-path_modifier_plots = '/home/calder/Documents/atmo-analysis-main/'
-path_modifier_data = '/home/calder/Documents/petitRADTRANS_data/'
+path_modifier_plots = '/home/calder/Documents/atmo-analysis-main/'  #linux
+path_modifier_data = '/home/calder/Documents/petitRADTRANS_data/'   #linux
+path_modifier_plots = '/Users/calder/Documents/atmo-analysis-main/' #mac
+path_modifier_data = '/Users/calder/Documents/petitRADTRANS_data/'  #mac
 
 pl.rc('font', size=14) #controls default text size
 pl.rc('axes', titlesize=14) #fontsize of the title
