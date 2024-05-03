@@ -35,11 +35,13 @@ import horus
 path_modifier_plots = '/home/calder/Documents/atmo-analysis-main/'  #linux
 path_modifier_data = '/home/calder/Documents/petitRADTRANS_data/'   #linux
 path_modifier_plots = '/Users/calder/Documents/atmo-analysis-main/' #mac
-path_modifier_data = '/Users/calder/Documents/petitRADTRANS_data/'  #mac
-
+path_modifier_data = '/Volumes/sabrent/petitRADTRANS_data'  #mac
+path_modifier_data = '/Users/calder/Documents/petitRADTRANS_data/' #mac
 
 def run_one_ccf(species_label, vmr, arm, observation_epoch, template_wave, template_flux, template_wave_in, template_flux_in, planet_name, temperature_profile, do_inject_model, species_name_ccf, model_tag, f, method, do_make_new_model):
-    
+
+    species_name_inject, species_name_ccf = get_species_keys(species_label)
+
     niter = 10
     n_systematics = np.array(get_sysrem_parameters(arm, observation_epoch, species_label, planet_name))
     ckms = 2.9979e5
@@ -172,9 +174,8 @@ def run_one_ccf(species_label, vmr, arm, observation_epoch, template_wave, templ
 
     
         snr, Kp, drv, cross_cor_display = combine_ccfs(drv, cross_cor, sigma_cross_cor, orbital_phase, n_spectra, ccf_weights, half_duration_phase, temperature_profile)
-
         
-        make_shifted_plot(snr, planet_name, observation_epoch, arm, species_name_ccf, model_tag, RV_abs, Kp_expected, V_sys_true, Kp_true, do_inject_model, True, drv, Kp, species_label, temperature_profile, method)
+        plotsnr = make_shifted_plot(snr, planet_name, observation_epoch, arm, species_name_ccf, model_tag, RV_abs, Kp_expected, V_sys_true, Kp_true, do_inject_model, True, drv, Kp, species_label, temperature_profile, method)
 
         get_peak_snr(snr, drv, Kp, do_inject_model, V_sys_true, Kp_true, RV_abs, Kp_expected, arm, observation_epoch, f, method)
 
@@ -193,9 +194,19 @@ def run_one_ccf(species_label, vmr, arm, observation_epoch, template_wave, templ
         #now need to combine the likelihoods along the planet orbit
         shifted_lnL, Kp, drv = combine_likelihoods(drv, lnL, orbital_phase, n_spectra, half_duration_phase, temperature_profile)
 
-        make_shifted_plot(shifted_lnL, planet_name, observation_epoch, arm, species_name_ccf, model_tag, RV_abs, Kp_expected, V_sys_true, Kp_true, do_inject_model, True, drv, Kp, species_label, temperature_profile, method)
+        plotsnr = (shifted_lnL, planet_name, observation_epoch, arm, species_name_ccf, model_tag, RV_abs, Kp_expected, V_sys_true, Kp_true, do_inject_model, True, drv, Kp, species_label, temperature_profile, method)
 
         combine_ccfs_binned(drv, cross_cor, sigma_cross_cor, orbital_phase, n_spectra, ccf_weights, half_duration_phase, temperature_profile, Kp_true, species_name_ccf, planet_name)
+
+    #breakpoint()
+
+    goods = np.abs(drv) <= 100.
+
+    drv = drv[goods]
+    cross_cor_display = cross_cor[:,goods]
+    breakpoint()
+    amps, amps_error, rv, rv_error, width, width_error, residuals, do_molecfit, selected_idx, wind_chars = gaussian_fit(Kp, Kp_true, drv, species_label, planet_name, observation_epoch, arm, species_name_ccf, model_tag, plotsnr, cross_cor_display, sigma_cross_cor, orbital_phase, n_spectra, ccf_weights, half_duration_phase, temperature_profile)
+
     return orbital_phase
 
 def combine_observations(observation_epochs, arms, planet_name, temperature_profile, species_label, species_name_ccf, model_tag, RV_abs, Kp_expected, do_inject_model, f, method):
@@ -278,7 +289,7 @@ def combine_observations(observation_epochs, arms, planet_name, temperature_prof
         for i in range (1, len(observation_epochs)):
             all_epochs += '+'+observation_epochs[i]
 
-    make_shifted_plot(snr, planet_name, all_epochs, which_arms, species_name_ccf, model_tag, RV_abs, Kp_expected, V_sys_true, Kp_true, do_inject_model, True, drv, Kp, species_label, temperature_profile, method)
+    plotsnr = make_shifted_plot(snr, planet_name, all_epochs, which_arms, species_name_ccf, model_tag, RV_abs, Kp_expected, V_sys_true, Kp_true, do_inject_model, True, drv, Kp, species_label, temperature_profile, method)
 
     
 
@@ -369,6 +380,8 @@ def run_all_ccfs(planet_name, temperature_profile, species_label, vmr, do_inject
 
     if species_label != 'CaH': combine_observations(observation_epochs, ['red'], planet_name, temperature_profile, species_label, species_name_ccf, model_tag, RV_abs, Kp_expected, do_inject_model, f, method)
 
+    amps, amps_error, rv, rv_error, width, width_error, residuals, do_molecfit, selected_idx, wind_chars = gaussian_fit(Kp, Kp_true, drv, species_label, planet_name, observation_epoch, arm, species_name_ccf, model_tag, plotsnr)
+                                                                                                                        
     f.close()
     orbital_phase, observation_epochs
 
