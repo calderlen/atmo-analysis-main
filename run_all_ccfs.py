@@ -28,9 +28,9 @@ from create_model import create_model, instantiate_radtrans
 # global varaibles defined for harcoded path to data on my computer
 path_modifier_plots = '/home/calder/Documents/atmo-analysis-main/'  #linux
 path_modifier_data = '/home/calder/Documents/petitRADTRANS_data/'   #linux
-path_modifier_plots = '/Users/calder/Documents/atmo-analysis-main/' #mac
-path_modifier_data = '/Volumes/sabrent/petitRADTRANS_data'  #mac
-path_modifier_data = '/Users/calder/Documents/petitRADTRANS_data/' #mac
+#path_modifier_plots = '/Users/calder/Documents/atmo-analysis-main/' #mac
+#path_modifier_data = '/Volumes/sabrent/petitRADTRANS_data'  #mac
+#path_modifier_data = '/Users/calder/Documents/petitRADTRANS_data/' #mac
 
 def run_one_ccf(species_label, vmr, arm, observation_epoch, template_wave, template_flux, template_wave_in, template_flux_in, planet_name, temperature_profile, do_inject_model, species_name_ccf, model_tag, f, method, do_make_new_model):
 
@@ -140,7 +140,7 @@ def run_one_ccf(species_label, vmr, arm, observation_epoch, template_wave, templ
         scale_factor_index = np.argmin(rms)
         scale_factor = scales[scale_factor_index]
 
-        # Scale ccf_model by scale factor
+        # Subtract off
         ccf_model *= scale_factor
         cross_cor -= ccf_model
 
@@ -194,7 +194,7 @@ def run_one_ccf(species_label, vmr, arm, observation_epoch, template_wave, templ
     #drv = drv[goods]
     #cross_cor_display = cross_cor[:,goods]
     
-    return Kp, Kp_true, drv, species_label, planet_name, observation_epoch, arm, species_name_ccf, model_tag, plotsnr, cross_cor_display, sigma_cross_cor, orbital_phase, n_spectra, ccf_weights, half_duration_phase, temperature_profile
+    return Kp, Kp_true, drv, species_label, planet_name, observation_epoch, arm, species_name_ccf, model_tag, plotsnr, cross_cor_display, sigma_cross_cor, orbital_phase, n_spectra, ccf_weights, half_duration_phase, temperature_profile, sigma_shifted_ccfs
 
 def combine_observations(observation_epochs, arms, planet_name, temperature_profile, species_label, species_name_ccf, model_tag, RV_abs, Kp_expected, do_inject_model, f, method):
 
@@ -342,9 +342,9 @@ def run_all_ccfs(planet_name, temperature_profile, species_label, vmr, do_inject
         for observation_epoch in observation_epochs:
             for arm in arms:
                 print('Now running the ',arm,' data for ',observation_epoch)
-                Kp, Kp_true, drv, species_label, planet_name, observation_epoch, arm, species_name_ccf, model_tag, plotsnr, cross_cor_display, sigma_cross_cor, orbital_phase, n_spectra, ccf_weights, half_duration_phase, temperature_profile = run_one_ccf(species_label, vmr, arm, observation_epoch, template_wave, template_flux, template_wave_in, template_flux_in, planet_name, temperature_profile, do_inject_model, species_name_ccf, model_tag, f, method, do_make_new_model)
+                Kp, Kp_true, drv, species_label, planet_name, observation_epoch, arm, species_name_ccf, model_tag, plotsnr, cross_cor_display, sigma_cross_cor, orbital_phase, n_spectra, ccf_weights, half_duration_phase, temperature_profile, sigma_shifted_ccfs = run_one_ccf(species_label, vmr, arm, observation_epoch, template_wave, template_flux, template_wave_in, template_flux_in, planet_name, temperature_profile, do_inject_model, species_name_ccf, model_tag, f, method, do_make_new_model)
 
-                #gaussian_fit(Kp, Kp_true, drv, species_label, planet_name, observation_epoch, arm, species_name_ccf, model_tag, plotsnr, cross_cor_display, sigma_cross_cor, orbital_phase, n_spectra, ccf_weights, half_duration_phase, temperature_profile)
+                gaussian_fit(Kp, Kp_true, drv, species_label, planet_name, observation_epoch, arm, species_name_ccf, model_tag, plotsnr, sigma_shifted_ccfs, temperature_profile, cross_cor_display, sigma_cross_cor, ccf_weights)
 
     print('Now combining all of the data')
 
@@ -547,7 +547,7 @@ def combinedWindCharacteristics(planet_name, temperature_profile, species_dict, 
 
             # Creating a gradient fill
             for i in range(len(phase_array) - 1):
-                ax.fill_betweenx([combined_data['rv'][i] - combined_data['rv_error'][i], combined_data['rv'][i] + combined_data['rv_error'][i]], phase_array[i], phase_array[i + 1], color=colors_array[i], alpha=0.5)
+                ax.fill_between([combined_data['rv'][i] - combined_data['rv_error'][i], combined_data['rv'][i] + combined_data['rv_error'][i]], phase_array[i], phase_array[i + 1], color=colors_array[i], alpha=0.5)
 
             # Labeling the species at the beginning of the curve with offset and style
             start_phase = phase_array[0] - 0.05 * (phase_max - phase_min)  # Adjusting horizontal offset

@@ -2,6 +2,8 @@
 
 import numpy as np
 import matplotlib.pyplot as plt
+import petitRADTRANS.nat_cst as nc
+from petitRADTRANS import Radtrans
 from specutils import Spectrum1D
 from specutils.fitting import fit_continuum
 from astropy import units as u
