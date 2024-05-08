@@ -44,9 +44,9 @@ pl.rc('legend', fontsize=14) #fontsize of the legend
 # global varaibles defined for harcoded path to data on my computer
 path_modifier_plots = '/home/calder/Documents/atmo-analysis-main/'  #linux
 path_modifier_data = '/home/calder/Documents/petitRADTRANS_data/'   #linux
-#path_modifier_plots = '/Users/calder/Documents/atmo-analysis-main/' #mac
-#path_modifier_data = '/Volumes/sabrent/petitRADTRANS_data/'  #mac
-#path_modifier_data = '/Users/calder/Documents/petitRADTRANS_data/' #mac
+path_modifier_plots = '/Users/calder/Documents/atmo-analysis-main/' #mac
+path_modifier_data = '/Volumes/sabrent/petitRADTRANS_data/'  #mac
+path_modifier_data = '/Users/calder/Documents/petitRADTRANS_data/' #mac
 
 def get_species_keys(species_label):
 
@@ -1091,10 +1091,6 @@ def combine_ccfs(drv, cross_cor, sigma_cross_cor, orbital_phase, n_spectra, ccf_
     #snr = shifted_ccfs / np.std(tempp[use_for_snr_2,:])
     snr = shifted_ccfs / np.std(shifted_ccfs[:,use_for_snr])
 
-    goods = np.abs(drv) <= 100.
-    #drv = drv[goods]  
-    shifted_ccfs, sigma_shifted_ccfs = shifted_ccfs[:,goods], sigma_shifted_ccfs[:,goods]
-
     return snr, Kp, drv, cross_cor, sigma_shifted_ccfs
 
 def gaussian(x, a, mu, sigma):
@@ -1293,8 +1289,6 @@ def gaussian_fit(Kp, Kp_true, drv, species_label, planet_name, observation_epoch
     orbital_phase = get_orbital_phase(jd, epoch, Period, RA, Dec)
     
     # Fitting a Gaussian to the 1D slice during transit
-    mask = np.abs(drv) < 101.
-    drv = drv[mask]
 
     # Initializing lists to store fit parameters
     amps = np.zeros(plotsnr.shape[0])
@@ -1303,17 +1297,15 @@ def gaussian_fit(Kp, Kp_true, drv, species_label, planet_name, observation_epoch
 
     Kp_slice_peak = np.zeros(plotsnr.shape[0])
     residuals = np.zeros(plotsnr.shape[0])    
-    breakpoint()
     # Fitting gaussian to all 1D Kp slices
     for i in range(plotsnr.shape[0]):
         current_slice = plotsnr[i,:]
-        current_slice_errors = sigma_shifted_ccfs[i,mask]
+        current_slice_errors = sigma_shifted_ccfs[i,:]
         peak = np.argmax(current_slice)
         Kp_slice_peak[i] = current_slice[peak]
         #bounds = ([0, drv[peak] - 15, 0], [np.inf, drv[peak] + 15, np.inf])
-    
         #popt, pcov = curve_fit(gaussian, drv, current_slice, p0=[5, 0, 1])
-        popt, pcov = curve_fit(gaussian, drv, current_slice, p0=[current_slice[peak], drv[peak], 2.5], sigma = current_slice_errors)
+        popt, pcov = curve_fit(gaussian, drv, current_slice, p0=[current_slice[peak], drv[peak], 2.5], sigma = current_slice_errors, maxfev=10000)
         #popt, pcov = curve_fit(gaussian, drv, current_slice, bounds=bounds, sigma=current_slice_errors)
 
         amps[i] = popt[0]
@@ -1322,7 +1314,7 @@ def gaussian_fit(Kp, Kp_true, drv, species_label, planet_name, observation_epoch
         amps_error = np.sqrt(pcov[0,0])
         rv_error = np.sqrt(pcov[1,1])
         width_error = np.sqrt(pcov[2,2])
-
+        print(i)
     # Selecting a specific Kp slice
     selected_idx = np.where(Kp == int((np.floor(Kp_true))))[0][0] #Kp slice corresponding to expected Kp
     selected_idx = np.argmax(Kp_slice_peak)                       #Kp slice corresponding to max SNR -- this is the one I've selected for now
@@ -1393,16 +1385,13 @@ def gaussian_fit(Kp, Kp_true, drv, species_label, planet_name, observation_epoch
     fig.savefig(snr_fit, dpi=300, bbox_inches='tight')
 
     
-    
-    
-    
     # Wind Characteristics plot
 
     Kp = np.arange(50, 350, 1)
     nKp, nv = len(Kp), len(drv)
 
     shifted_ccfs, var_shifted_ccfs = np.zeros((nKp, nv)), np.zeros((nKp, nv))
-
+    rv_chars = np.zeros(cross_cor.shape)
     i = 0
     for Kp_i in Kp:
         RV = Kp_i*np.sin(2.*np.pi*orbital_phase)
@@ -1411,11 +1400,14 @@ def gaussian_fit(Kp, Kp_true, drv, species_label, planet_name, observation_epoch
             #restrict to only in-transit spectra if doing transmission:
             #also want to leave out observations in 2ndary eclipse!
 
-            if not 'transmission' in temperature_profile or np.abs(orbital_phase[j]) <= half_duration_phase or np.abs(orbital_phase[j]-0.5) >= half_duration_phase:
-                temp_ccf = np.interp(drv, drv-RV[j], cross_cor[j, :], left=0., right=0.0)
-                sigma_temp_ccf = np.interp(drv, drv-RV[j], sigma_cross_cor[j, :], left=0., right=0.0)
-                shifted_ccfs[i,:] += temp_ccf * ccf_weights[j]
-                var_shifted_ccfs[i,:] += sigma_temp_ccf**2 * ccf_weights[j]**2
+            temp_ccf = np.interp(drv, drv-RV[j], cross_cor[j, :], left=0., right=0.0)
+            sigma_temp_ccf = np.interp(drv, drv-RV[j], sigma_cross_cor[j, :], left=0., right=0.0)
+            shifted_ccfs[i,:] += temp_ccf * ccf_weights[j]
+            var_shifted_ccfs[i,:] += sigma_temp_ccf**2 * ccf_weights[j]**2
+            popt, pcov = curve_fit(gaussian, drv, cross_cor[j,:], p0=[current_slice[peak], drv[peak], 2.5], sigma = current_slice_errors, maxfev=10000)
+        #popt, pcov = curve_fit(gaussian, drv, current_slice, bounds=bounds, sigma=current_slice_errors)
+
+            rv_chars[j] = popt[1]
         i+=1
     
     sigma_shifted_ccfs = np.sqrt(var_shifted_ccfs)
@@ -1432,25 +1424,22 @@ def gaussian_fit(Kp, Kp_true, drv, species_label, planet_name, observation_epoch
 
     goods = np.abs(drv) <= 100.
     #drv = drv[goods]  
-    shifted_ccfs, sigma_shifted_ccfs = shifted_ccfs[:,goods], sigma_shifted_ccfs[:,goods]
+    #shifted_ccfs, sigma_shifted_ccfs = shifted_ccfs[:,goods], sigma_shifted_ccfs[:,goods]
     
-    breakpoint()
-    
-    
-    
-    
-    
-    phase_min = np.min(orbital_phase)
-    phase_max = np.max(orbital_phase)
-    phase_array = np.linspace(phase_min, phase_max, np.shape(rv)[0])
 
     fig, ax1 = pl.subplots(figsize=(8,8))
 
     ax1.text(0.05, 0.99, species_label, transform=ax1.transAxes, verticalalignment='top', horizontalalignment='left', fontsize=12)
-
+    
+    
+    phase_min = np.min(orbital_phase)
+    phase_max = np.max(orbital_phase)
+    phase_array = np.linspace(phase_min, phase_max, np.shape(rv_chars)[0])
+    breakpoint()
     # Plotting Vsys
-    ax1.plot(phase_array, rv, 'o', label='Center')
-    ax1.fill_between(phase_array, rv - rv_error, rv + rv_error, color='blue', alpha=0.2)
+
+    ax1.plot(phase_array, rv_chars[10,:], 'o', label='Center')
+    ax1.fill_between(phase_array, rv_chars[10,:] - sigma_shifted_ccfs[np.floor(Kp_true)], rv_chars[10,:] + sigma_shifted_ccfs[np.floor(Kp_true)], color='blue', alpha=0.2)
     ax1.set_xlabel('Orbital Phase')
     ax1.set_ylabel('v_{sys}$ (km/s)', color='b')
     ax1.tick_params(axis='y', labelcolor='b')
@@ -1506,8 +1495,12 @@ def make_shifted_plot(snr, planet_name, observation_epoch, arm, species_name_ccf
         ctable = 'afmhot'
 
     keeprv = np.abs(drv-apoints[0]) <= 100.
+    keeprv = np.abs(drv-apoints[0]) <= 401.
+
     plotsnr, drv = plotsnr[:, keeprv], drv[keeprv]
     keepKp = np.abs(Kp-apoints[1]) <= 100.
+    keepKp = np.abs(Kp-apoints[1]) <= 401.
+
     plotsnr, Kp = plotsnr[keepKp, :], Kp[keepKp]
   # Fit a Gaussian to the line profile for combined arms
     gaussian_fit(Kp, Kp_true, drv, species_label, planet_name, observation_epoch, arm, species_name_ccf, model_tag, plotsnr, sigma_shifted_ccfs, temperature_profile, cross_cor_display, sigma_cross_cor, ccf_weights)
