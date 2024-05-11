@@ -49,118 +49,159 @@ path_modifier_data = '/home/calder/Documents/petitRADTRANS_data/'   #linux
 #path_modifier_data = '/Users/calder/Documents/petitRADTRANS_data/' #mac
 
 def get_species_keys(species_label):
-
+    species_names = set()  # Create a set to store unique species names
 
     if species_label == 'TiO':
-        species_name_inject = 'TiO_48_Exomol_McKemmish' #'TiO_all_iso_Plez'
-        species_name_ccf = 'TiO_48_Exomol_McKemmish'
-
+        species_names.add('TiO_all_iso_Plez')
+    if species_label == 'TiO_46':
+        species_names.add('TiO_46_Exomol_McKemmish')
+    if species_label == 'TiO_47':
+        species_names.add('TiO_47_Exomol_McKemmish')
+    if species_label == 'TiO_48':
+        species_names.add('TiO_48_Exomol_McKemmish')  
+    if species_label == 'TiO_49':
+        species_names.add('TiO_49_Exomol_McKemmish')
+    if species_label == 'TiO_50':
+        species_names.add('TiO_50_Exomol_McKemmish')
     if species_label == 'VO':
-        species_name_inject = 'VO_ExoMol_McKemmish'
-        species_name_ccf = 'VO_ExoMol_McKemmish'
-    
+        species_names.add('VO_ExoMol_McKemmish')
     if species_label == 'FeH':
-        species_name_inject = 'FeH_main_iso'
-        species_name_ccf = 'FeH_main_iso'
-
+        species_names.add('FeH_main_iso')
     if species_label == 'CaH':
-        species_name_inject = 'CaH'
-        species_name_ccf = 'CaH'
-    
+        species_names.add('CaH')
     if species_label == 'Fe I':
-        species_name_inject = 'Fe'
-        species_name_ccf = 'Fe'
-
+        species_names.add('Fe')
     if species_label == 'Ti I':
-        species_name_inject = 'Ti'
-        species_name_ccf = 'Ti'
-
+        species_names.add('Ti')
     if species_label == 'Ti II':
-        species_name_inject = 'Ti+'
-        species_name_ccf = 'Ti+'
-
+        species_names.add('Ti+')
     if species_label == 'Mg I':
-        species_name_inject = 'Mg'
-        species_name_ccf = 'Mg'
-
+        species_names.add('Mg')
     if species_label == 'Mg II':
-        species_name_inject = 'Mg+'
-        species_name_ccf = 'Mg+'
-    
+        species_names.add('Mg+')
     if species_label == 'Fe II':
-        species_name_inject = 'Fe+'
-        species_name_ccf = 'Fe+'
-
+        species_names.add('Fe+')
     if species_label == 'Cr I':
-        species_name_inject = 'Cr'
-        species_name_ccf = 'Cr'
-
-    if species_label == 'CrH':
-        species_name_inject = 'CrH'
-        species_name_ccf = 'CrH'
-    
+        species_names.add('Cr')
     if species_label == 'Si I':
-        species_name_inject = 'Si'
-        species_name_ccf = 'Si'
-
+        species_names.add('Si')
     if species_label == 'Ni I':
-        species_name_inject = 'Ni'
-        species_name_ccf = 'Ni'
-
+        species_names.add('Ni')
     if species_label == 'Al I':
-        species_name_inject = 'Al'
-        species_name_ccf = 'Al'
-
-    if species_label == 'Sc I':
-        species_name_inject = 'Sc'
-        species_name_ccf = 'Sc'
-
-    if species_label == 'V I':
-        species_name_inject = 'V'
-        species_name_ccf = 'V'
-
-    if species_label == 'Sr I':
-        species_name_inject = 'Sr'
-        species_name_ccf = 'Sr'
-
-    if species_label == 'Mn I':
-        species_name_inject = 'Mn'
-        species_name_ccf = 'Mn'
-
-    if species_label == 'Ca I':
-        species_name_inject = 'Ca'
-        species_name_ccf = 'Ca'
-
-    if species_label == 'Ca II':
-        species_name_inject = 'Ca+'
-        species_name_ccf = 'Ca+'
-
+        species_names.add('Al')
     if species_label == 'SiO':
-        species_name_inject = 'SiO_main_iso' #_new_incl_UV'
-        species_name_ccf = 'SiO_main_iso' #_new_incl_UV'
-    
+        species_names.add('SiO_main_iso_new_incl_UV')
     if species_label == 'H2O':
-        species_name_inject = 'H2O_main_iso'
-        species_name_ccf = 'H2O_main_iso'
-
-    if species_label == 'HCN':
-        species_name_inject = 'HCN_main_iso'
-        species_name_ccf = 'HCN_main_iso'
-    
+        species_names.add('H2O_main_iso')
     if species_label == 'OH':
-        species_name_inject = 'OH_main_iso'
-        species_name_ccf = 'OH_main_iso'
-
+        species_names.add('OH_main_iso')
     if species_label == 'MgH':
-        species_name_inject = 'MgH'
-        species_name_ccf = 'MgH'
+        species_names.add('MgH')
+    if species_label == 'Ca I':
+        species_names.add('Ca')
+    if species_label == 'CO_all':
+        species_names.add('CO_all_iso')
+    if species_label == 'CO_main':
+        species_names.add('CO_main_iso')    
+    if species_label == 'NaH':
+        species_names.add('NaH')
+    if species_label == 'H I':
+        species_names.add('H')
+    if species_label == 'AlO':
+        species_names.add('AlO')
+    if species_label == 'Ba I':
+        species_names.add('Ba')
+    if species_label == 'Ba II':
+        species_names.add('Ba+')
+    if species_label == 'CaO':
+        species_names.add('CaO')
+    if species_label == 'Co I':
+        species_names.add('Co')
+    if species_label == 'Cr II':
+        species_names.add('Cr+')
+    if species_label == 'Cs I':
+        species_names.add('Cs')
+    if species_label == 'Cu I':
+        species_names.add('Cu') 
+    if species_label == 'Ga I':
+        species_names.add('Ga') 
+    if species_label == 'Ge I': 
+        species_names.add('Ge')
+    if species_label == 'Hf I':
+        species_names.add('Hf')
+    if species_label == 'In I':
+        species_names.add('In') 
+    if species_label == 'Ir I':
+        species_names.add('Ir') 
+    if species_label == 'Mn I':
+        species_names.add('Mn') 
+    if species_label == 'Mo I':
+        species_names.add('Mo')
+    if species_label == 'Na I':
+        species_names.add('Na')
+    if species_label == 'NaH':
+        species_names.add('NaH')
+    if species_label == 'Nb I':
+        species_names.add('Nb')
+    if species_label == 'Ni I':
+        species_names.add('Ni')
+    if species_label == 'O I':
+        species_names.add('O')
+    if species_label == 'Os I':
+        species_names.add('Os')
+    if species_label == 'Pb I':
+        species_names.add('Pb')
+    if species_label == 'Pd I':
+        species_names.add('Pd')
+    if species_label == 'Rb I':
+        species_names.add('Rb')
+    if species_label == 'Rh I':
+        species_names.add('Rh')
+    if species_label == 'Ru I':
+        species_names.add('Ru')
+    if species_label == 'Sc I':
+        species_names.add('Sc')
+    if species_label == 'Sc II':
+        species_names.add('Sc+')
+    if species_label == 'Sn I':
+        species_names.add('Sn')
+    if species_label == 'Sr I':
+        species_names.add('Sr')
+    if species_label == 'Sr II':
+        species_names.add('Sr+')
+    if species_label == 'Ti II':
+        species_names.add('Ti+')
+    if species_label == 'Tl':
+        species_names.add('Tl')
+    if species_label == 'W I':
+        species_names.add('W')
+    if species_label == 'Y II':
+        species_names.add('Y+')
+    if species_label == 'Zn I':
+        species_names.add('Zn')
+    if species_label == 'Zr I':
+        species_names.add('Zr')
+    if species_label == 'Zr I':
+        species_names.add('Zr+')
+    if species_label == 'N I':
+        species_names.add('N')
+    if species_label == 'K I':
+        species_names.add('K')
+    if species_label == 'Y I':
+        species_names.add('Y')
+    if species_label == 'Li I':
+        species_names.add('Li')
+    if species_label == 'V I':
+        species_names.add('V')
+    if species_label == 'V II':
+        species_names.add('V+')
+    if species_label == 'Ca II':
+        species_names.add('Ca+')
 
-    if species_label == 'PH3':
-        species_name_inject = 'PH3'
-        species_name_ccf = 'PH3'
-
-
-
+    species_names = list(set(species_names))  # Convert the set back to a list
+    species_names.append(species_names[0])
+    species_name_inject, species_name_ccf = species_names
+        
     return species_name_inject, species_name_ccf
 
 def get_sysrem_parameters(arm, observation_epoch, species_label, planet_name):
@@ -182,28 +223,28 @@ def get_sysrem_parameters(arm, observation_epoch, species_label, planet_name):
         if arm == 'blue': n_systematics = [2, 0]
     elif species_label == 'Ni I':
         if arm == 'red': n_systematics = [2,3]
-        if arm == 'blue': n_systematics = [0,5]
+        if arm == 'blue': n_systematics = [5,0]
     elif species_label == 'Cr I':
         if arm == 'red': n_systematics = [0,10]
-        if arm == 'blue': n_systematics = [0,10]
+        if arm == 'blue': n_systematics = [10,0]
     elif species_label == 'V I':
         if arm == 'red': n_systematics = [2,5]
-        if arm == 'blue': n_systematics = [1,8]
+        if arm == 'blue': n_systematics = [8,0]
     elif species_label == 'VO':
         if arm == 'red': n_systematics = [1, 2]
         if arm == 'blue': n_systematics = [3, 0]
     elif species_label == 'FeH':
         if arm == 'red': n_systematics = [1, 0]
-        if arm == 'blue': n_systematics = [0, 5]
+        if arm == 'blue': n_systematics = [5, 0]
     elif species_label == 'CaH':
         if arm == 'red': n_systematics = [0, 10]
         if arm == 'blue': n_systematics = [2, 0]
     elif species_label == 'Na I':
         if arm == 'red': n_systematics = [0, 10]
-        if arm == 'blue': n_systematics = [1,2]
+        if arm == 'blue': n_systematics = [1,0]
     elif species_label == 'Mn I':
         if arm == 'red': n_systematics = [2,2]
-        if arm == 'blue': n_systematics = [1,1]
+        if arm == 'blue': n_systematics = [1,0]
      
     else:
         if arm == 'blue':
@@ -599,7 +640,7 @@ def get_pepsi_data(arm, observation_epoch, planet_name, do_molecfit):
     #    errorin[i,:] *= underestimate_factor
 
     
-
+    #breakpoint()
     return wave, fluxin, errorin, jd, snr_spectra, exptime, airmass, n_spectra, npix
 
 def get_orbital_phase(jd, epoch, Period, RA, Dec):
@@ -625,6 +666,7 @@ def get_orbital_phase(jd, epoch, Period, RA, Dec):
 
 def convolve_atmospheric_model(template_wave, template_flux, profile_width, profile_form, temperature_profile='emission', epsilon=0.6):
     ckms =2.9979e5
+    #breakpoint()
     velocities = (template_wave - np.mean(template_wave)) / template_wave * ckms
     velocities = velocities[np.abs(velocities) <= 100.]
     if profile_form == 'rotational':
@@ -689,8 +731,10 @@ def make_new_model(instrument, species_name_new, vmr, spectrum_type, planet_name
 
 
     if instrument == 'PEPSI':
-        if (planet_name == 'WASP-189b' or planet_name == 'KELT-20b'):
+        if planet_name == 'WASP-189b':
             instrument_here = 'PEPSI-25'
+        #elseif planet_name == 'KELT-20b':
+        #    instrument_here = 'PEPSI-25'
         else:
             instrument_here = 'PEPSI-35'
     else:
@@ -828,7 +872,6 @@ def correct_for_reflex_motion(Ks_expected, orbital_phase, wave, n_spectra):
     RV = Ks_expected*np.sin(2.*np.pi*(orbital_phase-0.5)) 
 
     doppler_shift = 1.0 / (1.0 - RV / 1000. / ckms)
-        
     for i in range (0, n_spectra): wave[i,:] *= doppler_shift[i]
 
     return wave
@@ -1030,9 +1073,8 @@ def get_ccfs(wave, corrected_flux, corrected_error, template_wave, template_flux
 
     #rvmin, rvmax = -100., 100. #kms
     rvmin, rvmax = -400., 400. #kms
-
     rvspacing = 1.0 #kms
-
+    #breakpoint()
     for i in range (n_spectra):
         drv, cross_cor_out, sigma_cross_cor_out = ccf(wave, corrected_flux[i,:], corrected_error[i,:], template_wave, template_flux, rvmin, rvmax, rvspacing)
         if i == 0:
@@ -1044,7 +1086,7 @@ def get_ccfs(wave, corrected_flux, corrected_error, template_wave, template_flux
 def get_likelihood(wave, corrected_flux, corrected_error, template_wave, template_flux, n_spectra, U_sysrem, telluric_free):
 
     rvmin, rvmax = -400., 400. #kms
-    rvspacing = 1.0 #kms
+    rvspacing = 0.01 #kms
 
     alpha, beta, norm_offset = 1.0, 1.0, 0.0 #I think this is correct for this application--only set these scaling factors if do actual fits
 
@@ -1084,13 +1126,13 @@ def combine_ccfs(drv, cross_cor, sigma_cross_cor, orbital_phase, n_spectra, ccf_
 
     #use_for_snr = (np.abs(drv) <= 100.) & (np.abs(drv) >= 50.)#
     #use_for_snr = np.abs(drv) > 150.
-    use_for_snr = np.abs(drv) > 100.
+    use_for_snr = np.abs(drv > 100.)
     #tempp = shifted_ccfs[:,use_for_snr]
     #use_for_snr_2 = (Kp <= 280.) & (Kp >= 180.)
 
     #snr = shifted_ccfs / np.std(tempp[use_for_snr_2,:])
     snr = shifted_ccfs / np.std(shifted_ccfs[:,use_for_snr])
-
+    #breakpoint()
     return snr, Kp, drv, cross_cor, sigma_shifted_ccfs
 
 def gaussian(x, a, mu, sigma):
@@ -1158,13 +1200,10 @@ def combine_ccfs_binned(drv, cross_cor, sigma_cross_cor, orbital_phase, n_spectr
         ftransit=np.pi/2.-omega*np.pi/180.#-np.pi #true anomaly at transit
         Etransit=2.*np.arctan(np.sqrt((1.-ecc)/(1.+ecc))*np.tan(ftransit/2.)) #eccentric anomaly at transit
         timesince=1.0/(2.*np.pi)*(Etransit-ecc*np.sin(Etransit)) #time since periastron to transit
+        RVe = radvel.kepler.rv_drive(orbital_phase, np.array([1.0, 0.0-timesince, ecc, omega*np.pi/180.-np.pi, Kp_here]))
 
-    
-
-    RVe = radvel.kepler.rv_drive(orbital_phase, np.array([1.0, 0.0-timesince, ecc, omega*np.pi/180.-np.pi, Kp_here]))
-
-    RVdiff = RVe - RV
-    order = np.argsort(orbital_phase)
+        RVdiff = RVe - RV
+        order = np.argsort(orbital_phase)
 
     good = np.abs(drv) < 30.
     pl.pcolor(drv[good], phase_bin, binned_ccfs[:,good], edgecolors='none',rasterized=True)
@@ -1191,7 +1230,7 @@ def combine_ccfs_binned(drv, cross_cor, sigma_cross_cor, orbital_phase, n_spectr
     for i in range (0, nphase):
         pl.subplot(3, 3, np.mod(i, 9)+1)
         peak = np.argmax(ccffit[i,:])
-        popt, pcov = curve_fit(gaussian, drvfit, ccffit[i,:], p0=[ccffit[i,peak], drvfit[peak], 2.5], sigma = sigmafit[i,:])
+        popt, pcov = curve_fit(gaussian, drvfit, ccffit[i,:], p0=[ccffit[i,peak], drvfit[peak], 2.5], sigma = sigmafit[i,:], maxfev=10000)
 
         pl.plot(drvfit, ccffit[i,:], color='blue')
         pl.plot(drvfit, gaussian(drvfit, popt[0], popt[1], popt[2]), color='red')
@@ -1291,34 +1330,42 @@ def gaussian_fit(Kp, Kp_true, drv, species_label, planet_name, observation_epoch
     # Fitting a Gaussian to the 1D slice during transit
 
     # Initializing lists to store fit parameters
-    amps = np.zeros(plotsnr.shape[0])
-    rv = np.zeros(plotsnr.shape[0])
-    width = np.zeros(plotsnr.shape[0])
+    amps, amps_error = np.zeros(plotsnr.shape[0]), np.zeros(plotsnr.shape[0])
+    rv, rv_error = np.zeros(plotsnr.shape[0]), np.zeros(plotsnr.shape[0])
+    width, width_error = np.zeros(plotsnr.shape[0]), np.zeros(plotsnr.shape[0])
 
     Kp_slice_peak = np.zeros(plotsnr.shape[0])
     residuals = np.zeros(plotsnr.shape[0])    
     # Fitting gaussian to all 1D Kp slices
+    
     for i in range(plotsnr.shape[0]):
         current_slice = plotsnr[i,:]
         current_slice_errors = sigma_shifted_ccfs[i,:]
-        peak = np.argmax(current_slice)
-        Kp_slice_peak[i] = current_slice[peak]
-        #bounds = ([0, drv[peak] - 15, 0], [np.inf, drv[peak] + 15, np.inf])
-        #popt, pcov = curve_fit(gaussian, drv, current_slice, p0=[5, 0, 1])
-        popt, pcov = curve_fit(gaussian, drv, current_slice, p0=[current_slice[peak], drv[peak], 2.5], sigma = current_slice_errors, maxfev=10000)
-        #popt, pcov = curve_fit(gaussian, drv, current_slice, bounds=bounds, sigma=current_slice_errors)
+        
+        # Sort the peaks in descending order
+        peaks = np.argsort(current_slice)[::-1]
+        
+        # Iterate over the peaks
+        for peak in peaks:
+            # If the peak is within the desired range, fit the Gaussian
+            if -15 <= drv[peak] <= 15:
+                Kp_slice_peak[i] = current_slice[peak]
+                popt, pcov = curve_fit(gaussian, drv, current_slice, p0=[current_slice[peak], drv[peak], 2.5], sigma = current_slice_errors, maxfev=10000)
 
-        amps[i] = popt[0]
-        rv[i] = popt[1]
-        width[i] = popt[2]
-        amps_error = np.sqrt(pcov[0,0])
-        rv_error = np.sqrt(pcov[1,1])
-        width_error = np.sqrt(pcov[2,2])
+                amps[i] = popt[0]
+                rv[i] = popt[1]
+                width[i] = popt[2]
+                amps_error[i] = np.sqrt(pcov[0,0])
+                rv_error[i] = np.sqrt(pcov[1,1])
+                width_error[i] = np.sqrt(pcov[2,2])
+                
+                # Break the loop as we have found a suitable peak
+                break
+        
     # Selecting a specific Kp slice
     selected_idx = np.where(Kp == int((np.floor(Kp_true))))[0][0] #Kp slice corresponding to expected Kp
     selected_idx = np.argmax(Kp_slice_peak)                       #Kp slice corresponding to max SNR -- this is the one I've selected for now
-    
-    # Fitting a Gaussian to the selected slice
+
     popt_selected = [amps[selected_idx], rv[selected_idx], width[selected_idx]]
     print('Selected SNR:', amps[selected_idx], '\n Selected Vsys:', rv[selected_idx], '\n Selected sigma:', width[selected_idx], '\n Selected Kp:', Kp[selected_idx])
 
@@ -1478,12 +1525,12 @@ def make_shifted_plot(snr, planet_name, observation_epoch, arm, species_name_ccf
     keepKp = np.abs(Kp-apoints[1]) <= 401.
 
     plotsnr, Kp = plotsnr[keepKp, :], Kp[keepKp]
-  # Fit a Gaussian to the line profile for combined arms
-    #gaussian_fit(Kp, Kp_true, drv, species_label, planet_name, observation_epoch, arm, species_name_ccf, model_tag, plotsnr, sigma_shifted_ccfs, temperature_profile, cross_cor_display, sigma_cross_cor, ccf_weights)
+    # Fit a Gaussian to the line profile for combined arms
+    amps, amps_error, rv, rv_error, width, width_error, residuals, do_molecfit, selected_idx, wind_chars = gaussian_fit(Kp, Kp_true, drv, species_label, planet_name, observation_epoch, arm, species_name_ccf, model_tag, plotsnr, sigma_shifted_ccfs, temperature_profile, cross_cor_display, sigma_cross_cor, ccf_weights)
 
     psarr(plotsnr, drv, Kp, '$V_{\mathrm{sys}}$ (km/s)', '$K_p$ (km/s)', zlabel, filename=plotname, ctable=ctable, alines=True, apoints=apoints, acolor='cyan', textstr=species_label+' '+model_label, textloc = np.array([apoints[0]-75.,apoints[1]+75.]), textcolor='cyan', fileformat=plotformat)
     
-    return plotsnr
+    return plotsnr, amps, amps_error, rv, rv_error, width, width_error, selected_idx
 
 def DopplerShadowModel(drv, planet_name, exptime, orbital_phase, obs, inputs = {
                                     'mode':'spec',  
@@ -1811,10 +1858,12 @@ def process_data(observation_epochs, arms, planet_name):
 
 
 def generate_atmospheric_model(planet_name, spectrum_type, instrument, arm, all_species, parameters, atmosphere, pressures, ptprofile='guillot'):
-
+    #breakpoint()
     #handle the W-189 observations being with CD II
-    if (planet_name == 'WASP-189b' or planet_name == 'KELT-20b') and instrument != 'GMT-all':
-        instrument_here = 'PEPSI-25' 
+    if planet_name == 'WASP-189b' and instrument != 'GMT-all':
+        instrument_here = 'PEPSI-25'
+    #elif planet_name == 'KELT-20b' and instrument != 'GMT-all':
+    #    instrument_here = 'PEPSI-25'
     elif instrument == 'PEPSI':
         instrument_here = 'PEPSI-35'
     else:

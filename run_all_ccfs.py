@@ -167,7 +167,8 @@ def run_one_ccf(species_label, vmr, arm, observation_epoch, template_wave, templ
 
     
         snr, Kp, drv, cross_cor_display, sigma_shifted_ccfs = combine_ccfs(drv, cross_cor, sigma_cross_cor, orbital_phase, n_spectra, ccf_weights, half_duration_phase, temperature_profile)
-        plotsnr = make_shifted_plot(snr, planet_name, observation_epoch, arm, species_name_ccf, model_tag, RV_abs, Kp_expected, V_sys_true, Kp_true, do_inject_model, drv, Kp, species_label, temperature_profile, sigma_shifted_ccfs, method, cross_cor_display, sigma_cross_cor, orbital_phase, n_spectra, ccf_weights, half_duration_phase)
+        
+        plotsnr, amps, amps_error, rv, rv_error, width, width_error, selected_idx = make_shifted_plot(snr, planet_name, observation_epoch, arm, species_name_ccf, model_tag, RV_abs, Kp_expected, V_sys_true, Kp_true, do_inject_model, drv, Kp, species_label, temperature_profile, sigma_shifted_ccfs, method, cross_cor_display, sigma_cross_cor, orbital_phase, n_spectra, ccf_weights, half_duration_phase)
 
         get_peak_snr(snr, drv, Kp, do_inject_model, V_sys_true, Kp_true, RV_abs, Kp_expected, arm, observation_epoch, f, method)
 
@@ -186,7 +187,7 @@ def run_one_ccf(species_label, vmr, arm, observation_epoch, template_wave, templ
         #now need to combine the likelihoods along the planet orbit
         shifted_lnL, Kp, drv = combine_likelihoods(drv, lnL, orbital_phase, n_spectra, half_duration_phase, temperature_profile)
 
-        plotsnr = make_shifted_plot(snr, planet_name, observation_epoch, arm, species_name_ccf, model_tag, RV_abs, Kp_expected, V_sys_true, Kp_true, do_inject_model, drv, Kp, species_label, temperature_profile, sigma_shifted_ccfs, method, cross_cor_display, sigma_cross_cor, orbital_phase, n_spectra, ccf_weights, half_duration_phase)
+        plotsnr, amps, amps_error, rv, rv_error, width, width_error, selected_idx = make_shifted_plot(snr, planet_name, observation_epoch, arm, species_name_ccf, model_tag, RV_abs, Kp_expected, V_sys_true, Kp_true, do_inject_model, drv, Kp, species_label, temperature_profile, sigma_shifted_ccfs, method, cross_cor_display, sigma_cross_cor, orbital_phase, n_spectra, ccf_weights, half_duration_phase)
 
 
     #goods = np.abs(drv) <= 100.
@@ -194,7 +195,7 @@ def run_one_ccf(species_label, vmr, arm, observation_epoch, template_wave, templ
     #drv = drv[goods]
     #cross_cor_display = cross_cor[:,goods]
     
-    return Kp, Kp_true, drv, species_label, planet_name, observation_epoch, arm, species_name_ccf, model_tag, plotsnr, cross_cor_display, sigma_cross_cor, orbital_phase, n_spectra, ccf_weights, half_duration_phase, temperature_profile, sigma_shifted_ccfs
+    return Kp, Kp_true, drv, species_label, planet_name, observation_epoch, arm, species_name_ccf, model_tag, plotsnr, cross_cor_display, sigma_cross_cor, orbital_phase, n_spectra, ccf_weights, half_duration_phase, temperature_profile, sigma_shifted_ccfs, amps, amps_error, rv, rv_error, width, width_error, selected_idx
 
 def combine_observations(observation_epochs, arms, planet_name, temperature_profile, species_label, species_name_ccf, model_tag, RV_abs, Kp_expected, do_inject_model, f, method):
 
@@ -269,20 +270,34 @@ def combine_observations(observation_epochs, arms, planet_name, temperature_prof
         
     if 'likelihood' in method:
         snr, Kp, drv = combine_likelihoods(drv, cross_cor, orbital_phase, len(orbital_phase), half_duration_phase, temperature_profile)
-
+    if any('red' in s for s in arms) and ('red' in s for s in arms):
+        all_arms = 'combined'
+    else:
+        all_arms = arms[0]
 
     all_epochs = observation_epochs[0]
     if len(observation_epochs) > 1:
         for i in range (1, len(observation_epochs)):
             all_epochs += '+'+observation_epochs[i]
             
+    if arm == 'red':
+        do_molecfit = True
+    else:
+        do_molecfit = False
+    
+    wave, fluxin, errorin, jd, snr_spectra, exptime, airmass, n_spectra, npix = get_pepsi_data(arm, observation_epoch, planet_name, do_molecfit)
+    
     get_peak_snr(snr, drv, Kp, do_inject_model, V_sys_true, Kp_true, RV_abs, Kp_expected, which_arms, all_epochs, f, method)
     
-    return Kp_true, orbital_phase
+    plotsnr, amps, amps_error, rv, rv_error, width, width_error, selected_idx = make_shifted_plot(snr, planet_name, observation_epoch, arm, species_name_ccf, model_tag, RV_abs, Kp_expected, V_sys_true, Kp_true, do_inject_model, drv, Kp, species_label, temperature_profile, sigma_shifted_ccfs, method, cross_cor_display, sigma_cross_cor, orbital_phase, n_spectra, ccf_weights, half_duration_phase)
+    
+    return Kp_true, orbital_phase, plotsnr, amps, amps_error, rv, rv_error, width, width_error, selected_idx
             
 
 def run_all_ccfs(planet_name, temperature_profile, species_label, vmr, do_inject_model, do_run_all, do_make_new_model, method):
 
+    fit_params = {}
+    
     initial_time=time.time()
     ckms = 2.9979e5
 
@@ -338,37 +353,75 @@ def run_all_ccfs(planet_name, temperature_profile, species_label, vmr, do_inject
     else:
         template_wave_in, template_flux_in = template_wave, template_flux
 
+    # Ensure species_label key is initialized in fit_params
+    if species_label not in fit_params:
+        fit_params[species_label] = {}
+        
     if do_run_all:
         for observation_epoch in observation_epochs:
             for arm in arms:
                 print('Now running the ',arm,' data for ',observation_epoch)
-                Kp, Kp_true, drv, species_label, planet_name, observation_epoch, arm, species_name_ccf, model_tag, plotsnr, cross_cor_display, sigma_cross_cor, orbital_phase, n_spectra, ccf_weights, half_duration_phase, temperature_profile, sigma_shifted_ccfs = run_one_ccf(species_label, vmr, arm, observation_epoch, template_wave, template_flux, template_wave_in, template_flux_in, planet_name, temperature_profile, do_inject_model, species_name_ccf, model_tag, f, method, do_make_new_model)
+                Kp, Kp_true, drv, species_label, planet_name, observation_epoch, arm, species_name_ccf, model_tag, plotsnr, cross_cor_display, sigma_cross_cor, orbital_phase, n_spectra, ccf_weights, half_duration_phase, temperature_profile, sigma_shifted_ccfs, amps, amps_error, rv, rv_error, width, width_error, selected_idx = run_one_ccf(species_label, vmr, arm, observation_epoch, template_wave, template_flux, template_wave_in, template_flux_in, planet_name, temperature_profile, do_inject_model, species_name_ccf, model_tag, f, method, do_make_new_model)
 
-                gaussian_fit(Kp, Kp_true, drv, species_label, planet_name, observation_epoch, arm, species_name_ccf, model_tag, plotsnr, sigma_shifted_ccfs, temperature_profile, cross_cor_display, sigma_cross_cor, ccf_weights)
+
+               # Ensure observation_epoch key is initialized in fit_params[species_label]
+                if observation_epoch not in fit_params[species_label]:
+                    fit_params[species_label][observation_epoch] = {}
+                # Assign the values
+
+                fit_params[species_label][observation_epoch][arm] = {
+                    'amps': amps,
+                    'amps_error': amps_error,
+                    'rv': rv,
+                    'rv_error': rv_error,
+                    'width': width,
+                    'width_error': width_error,
+                    'selected_idx': selected_idx,
+                    'orbital_phase': orbital_phase
+                }
 
     print('Now combining all of the data')
-
+    
     Period, epoch, M_star, RV_abs, i, M_p, R_p, RA, Dec, Kp_expected, half_duration_phase, Ks_expected = get_planet_parameters(planet_name)
 
-    combine_observations(observation_epochs, arms, planet_name, temperature_profile, species_label, species_name_ccf, model_tag, RV_abs, Kp_expected, do_inject_model, f, method)
+    Kp_true, orbital_phase, plotsnr, amps, amps_error, rv, rv_error, width, width_error, selected_idx = combine_observations(observation_epochs, arms, planet_name, temperature_profile, species_label, species_name_ccf, model_tag, RV_abs, Kp_expected, do_inject_model, f, method)
+    
+   # Ensure 'combined' key is initialized in fit_params[species_label]
 
-    if species_label != 'FeH': combine_observations(observation_epochs, ['blue'], planet_name, temperature_profile, species_label, species_name_ccf, model_tag, RV_abs, Kp_expected, do_inject_model, f, method)
+    if 'combined' not in fit_params[species_label]:
+        fit_params[species_label]['combined'] = {}
 
-    if species_label != 'CaH': combine_observations(observation_epochs, ['red'], planet_name, temperature_profile, species_label, species_name_ccf, model_tag, RV_abs, Kp_expected, do_inject_model, f, method)
+    fit_params[species_label]['combined']['combined'] = {
+        'amps': amps,
+        'amps_error': amps_error,
+        'rv': rv,
+        'rv_error': rv_error,
+        'width': width,
+        'width_error': width_error,
+        'selected_idx': selected_idx,
+        'orbital_phase': orbital_phase
+    }
+    
+
+    #if species_label != 'FeH': Kp_true, orbital_phase, plotsnr, amps, amps_error, rv, rv_error, width, width_error, selected_idx = combine_observations(observation_epochs, ['blue'], planet_name, temperature_profile, species_label, species_name_ccf, model_tag, RV_abs, Kp_expected, do_inject_model, f, method)
+
+    #if species_label != 'CaH': Kp_true, orbital_phase, plotsnr, amps, amps_error, rv, rv_error, width, width_error, selected_idx = combine_observations(observation_epochs, ['red'], planet_name, temperature_profile, species_label, species_name_ccf, model_tag, RV_abs, Kp_expected, do_inject_model, f, method)
 
     f.close()
     orbital_phase, observation_epochs
+    
+    return amps, amps_error, rv, rv_error, width, width_error, selected_idx, orbital_phase, fit_params, observation_epochs
 
 def multiSpeciesCCF(planet_name, temperature_profile, species_dict, do_inject_model, do_run_all, do_make_new_model, method):
     """
     Runs all cross-correlation functions (CCFs) for a given planet, temperature profile, and all species labels with their
-    respective VMRs and p0_gaussian values given in the species_dict.
+    respective VMRs  in the species_dict.
 
     Args:
         planet_name (str): The name of the planet.
         temperature_profile (str): The temperature profile.
         species_dict (dict): A dictionary where each key is a species label and its value is another dictionary
-                             containing 'vmr' and 'p0_gaussian' for the species.
+                             containing 'vmr' for the species.
         do_inject_model (bool): Flag indicating whether to inject a model.
         do_run_all (bool): Flag indicating whether to run all CCFs.
         do_make_new_model (bool): Flag indicating whether to make a new model.
@@ -383,7 +436,6 @@ def multiSpeciesCCF(planet_name, temperature_profile, species_dict, do_inject_mo
 
     for species_label, params in species_dict.items():
         vmr = params.get('vmr')
-        #p0_gaussian = params.get('p0_gaussian')
         amps, amps_error, rv, rv_error, width, width_error, selected_idx, orbital_phase, fit_params, observation_epochs = run_all_ccfs(
             planet_name, temperature_profile, species_label, vmr, do_inject_model, do_run_all, do_make_new_model, method)
         
@@ -470,7 +522,6 @@ def combinedWindCharacteristics(planet_name, temperature_profile, species_dict, 
     # Loop through each species
     for species_label, params in species_dict.items():
         vmr = params['vmr']
-        #p0_gaussian = params['p0_gaussian']
         amps, amps_error, rv, rv_error, width, width_error, selected_idx, orbital_phase, fit_params, observation_epochs = run_all_ccfs(planet_name, temperature_profile, species_label, vmr, do_inject_model, do_run_all, do_make_new_model, method)
 
         # Initialize 'combined' key for each species
