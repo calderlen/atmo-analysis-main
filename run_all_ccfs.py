@@ -28,9 +28,9 @@ from create_model import create_model, instantiate_radtrans
 # global varaibles defined for harcoded path to data on my computer
 path_modifier_plots = '/home/calder/Documents/atmo-analysis-main/'  #linux
 path_modifier_data = '/home/calder/Documents/petitRADTRANS_data/'   #linux
-path_modifier_plots = '/Users/calder/Documents/atmo-analysis-main/' #mac
-path_modifier_data = '/Volumes/sabrent/petitRADTRANS_data'  #mac
-path_modifier_data = '/Users/calder/Documents/petitRADTRANS_data/' #mac
+#path_modifier_plots = '/Users/calder/Documents/atmo-analysis-main/' #mac
+#path_modifier_data = '/Volumes/sabrent/petitRADTRANS_data'  #mac
+#path_modifier_data = '/Users/calder/Documents/petitRADTRANS_data/' #mac
 
 def run_one_ccf(species_label, vmr, arm, observation_epoch, template_wave, template_flux, template_wave_in, template_flux_in, planet_name, temperature_profile, do_inject_model, species_name_ccf, model_tag, f, method, do_make_new_model):
 
@@ -168,7 +168,7 @@ def run_one_ccf(species_label, vmr, arm, observation_epoch, template_wave, templ
     
         snr, Kp, drv, cross_cor_display, sigma_shifted_ccfs = combine_ccfs(drv, cross_cor, sigma_cross_cor, orbital_phase, n_spectra, ccf_weights, half_duration_phase, temperature_profile)
         
-        plotsnr, amps, amps_error, rv, rv_error, width, width_error, selected_idx = make_shifted_plot(snr, planet_name, observation_epoch, arm, species_name_ccf, model_tag, RV_abs, Kp_expected, V_sys_true, Kp_true, do_inject_model, drv, Kp, species_label, temperature_profile, sigma_shifted_ccfs, method, cross_cor_display, sigma_cross_cor, orbital_phase, n_spectra, ccf_weights, half_duration_phase)
+        plotsnr, amps, amps_error, rv, rv_error, width, width_error, selected_idx, snr_fit = make_shifted_plot(snr, planet_name, observation_epoch, arm, species_name_ccf, model_tag, RV_abs, Kp_expected, V_sys_true, Kp_true, do_inject_model, drv, Kp, species_label, temperature_profile, sigma_shifted_ccfs, method, cross_cor_display, sigma_cross_cor, orbital_phase, n_spectra, ccf_weights, half_duration_phase)
 
         get_peak_snr(snr, drv, Kp, do_inject_model, V_sys_true, Kp_true, RV_abs, Kp_expected, arm, observation_epoch, f, method)
 
@@ -187,7 +187,7 @@ def run_one_ccf(species_label, vmr, arm, observation_epoch, template_wave, templ
         #now need to combine the likelihoods along the planet orbit
         shifted_lnL, Kp, drv = combine_likelihoods(drv, lnL, orbital_phase, n_spectra, half_duration_phase, temperature_profile)
 
-        plotsnr, amps, amps_error, rv, rv_error, width, width_error, selected_idx = make_shifted_plot(snr, planet_name, observation_epoch, arm, species_name_ccf, model_tag, RV_abs, Kp_expected, V_sys_true, Kp_true, do_inject_model, drv, Kp, species_label, temperature_profile, sigma_shifted_ccfs, method, cross_cor_display, sigma_cross_cor, orbital_phase, n_spectra, ccf_weights, half_duration_phase)
+        plotsnr, amps, amps_error, rv, rv_error, width, width_error, selected_idx, snr_fit = make_shifted_plot(snr, planet_name, observation_epoch, arm, species_name_ccf, model_tag, RV_abs, Kp_expected, V_sys_true, Kp_true, do_inject_model, drv, Kp, species_label, temperature_profile, sigma_shifted_ccfs, method, cross_cor_display, sigma_cross_cor, orbital_phase, n_spectra, ccf_weights, half_duration_phase)
 
 
     #goods = np.abs(drv) <= 100.
@@ -195,7 +195,7 @@ def run_one_ccf(species_label, vmr, arm, observation_epoch, template_wave, templ
     #drv = drv[goods]
     #cross_cor_display = cross_cor[:,goods]
     
-    return Kp, Kp_true, drv, species_label, planet_name, observation_epoch, arm, species_name_ccf, model_tag, plotsnr, cross_cor_display, sigma_cross_cor, orbital_phase, n_spectra, ccf_weights, half_duration_phase, temperature_profile, sigma_shifted_ccfs, amps, amps_error, rv, rv_error, width, width_error, selected_idx
+    return Kp, Kp_true, drv, species_label, planet_name, observation_epoch, arm, species_name_ccf, model_tag, plotsnr, cross_cor_display, sigma_cross_cor, orbital_phase, n_spectra, ccf_weights, half_duration_phase, temperature_profile, sigma_shifted_ccfs, amps, amps_error, rv, rv_error, width, width_error, selected_idx, snr_fit
 
 def combine_observations(observation_epochs, arms, planet_name, temperature_profile, species_label, species_name_ccf, model_tag, RV_abs, Kp_expected, do_inject_model, f, method):
 
@@ -270,12 +270,14 @@ def combine_observations(observation_epochs, arms, planet_name, temperature_prof
         
     if 'likelihood' in method:
         snr, Kp, drv = combine_likelihoods(drv, cross_cor, orbital_phase, len(orbital_phase), half_duration_phase, temperature_profile)
+        
     if any('red' in s for s in arms) and ('red' in s for s in arms):
         all_arms = 'combined'
     else:
         all_arms = arms[0]
 
     all_epochs = observation_epochs[0]
+    
     if len(observation_epochs) > 1:
         for i in range (1, len(observation_epochs)):
             all_epochs += '+'+observation_epochs[i]
@@ -289,9 +291,9 @@ def combine_observations(observation_epochs, arms, planet_name, temperature_prof
     
     get_peak_snr(snr, drv, Kp, do_inject_model, V_sys_true, Kp_true, RV_abs, Kp_expected, which_arms, all_epochs, f, method)
     
-    plotsnr, amps, amps_error, rv, rv_error, width, width_error, selected_idx = make_shifted_plot(snr, planet_name, observation_epoch, arm, species_name_ccf, model_tag, RV_abs, Kp_expected, V_sys_true, Kp_true, do_inject_model, drv, Kp, species_label, temperature_profile, sigma_shifted_ccfs, method, cross_cor_display, sigma_cross_cor, orbital_phase, n_spectra, ccf_weights, half_duration_phase)
+    plotsnr, amps, amps_error, rv, rv_error, width, width_error, selected_idx = make_shifted_plot(snr, planet_name, all_epochs, all_arms, species_name_ccf, model_tag, RV_abs, Kp_expected, V_sys_true, Kp_true, do_inject_model, drv, Kp, species_label, temperature_profile, sigma_shifted_ccfs, method, cross_cor_display, sigma_cross_cor, orbital_phase, n_spectra, ccf_weights, half_duration_phase)
     
-    return Kp_true, orbital_phase, plotsnr, amps, amps_error, rv, rv_error, width, width_error, selected_idx
+    return Kp_true, orbital_phase, plotsnr, amps, amps_error, rv, rv_error, width, width_error, selected_idx, snr_fit
             
 
 def run_all_ccfs(planet_name, temperature_profile, species_label, vmr, do_inject_model, do_run_all, do_make_new_model, method):
@@ -361,7 +363,7 @@ def run_all_ccfs(planet_name, temperature_profile, species_label, vmr, do_inject
         for observation_epoch in observation_epochs:
             for arm in arms:
                 print('Now running the ',arm,' data for ',observation_epoch)
-                Kp, Kp_true, drv, species_label, planet_name, observation_epoch, arm, species_name_ccf, model_tag, plotsnr, cross_cor_display, sigma_cross_cor, orbital_phase, n_spectra, ccf_weights, half_duration_phase, temperature_profile, sigma_shifted_ccfs, amps, amps_error, rv, rv_error, width, width_error, selected_idx = run_one_ccf(species_label, vmr, arm, observation_epoch, template_wave, template_flux, template_wave_in, template_flux_in, planet_name, temperature_profile, do_inject_model, species_name_ccf, model_tag, f, method, do_make_new_model)
+                Kp, Kp_true, drv, species_label, planet_name, observation_epoch, arm, species_name_ccf, model_tag, plotsnr, cross_cor_display, sigma_cross_cor, orbital_phase, n_spectra, ccf_weights, half_duration_phase, temperature_profile, sigma_shifted_ccfs, amps, amps_error, rv, rv_error, width, width_error, selected_idx, snr_fit = run_one_ccf(species_label, vmr, arm, observation_epoch, template_wave, template_flux, template_wave_in, template_flux_in, planet_name, temperature_profile, do_inject_model, species_name_ccf, model_tag, f, method, do_make_new_model)
 
 
                # Ensure observation_epoch key is initialized in fit_params[species_label]
@@ -377,13 +379,14 @@ def run_all_ccfs(planet_name, temperature_profile, species_label, vmr, do_inject
                     'width': width,
                     'width_error': width_error,
                     'selected_idx': selected_idx,
-                    'orbital_phase': orbital_phase
+                    'orbital_phase': orbital_phase,
+                    'snr_fit' : snr_fit
                 }
 
     print('Now combining all of the data')
     
     Period, epoch, M_star, RV_abs, i, M_p, R_p, RA, Dec, Kp_expected, half_duration_phase, Ks_expected = get_planet_parameters(planet_name)
-
+    #breakpoint()
     Kp_true, orbital_phase, plotsnr, amps, amps_error, rv, rv_error, width, width_error, selected_idx = combine_observations(observation_epochs, arms, planet_name, temperature_profile, species_label, species_name_ccf, model_tag, RV_abs, Kp_expected, do_inject_model, f, method)
     
    # Ensure 'combined' key is initialized in fit_params[species_label]
@@ -399,18 +402,32 @@ def run_all_ccfs(planet_name, temperature_profile, species_label, vmr, do_inject
         'width': width,
         'width_error': width_error,
         'selected_idx': selected_idx,
-        'orbital_phase': orbital_phase
+        'orbital_phase': orbital_phase,
+        'snr_fit' : snr_fit
     }
     
 
-    #if species_label != 'FeH': Kp_true, orbital_phase, plotsnr, amps, amps_error, rv, rv_error, width, width_error, selected_idx = combine_observations(observation_epochs, ['blue'], planet_name, temperature_profile, species_label, species_name_ccf, model_tag, RV_abs, Kp_expected, do_inject_model, f, method)
+    #if species_label != 'FeH': Kp_true, orbital_phase, plotsnr, amps, amps_error, rv, rv_error, width, width_error, selected_idx = combine_observations(observation_epochs, ['blue'], planet_name, temperature_profile, species_label, species_name_ccf, model_ta1, RV_abs, Kp_expected, do_inject_model, f, method)
 
     #if species_label != 'CaH': Kp_true, orbital_phase, plotsnr, amps, amps_error, rv, rv_error, width, width_error, selected_idx = combine_observations(observation_epochs, ['red'], planet_name, temperature_profile, species_label, species_name_ccf, model_tag, RV_abs, Kp_expected, do_inject_model, f, method)
-
+    breakpoint()
     f.close()
     orbital_phase, observation_epochs
     
     return amps, amps_error, rv, rv_error, width, width_error, selected_idx, orbital_phase, fit_params, observation_epochs
+
+def overlayGaussian(planet_name, temperature_profile, species_dict, do_inject_model, do_run_all, do_make_new_model, method):
+    arms = ['blue', 'red', 'combined']
+    snr_fit = {}
+    for arm in arms:
+        for species_label, params in species_dict.items():
+            vmr = params.get('vmr')
+            amps, amps_error, rv, rv_error, width, width_error, selected_idx, orbital_phase, fit_params, observation_epochs = run_all_ccfs(planet_name, temperature_profile, species_label, vmr, do_inject_model, do_run_all, do_make_new_model, method)
+
+            snr_fit[arm] = fit_params[species_label]['combined'][arm]['snr_fit']
+    
+    breakpoint()
+            
 
 def multiSpeciesCCF(planet_name, temperature_profile, species_dict, do_inject_model, do_run_all, do_make_new_model, method):
     """
@@ -491,7 +508,7 @@ def multiSpeciesCCF(planet_name, temperature_profile, species_dict, do_inject_mo
     cbar.set_label('SNR')
 
     # Save the plot
-    plotname = path_modifier_plots + 'plots/' + planet_name + '.' + temperature_profile + '.CombinedSpeciesSNRs.pdf'
+    plotname = path_modifier_plots + 'plots/' + planet_name + '.' + temperature_profile + '.CombinedGaussians.pdf'
     fig.savefig(plotname, dpi=300, bbox_inches='tight')
 
 # example usage
@@ -516,7 +533,7 @@ def combinedWindCharacteristics(planet_name, temperature_profile, species_dict, 
     """
     
     # Initialize dicts
-    wind_chars = {}
+    line_profile = {}
     all_amps = []
 
     # Loop through each species
@@ -525,12 +542,12 @@ def combinedWindCharacteristics(planet_name, temperature_profile, species_dict, 
         amps, amps_error, rv, rv_error, width, width_error, selected_idx, orbital_phase, fit_params, observation_epochs = run_all_ccfs(planet_name, temperature_profile, species_label, vmr, do_inject_model, do_run_all, do_make_new_model, method)
 
         # Initialize 'combined' key for each species
-        if species_label not in wind_chars:
-            wind_chars[species_label] = {'combined': {'combined': {}}}
+        if species_label not in line_profile:
+            line_profile[species_label] = {'combined': {'combined': {}}}
 
         # Mask 'rv' and 'rv_error' values exceeding ±20 km/s
-        rv_masked = np.where(np.abs(rv) <= 20, rv, 0)
-        rv_error_masked = np.where(np.abs(rv_error) <= 20, rv_error, 0)
+        rv_masked = np.where(np.abs(rv) <= 10, rv, 0)
+        rv_error_masked = np.where(np.abs(rv_error) <= 10, rv_error, 0)
 
         # ############################################################################################################################################################################################
         # This will do for now, but later on I need to pare down the outputs of run_all_ccfs to fit_params and change how the outputs are processed in multiSpeciesCCF and combinedWindCharacteristics
@@ -538,27 +555,27 @@ def combinedWindCharacteristics(planet_name, temperature_profile, species_dict, 
         # Creating a whole new dictionary is unnecessary. 
 
         # Accessing results from run_all_ccfs and storing results for per-arm CCFs
-        if species_label not in wind_chars:
-            wind_chars[species_label] = {}
+        if species_label not in line_profile:
+            line_profile[species_label] = {}
 
             for observation_epoch in observation_epochs:
                 for arm in ['blue', 'red']:
-                    if observation_epoch not in wind_chars[species_label]:
+                    if observation_epoch not in line_profile[species_label]:
 
-                        wind_chars[species_label][observation_epoch] = {}
-                        wind_chars[species_label][observation_epoch][arm] = {}
+                        line_profile[species_label][observation_epoch] = {}
+                        line_profile[species_label][observation_epoch][arm] = {}
 
-                        wind_chars[species_label][observation_epoch][arm]['amps'] = fit_params[species_label][observation_epoch][arm]['amps']
-                        wind_chars[species_label][observation_epoch][arm]['amps_error'] = fit_params[species_label][observation_epoch][arm]['amps_error']
-                        wind_chars[species_label][observation_epoch][arm]['rv'] = fit_params[species_label][observation_epoch][arm]['rv']
-                        wind_chars[species_label][observation_epoch][arm]['rv_error'] = fit_params[species_label][observation_epoch][arm]['rv_error']
-                        wind_chars[species_label][observation_epoch][arm]['width'] = fit_params[species_label][observation_epoch][arm]['width']
-                        wind_chars[species_label][observation_epoch][arm]['width_error'] = fit_params[species_label][observation_epoch][arm]['width_error']
-                        wind_chars[species_label][observation_epoch][arm]['selected_idx'] = fit_params[species_label][observation_epoch][arm]['selected_idx']
-                        wind_chars[species_label][observation_epoch][arm]['orbital_phase'] = fit_params[species_label][observation_epoch][arm]['orbital_phase']
+                        line_profile[species_label][observation_epoch][arm]['amps'] = fit_params[species_label][observation_epoch][arm]['amps']
+                        line_profile[species_label][observation_epoch][arm]['amps_error'] = fit_params[species_label][observation_epoch][arm]['amps_error']
+                        line_profile[species_label][observation_epoch][arm]['rv'] = fit_params[species_label][observation_epoch][arm]['rv']
+                        line_profile[species_label][observation_epoch][arm]['rv_error'] = fit_params[species_label][observation_epoch][arm]['rv_error']
+                        line_profile[species_label][observation_epoch][arm]['width'] = fit_params[species_label][observation_epoch][arm]['width']
+                        line_profile[species_label][observation_epoch][arm]['width_error'] = fit_params[species_label][observation_epoch][arm]['width_error']
+                        line_profile[species_label][observation_epoch][arm]['selected_idx'] = fit_params[species_label][observation_epoch][arm]['selected_idx']
+                        line_profile[species_label][observation_epoch][arm]['orbital_phase'] = fit_params[species_label][observation_epoch][arm]['orbital_phase']
     
         # Storing results for combined CCFs
-        wind_chars[species_label]['combined']['combined'] = {
+        line_profile[species_label]['combined']['combined'] = {
             'amps': amps,
             'amps_error': amps_error,
             'rv': rv_masked,
@@ -583,7 +600,7 @@ def combinedWindCharacteristics(planet_name, temperature_profile, species_dict, 
         scalar_map = cm.ScalarMappable(norm=norm, cmap=cm.magma)  # Using the 'plasma' colormap
 
         # Plotting for each species
-        for species, species_data in wind_chars.items():
+        for species, species_data in line_profile.items():
             combined_data = species_data['combined']['combined']
             
             # Generate a color for each data point based on its amplitude
@@ -613,13 +630,13 @@ def combinedWindCharacteristics(planet_name, temperature_profile, species_dict, 
 
     else:
         # Set up a color cycle using a matplotlib colormap
-        num_species = len(wind_chars)
+        num_species = len(line_profile)
         color_map = pl.cm.get_cmap('nipy_spectral', num_species)  # Choosing a colormap with sufficient distinct colors
         
-        species_colors = {species: color_map(i) for i, species in enumerate(wind_chars.keys())}
+        species_colors = {species: color_map(i) for i, species in enumerate(line_profile.keys())}
         
         # Plotting for each species with assigned color
-        for species, species_data in enumerate(wind_chars.items()):
+        for species, species_data in enumerate(line_profile.items()):
             # Access the 'combined' data
             combined_data = species_data['combined']['combined']
             species_color = species_colors[species]
@@ -636,10 +653,10 @@ def combinedWindCharacteristics(planet_name, temperature_profile, species_dict, 
                         ax.fill_between(phase_array, arm_data['rv'] - arm_data['rv_error'], arm_data['rv'] + arm_data['rv_error'], color=species_color, alpha=0.2)
 
         # Create custom lines for the legend to match the species' colors
-        custom_lines = [pl.Line2D([0], [0], color=species_colors[species], lw=4) for species in wind_chars.keys()]
+        custom_lines = [pl.Line2D([0], [0], color=species_colors[species], lw=4) for species in line_profile.keys()]
 
         # Create the legend
-        ax.legend(custom_lines, [f'{species}' for species in wind_chars.keys()])
+        ax.legend(custom_lines, [f'{species}' for species in line_profile.keys()])
 
     # Save the plot
     plotname_combined = path_modifier_plots + 'plots/' + planet_name + '.' + temperature_profile + '.CombinedWindCharacteristics_Combined.pdf'   
