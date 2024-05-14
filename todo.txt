@@ -1,0 +1,4 @@
+todo
+- overlay red, blue, and combined gaussians
+- fix combined plots so they are output
+- 

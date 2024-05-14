@@ -44,9 +44,9 @@ pl.rc('legend', fontsize=14) #fontsize of the legend
 # global varaibles defined for harcoded path to data on my computer
 path_modifier_plots = '/home/calder/Documents/atmo-analysis-main/'  #linux
 path_modifier_data = '/home/calder/Documents/petitRADTRANS_data/'   #linux
-#path_modifier_plots = '/Users/calder/Documents/atmo-analysis-main/' #mac
-#path_modifier_data = '/Volumes/sabrent/petitRADTRANS_data/'  #mac
-#path_modifier_data = '/Users/calder/Documents/petitRADTRANS_data/' #mac
+path_modifier_plots = '/Users/calder/Documents/atmo-analysis-main/' #mac
+path_modifier_data = '/Volumes/sabrent/petitRADTRANS_data/'  #mac
+path_modifier_data = '/Users/calder/Documents/petitRADTRANS_data/' #mac
 
 def get_species_keys(species_label):
     species_names = set()  # Create a set to store unique species names
@@ -1300,21 +1300,6 @@ def combine_likelihoods(drv, lnL, orbital_phase, n_spectra, half_duration_phase,
 
     return shifted_lnL, Kp, drv
 
-def gaussian(x, a, mu, sigma):
-
-    '''
-    Inputs:
-    x: x values
-    a: amplitude
-    mu: mean
-    sigma: standard deviation
-
-    Output:
-    Gaussian function
-    '''
-    return a * np.exp(-(x - mu)**2 / (2 * sigma**2))
-
-
 def gaussian_fit(Kp, Kp_true, drv, species_label, planet_name, observation_epoch, arm, species_name_ccf, model_tag, plotsnr, sigma_shifted_ccfs, temperature_profile, cross_cor, sigma_cross_cor, ccf_weights):
  
 
@@ -1336,7 +1321,13 @@ def gaussian_fit(Kp, Kp_true, drv, species_label, planet_name, observation_epoch
 
     slice_peak = np.zeros(plotsnr.shape[0])
     # Fitting gaussian to all 1D Kp slices
+        
+    idx = np.where(Kp == int(np.floor(Kp_true)))[0][0] #Kp slice corresponding to expected Kp
+    #idx = np.argmax(slice_peak)                       #Kp slice corresponding to max SNR 
     
+    lower_bounds = [-np.inf, -np.inf, 2]
+    upper_bounds = [np.inf, np.inf, np.inf]
+       
     for i in range(plotsnr.shape[0]):
            
         # Sort the peaks in descending order
@@ -1345,10 +1336,10 @@ def gaussian_fit(Kp, Kp_true, drv, species_label, planet_name, observation_epoch
         # Iterate over the peaks
         for peak in peaks:
             # If the peak is within the desired range, fit the Gaussian
-            if -15 <= drv[peak] <= 15:
+            if np.abs(drv[peak]) <= 15:
                 slice_peak[i] = plotsnr[i, peak]
                 
-                popt, pcov = curve_fit(gaussian, drv, plotsnr[i,:], p0=[plotsnr[i, peak], drv[peak], 2.5], sigma = sigma_shifted_ccfs[i,:], maxfev=10000)
+                popt, pcov = curve_fit(gaussian, drv, plotsnr[i,:], p0=[plotsnr[i, peak], drv[peak], 2.55035], sigma = sigma_shifted_ccfs[i,:], bounds = (lower_bounds, upper_bounds), maxfev=10000)
 
                 amps[i] = popt[0]
                 rv[i] = popt[1]
@@ -1359,16 +1350,12 @@ def gaussian_fit(Kp, Kp_true, drv, species_label, planet_name, observation_epoch
                 
                 # Break the loop as we have found a suitable peak
                 break
-        
-    # Selecting a specific Kp slice
-    selected_idx = np.where(Kp == int((np.floor(Kp_true))))[0][0] #Kp slice corresponding to expected Kp
-    selected_idx = np.argmax(slice_peak)                       #Kp slice corresponding to max SNR -- this is the one I've selected for now
 
-    popt_selected = [amps[selected_idx], rv[selected_idx], width[selected_idx]]
-    print('Selected SNR:', amps[selected_idx], '\n Selected Vsys:', rv[selected_idx], '\n Selected sigma:', width[selected_idx], '\n Selected Kp:', Kp[selected_idx])
+    popt_selected = [amps[idx], rv[idx], width[idx]]
+    print('Selected SNR:', amps[idx], '\n Selected Vsys:', rv[idx], '\n Selected sigma:', width[idx], '\n Selected Kp:', Kp[idx])
 
     # Computing residuals and chi-squared for selected slice
-    residual = plotsnr[selected_idx, :] - gaussian(drv, *popt_selected)
+    residual = plotsnr[idx, :] - gaussian(drv, *popt_selected)
     # chi2 = np.sum((residual / np.std(residual))**2)/(len(drv)-len(popt))
 
     # Initialize Figure and GridSpec objects
@@ -1382,7 +1369,7 @@ def gaussian_fit(Kp, Kp_true, drv, species_label, planet_name, observation_epoch
     plot_mask = np.abs(drv) <= 25.
     # Restrict arrays to the region of interest for plotting
     drv_restricted = drv[plot_mask]
-    plotsnr_restricted = plotsnr[selected_idx, plot_mask]
+    plotsnr_restricted = plotsnr[idx, plot_mask]
     residual_restricted = residual[plot_mask]
   
     # Main Plot (ax1)
@@ -1397,19 +1384,19 @@ def gaussian_fit(Kp, Kp_true, drv, species_label, planet_name, observation_epoch
     # Annotating the arm and species on the plot
     
     # Additional text information for the main plot
-    #params_str = f"Peak (a): {popt_selected[0]:.2f}\nMean (mu): {popt_selected[1]:.2f}\nSigma: {popt_selected[2]:.2f}\nKp: {Kp[selected_idx]:.0f}"
+    #params_str = f"Peak (a): {popt_selected[0]:.2f}\nMean (mu): {popt_selected[1]:.2f}\nSigma: {popt_selected[2]:.2f}\nKp: {Kp[idx]:.0f}"
     #ax1.text(0.01, 0.95, params_str, transform=ax1.transAxes, verticalalignment='top', fontsize=10)
 
     arm_species_text = f'Arm: {arm}'
     ax1.text(0.15, 0.95, arm_species_text, transform=ax1.transAxes, verticalalignment='top', fontsize=10)
     
     # Vertical line for the Gaussian peak center
-    ax1.axvline(x=rv[selected_idx], color='b', linestyle='-', label='Center')
+    ax1.axvline(x=rv[idx], color='b', linestyle='-', label='Center')
     #ax1.set_title('1D CCF Slice + Gaussian Fit')
 
     # Vertical lines for sigma width (center ± sigma)
-    #sigma_left = rv[selected_idx] - width[selected_idx]
-    #sigma_right = rv[selected_idx] + width[selected_idx]
+    #sigma_left = rv[idx] - width[idx]
+    #sigma_right = rv[idx] + width[idx]
     #ax1.axvline(x=sigma_left, color='purple', linestyle='--', label='- Sigma')
     #ax1.axvline(x=sigma_right, color='purple', linestyle='--', label='+ Sigma')
 
@@ -1446,7 +1433,7 @@ def gaussian_fit(Kp, Kp_true, drv, species_label, planet_name, observation_epoch
             phase_here = np.argmin(np.abs(phase_array - orbital_phase[j]))
             temp_ccf = np.interp(drv, drv-RV[j], cross_cor[j, :], left=0., right=0.0)
             temp_ccf *= ccf_weights[j]
-            peak = np.argmax(temp_ccf[300:501]) + 300
+            peak = np.argmax(temp_ccf[390:411]) + 390
             sigma_temp_ccf = np.interp(drv, drv-RV[j], sigma_cross_cor[j, :], left=0., right=0.0)
             sigma_temp_ccf = sigma_temp_ccf**2 * ccf_weights[j]**2
             popt, pcov = curve_fit(gaussian, drv, temp_ccf, p0=[temp_ccf[peak], drv[peak], 2.5], sigma = np.sqrt(sigma_temp_ccf), maxfev=1000)
@@ -1455,16 +1442,10 @@ def gaussian_fit(Kp, Kp_true, drv, species_label, planet_name, observation_epoch
             slice_peak_chars[i] = temp_ccf[peak]
         i+=1
 
-
     fig, ax1 = pl.subplots(figsize=(8,8))
 
     ax1.text(0.05, 0.99, species_label, transform=ax1.transAxes, verticalalignment='top', horizontalalignment='left', fontsize=12)
-        
-    idx = np.where(Kp == int(np.floor(Kp_true)))[0][0]
-    #idx = np.argmax(slice_peak)                       #Kp slice corresponding to max SNR -- this is the one I've selected for now
-    
-    breakpoint()
-    
+
     ax1.plot(phase_array, rv_chars[idx,:], '-', label='Center')
     ax1.fill_between(phase_array, rv_chars[idx,:] - rv_chars_error[idx, :], rv_chars[idx,:] + rv_chars_error[idx,:], color='blue', alpha=0.2, zorder=2)
     ax1.set_xlabel('Orbital Phase')
@@ -1494,7 +1475,7 @@ def gaussian_fit(Kp, Kp_true, drv, species_label, planet_name, observation_epoch
     wind_chars = path_modifier_plots + 'plots/' + planet_name + '.' + observation_epoch + '.' + arm + '.' + species_name_ccf + model_tag + '.Wind-characteristics.pdf'
     fig.savefig(wind_chars, dpi=300, bbox_inches='tight')
 
-    return amps, amps_error, rv, rv_error, width, width_error, residual, do_molecfit, selected_idx, wind_chars
+    return amps, amps_error, rv, rv_error, width, width_error, residual, do_molecfit, idx, wind_chars
 
 def make_shifted_plot(snr, planet_name, observation_epoch, arm, species_name_ccf, model_tag, RV_abs, Kp_expected, V_sys_true, Kp_true, do_inject_model, drv, Kp, species_label, temperature_profile, sigma_shifted_ccfs, method, cross_cor_display, sigma_cross_cor, orbital_phase, n_spectra, ccf_weights, half_duration_phase, plotformat = 'pdf'):
     
@@ -1530,11 +1511,11 @@ def make_shifted_plot(snr, planet_name, observation_epoch, arm, species_name_ccf
 
     plotsnr, Kp = plotsnr[keepKp, :], Kp[keepKp]
     # Fit a Gaussian to the line profile for combined arms
-    amps, amps_error, rv, rv_error, width, width_error, residual, do_molecfit, selected_idx, wind_chars = gaussian_fit(Kp, Kp_true, drv, species_label, planet_name, observation_epoch, arm, species_name_ccf, model_tag, plotsnr, sigma_shifted_ccfs, temperature_profile, cross_cor_display, sigma_cross_cor, ccf_weights)
+    amps, amps_error, rv, rv_error, width, width_error, residual, do_molecfit, idx, wind_chars = gaussian_fit(Kp, Kp_true, drv, species_label, planet_name, observation_epoch, arm, species_name_ccf, model_tag, plotsnr, sigma_shifted_ccfs, temperature_profile, cross_cor_display, sigma_cross_cor, ccf_weights)
 
     psarr(plotsnr, drv, Kp, '$V_{\mathrm{sys}}$ (km/s)', '$K_p$ (km/s)', zlabel, filename=plotname, ctable=ctable, alines=True, apoints=apoints, acolor='cyan', textstr=species_label+' '+model_label, textloc = np.array([apoints[0]-75.,apoints[1]+75.]), textcolor='cyan', fileformat=plotformat)
     
-    return plotsnr, amps, amps_error, rv, rv_error, width, width_error, selected_idx
+    return plotsnr, amps, amps_error, rv, rv_error, width, width_error, idx
 
 def DopplerShadowModel(drv, planet_name, exptime, orbital_phase, obs, inputs = {
                                     'mode':'spec',  
