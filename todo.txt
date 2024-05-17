@@ -1,6 +1,5 @@
 todo
 - overlay red, blue, and combined gaussians
-- fix combined plots so they are output
 - 
 
 todo
@@ -21,31 +20,6 @@ todo
 				- EXPLAIN WHY THIS STEP IS NECSSARY.
 			- State the methodology for creating the Kp-Vsys map more clearly. Use subfield-proper language to do so. "Map", "grid search", "free parameter".
 				- mention what range of Kp values and Vsys values you consider in the search, and if these differ from the values you actually consider physical
-			- mention how the SNR is calculated, i.e. It's the standard deviation but say this in subfield-correct langauge again with good precision and conciseness.
-				- def flatten_spectra(flux, npix, n_spectra):
-					median_flux1, median_error = np.zeros(npix), np.zeros(npix)
-					residual_flux = unp.uarray(np.zeros((n_spectra, npix)), np.zeros((n_spectra, npix)))
-					total_flux, total_error = np.zeros(npix), np.zeros(npix)
-
-					for i in range (0, npix):
-						median_flux1[i] = np.median(unp.nominal_values(flux[:,i]))
-						#median doesn't really propagate errors correctly, so we need to do it by hand
-						little_n = (n_spectra-1)/2
-						#The latter estimated median error comes from https://mathworld.wolfram.com/StatisticalMedian.html
-						median_error[i] = np.sqrt(np.sum(unp.std_devs(flux[:,i])**2))/n_spectra/np.sqrt(4*little_n/(np.pi*n_spectra))
-						total_flux[i] = np.sum(unp.nominal_values(flux[:,i]))
-						total_error[i] = np.sqrt(np.sum(unp.std_devs(flux[:,i])**2))
-					
-					median_flux = unp.uarray(median_flux1, median_error)
-					
-					for i in range (0, n_spectra):
-						residual_flux[i,:] = flux[i, :] - median_flux
-
-					total_snr = total_flux/total_error
-					print('The maximum total SNR is ', np.max(total_snr))
-
-					return residual_flux
-					
 			- The presentation of CCFs is repetitive. I need to think of a way of presenting these in a less repetitive fashion.
 			- "We select the exposure with peak signal-to-noise ratio (SNR)" WRONG. find the location in the Kp-vsys map with the highest SNR, and use that value of Kp for the rest of this analysis?
 			-
@@ -63,17 +37,11 @@ todo
 			- make it more clear that the offset between Gaussian peak and planetary rest frame is the wind velocity. Language is too ambigious
 			- make it clear that you are doing a separate Gaussian fit to each of the in-transit CCFs and it is the peak velocity and width for these fits which is shown.
 			- "We repeat this process for each species meeting the ${3\sigma}$ detection threshold, then overlay the results." Doesn't need to be said in the main text. Put this in the captions. FIgure captions should describe what is shown in the figure, while the main text should be focused more on the reasoning for the analysis and the conclusions enabled by what is shown in the figure.
-		- TODO
-			- Kp-Vsys maps
-				- convert to 6x1
-				
+		- TODO				
 			- wind characteristics
-				- fix the Co wind characteristics plot so that there are no discontinuities due to the gaussian fitting to the wrong thing
 				- make the plot 6x1 instead of 3x2, using subplot in python rather than putting them 3x2 in LaTeX subplots
 					- this will eliminate redundant orbital phase x-axis. instead, an x-axis at the top of the plot and one at the bottom of the plot that have orbital phase. then add vertical lines at each 0.01 increment of orbital phase that extend across all plots. 
-					- also you need to change the scaling of the plots. and remove the 'Center' legend. In the caption for the main figure. Describe the y-axis and x-axis in detail. Describe the shading that represents the uncertainty. MAKE SURE YOURE CORRECT IN WHAT THIS IS ACTUALLY REPRESENTING. MARSHALL HAS BROUGHT UP THIS DETAIL IN THE PAST.
-					- make the Species label large. in the top left. 
-					- remove Arm: combined signifier. Instead, make note of this in the figure caption.
+					- also you need to change the scaling of the plots. and remove the 'Center' legend. In the caption for the main figure. Describe the y-axis and x-axis in detail. Describe the shading that represents the uncertainty.
 					- If you're considering including neutral Nickel, you will put this plot in a separate figure, where you make it clear that this is from only one arm and is extremely tentative.
 			
 4. Results

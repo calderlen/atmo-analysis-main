@@ -44,9 +44,9 @@ pl.rc('legend', fontsize=14) #fontsize of the legend
 # global varaibles defined for harcoded path to data on my computer
 path_modifier_plots = '/home/calder/Documents/atmo-analysis-main/'  #linux
 path_modifier_data = '/home/calder/Documents/petitRADTRANS_data/'   #linux
-#path_modifier_plots = '/Users/calder/Documents/atmo-analysis-main/' #mac
-#path_modifier_data = '/Volumes/sabrent/petitRADTRANS_data/'  #mac
-#path_modifier_data = '/Users/calder/Documents/petitRADTRANS_data/' #mac
+path_modifier_plots = '/Users/calder/Documents/atmo-analysis-main/' #mac
+path_modifier_data = '/Volumes/sabrent/petitRADTRANS_data/'  #mac
+path_modifier_data = '/Users/calder/Documents/petitRADTRANS_data/' #mac
 
 def get_species_keys(species_label):
     species_names = set()  # Create a set to store unique species names
@@ -1074,13 +1074,15 @@ def get_ccfs(wave, corrected_flux, corrected_error, template_wave, template_flux
     #rvmin, rvmax = -100., 100. #kms
     rvmin, rvmax = -400., 400. #kms
     rvspacing = 1.0 #kms
-    #breakpoint()
     for i in range (n_spectra):
         drv, cross_cor_out, sigma_cross_cor_out = ccf(wave, corrected_flux[i,:], corrected_error[i,:], template_wave, template_flux, rvmin, rvmax, rvspacing)
+        
+
         if i == 0:
             cross_cor, sigma_cross_cor = np.zeros((n_spectra, len(drv))), np.zeros((n_spectra, len(drv)))
         cross_cor[i,:], sigma_cross_cor[i,:] = cross_cor_out, sigma_cross_cor_out
-
+    
+    breakpoint()
     return drv, cross_cor, sigma_cross_cor
 
 def get_likelihood(wave, corrected_flux, corrected_error, template_wave, template_flux, n_spectra, U_sysrem, telluric_free):
@@ -1458,7 +1460,7 @@ def gaussian_fit(Kp, Kp_true, drv, species_label, planet_name, observation_epoch
     line_profile = path_modifier_plots + 'plots/' + planet_name + '.' + observation_epoch + '.' + arm + '.' + species_name_ccf + model_tag + '.line-profile.pdf'
     fig.savefig(line_profile, dpi=300, bbox_inches='tight')
 
-    return amps, amps_error, rv, rv_error, width, width_error, residual, do_molecfit, idx, line_profile, snr_fit
+    return amps, amps_error, rv, rv_error, width, width_error, residual, do_molecfit, idx, line_profile, drv_restricted, plotsnr_restricted, residual_restricted
 
 def make_shifted_plot(snr, planet_name, observation_epoch, arm, species_name_ccf, model_tag, RV_abs, Kp_expected, V_sys_true, Kp_true, do_inject_model, drv, Kp, species_label, temperature_profile, sigma_shifted_ccfs, method, cross_cor_display, sigma_cross_cor, orbital_phase, n_spectra, ccf_weights, half_duration_phase, plotformat = 'pdf'):
     
@@ -1494,13 +1496,13 @@ def make_shifted_plot(snr, planet_name, observation_epoch, arm, species_name_ccf
 
     plotsnr, Kp = plotsnr[keepKp, :], Kp[keepKp]
     # Fit a Gaussian to the line profile for combined arms
-    amps, amps_error, rv, rv_error, width, width_error, residual, do_molecfit, idx, line_profile, snr_fit = gaussian_fit(Kp, Kp_true, drv, species_label, planet_name, observation_epoch, arm, species_name_ccf, model_tag, plotsnr, sigma_shifted_ccfs, temperature_profile, cross_cor_display, sigma_cross_cor, ccf_weights)
+    amps, amps_error, rv, rv_error, width, width_error, residual, do_molecfit, idx, line_profile, drv_restricted, plotsnr_restricted, residual_restricted = gaussian_fit(Kp, Kp_true, drv, species_label, planet_name, observation_epoch, arm, species_name_ccf, model_tag, plotsnr, sigma_shifted_ccfs, temperature_profile, cross_cor_display, sigma_cross_cor, ccf_weights)
 
     psarr(plotsnr, drv, Kp, '$V_{\mathrm{sys}}$ (km/s)', '$K_p$ (km/s)', zlabel, filename=plotname, ctable=ctable, alines=True, apoints=apoints, acolor='cyan', textstr=species_label+' '+model_label, textloc = np.array([apoints[0]-75.,apoints[1]+75.]), textcolor='cyan', fileformat=plotformat)
     
-    return plotsnr, amps, amps_error, rv, rv_error, width, width_error, idx, snr_fit
+    return plotsnr, amps, amps_error, rv, rv_error, width, width_error, idx, drv_restricted, plotsnr_restricted, residual_restricted
 
-def DopplerShadowModel(drv, planet_name, exptime, orbital_phase, obs, inputs = {
+def dopplerShadowRemove(drv, planet_name, exptime, orbital_phase, obs, inputs = {
                                     'mode':'spec',  
                                     'res':'medium', 
                                     'resnum': 0,    
