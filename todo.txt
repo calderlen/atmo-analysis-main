@@ -1,11 +1,9 @@
 todo
 - overlay red, blue, and combined gaussians
-- 
+- bin phases for phase-resolved line profiles for stronger signal
 
 todo
 2. 
-	- explicity mention the SYSREM algorithm (in addition to PySysRem?)
-	- explain the numbers in the SYSREM/VMR table, what the parameters mean. you need to figure this out for yourself
 		
 3.
 	3.1 Data Preparation

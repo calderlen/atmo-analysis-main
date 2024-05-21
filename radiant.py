@@ -44,9 +44,9 @@ pl.rc('legend', fontsize=14) #fontsize of the legend
 # global varaibles defined for harcoded path to data on my computer
 path_modifier_plots = '/home/calder/Documents/atmo-analysis-main/'  #linux
 path_modifier_data = '/home/calder/Documents/petitRADTRANS_data/'   #linux
-#path_modifier_plots = '/Users/calder/Documents/atmo-analysis-main/' #mac
-#path_modifier_data = '/Volumes/sabrent/petitRADTRANS_data/'  #mac
-#path_modifier_data = '/Users/calder/Documents/petitRADTRANS_data/' #mac
+path_modifier_plots = '/Users/calder/Documents/atmo-analysis-main/' #mac
+path_modifier_data = '/Volumes/sabrent/petitRADTRANS_data/'  #mac
+path_modifier_data = '/Users/calder/Documents/petitRADTRANS_data/' #mac
 
 def get_species_keys(species_label):
     species_names = set()  # Create a set to store unique species names
@@ -488,10 +488,11 @@ def get_pepsi_data(arm, observation_epoch, planet_name, do_molecfit):
     
     
     #change 'avr' to 'nor' below for more recent data
-    if float(observation_epoch[0:4]) >= 2019 and float(observation_epoch[0:4]) <= 2023:
-        pepsi_extend = 'nor'
-    elif float(observation_epoch[0:4]) >= 2024:
-        pepsi_extend = 'bwl'
+    if observation_epoch != 'mock-obs':
+        if float(observation_epoch[0:4]) >= 2019 and float(observation_epoch[0:4]) <= 2023:
+            pepsi_extend = 'nor'
+        elif float(observation_epoch[0:4]) >= 2024:
+            pepsi_extend = 'bwl'
     else:
         pepsi_extend = 'avr'
         
@@ -1168,7 +1169,7 @@ def combine_ccfs_binned(drv, cross_cor, sigma_cross_cor, orbital_phase, n_spectr
     i = 0
 
 
-    
+    Kp_here = unp.nominal_values(Kp_here)
     RV = Kp_here*np.sin(2.*np.pi*orbital_phase)
     
         
@@ -1176,8 +1177,8 @@ def combine_ccfs_binned(drv, cross_cor, sigma_cross_cor, orbital_phase, n_spectr
         #restrict to only in-transit spectra if doing transmission:
         #print(orbital_phase[j])
         if not 'transmission' in temperature_profile or np.abs(orbital_phase[j]) <= half_duration_phase:
-
             phase_here = np.argmin(np.abs(phase_bin - orbital_phase[j]))
+            
             temp_ccf = np.interp(drv, drv-RV[j], cross_cor[j, :], left=0., right=0.0)
             sigma_temp_ccf = np.interp(drv, drv-RV[j], sigma_cross_cor[j, :], left=0., right=0.0)
             binned_ccfs[phase_here,:] += temp_ccf * ccf_weights[j]
@@ -1263,9 +1264,52 @@ def combine_ccfs_binned(drv, cross_cor, sigma_cross_cor, orbital_phase, n_spectr
     secax.set_ylabel('orbital phase (degrees)')
     pl.savefig(path_modifier_plots+'plots/'+planet_name+'.'+species_name_ccf+'.phase-binned+RVs.pdf', format='pdf')
     pl.clf()
+    
+    Kp = np.arange(50, 350, 1)
+    # Line Profile plot
+    idx = np.where(Kp == int(np.floor(Kp_here)))[0][0] #Kp slice corresponding to expected Kp
+
+    rv_chars, rv_chars_error = np.zeros((len(Kp), n_spectra)), np.zeros((len(Kp), n_spectra))
+    phase_array = np.linspace(np.min(orbital_phase), np.max(orbital_phase), num=n_spectra)   
+    slice_peak_chars = np.zeros(len(Kp))
+
+    i = 0
+    for Kp_i in Kp:
+        RV = Kp_i*np.sin(2.*np.pi*orbital_phase)
+        
+        for j in range(n_spectra):
+            #restrict to only in-transit spectra if doing transmission:
+            #also want to leave out observations in 2ndary eclipse!
+            phase_here = np.argmin(np.abs(phase_array - orbital_phase[j]))
+            temp_ccf = np.interp(drv, drv-RV[j], cross_cor[j, :], left=0., right=0.0)
+            temp_ccf *= ccf_weights[j]
+            peak = np.argmax(temp_ccf[390:411]) + 390
+            sigma_temp_ccf = np.interp(drv, drv-RV[j], sigma_cross_cor[j, :], left=0., right=0.0)
+            sigma_temp_ccf = sigma_temp_ccf**2 * ccf_weights[j]**2
+            popt, pcov = curve_fit(gaussian, drv, temp_ccf, p0=[temp_ccf[peak], drv[peak], 2.5], sigma = np.sqrt(sigma_temp_ccf), maxfev=1000)
+            rv_chars[i,phase_here] = popt[1]
+            rv_chars_error[i,phase_here] = np.sqrt(pcov[1,1])
+            slice_peak_chars[i] = temp_ccf[peak]
+        i+=1
+
+    fig, ax1 = pl.subplots(figsize=(8,8))
+
+    ax1.text(0.05, 0.99, species_name_ccf, transform=ax1.transAxes, verticalalignment='top', horizontalalignment='left', fontsize=12)
+    ax1.plot(rv_chars[idx,:], phase_array, '-', label='Center')
+    ax1.fill_betweenx(phase_array, rv_chars[idx,:] - rv_chars_error[idx, :], rv_chars[idx,:] + rv_chars_error[idx,:], color='blue', alpha=0.2, zorder=2)
+    ax1.set_ylabel('Orbital Phase')
+    ax1.set_xlabel('$v_{sys}$ (km/s)', color='b')
+    ax1.tick_params(axis='x', labelcolor='b')
+    
+    # add a vertical line at 0km/s
+    ax1.axvline(x=0, color='black', linestyle='--', alpha=0.5)
+
+    line_profile = path_modifier_plots + 'plots/' + planet_name + '.' + 'combined' + '.' + 'combined' + '.' + species_name_ccf + '.line-profile-binned.pdf'
+    fig.savefig(line_profile, dpi=300, bbox_inches='tight')
 
 
 
+    # equivlent to return snr, 
     return binned_ccfs, rvs, widths, rverrors, widtherrors
         
 
@@ -1332,8 +1376,7 @@ def gaussian_fit(Kp, Kp_true, drv, species_label, planet_name, observation_epoch
             # If the peak is within the desired range, fit the Gaussian
             if np.abs(drv[peak]) <= 15:
                 slice_peak[i] = plotsnr[i, peak]
-                print(i)
-                print(peak)
+                
                 popt, pcov = curve_fit(gaussian, drv, plotsnr[i,:], p0=[plotsnr[i, peak], drv[peak], 2.55035], sigma = sigma_shifted_ccfs[i,:], maxfev=10000)
 
                 amps[i] = popt[0]
@@ -1449,7 +1492,10 @@ def gaussian_fit(Kp, Kp_true, drv, species_label, planet_name, observation_epoch
     ax1.set_ylabel('Orbital Phase')
     ax1.set_xlabel('$v_{sys}$ (km/s)', color='b')
     ax1.tick_params(axis='x', labelcolor='b')
-
+    
+    # add a vertical line at 0km/s
+    ax1.axvline(x=0, color='black', linestyle='--', alpha=0.5)
+    
     line_profile = path_modifier_plots + 'plots/' + planet_name + '.' + observation_epoch + '.' + arm + '.' + species_name_ccf + model_tag + '.line-profile.pdf'
     fig.savefig(line_profile, dpi=300, bbox_inches='tight')
 
@@ -1607,7 +1653,6 @@ def dopplerShadowRemove(drv, planet_name, exptime, orbital_phase, obs, inputs = 
                 z2 = model['z2']    
 
         ccf_model = np.matrix(profarr-basearr)
-       
         return ccf_model
 
 def get_peak_snr(snr, drv, Kp, do_inject_model, V_sys_true, Kp_true, RV_abs, Kp_expected, arm, observation_epoch, f, method):

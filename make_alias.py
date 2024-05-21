@@ -71,6 +71,6 @@ def make_alias(instrument="PEPSI", planet_name="KELT-20b", spectrum_type="transm
     
     keep = Kp == np.round(unp.nominal_values(Kp_expected))
     ccf_1d = snr[keep,:]
-    
+    breakpoint()
     np.save('alias-drv.npy',drv)
     np.save(spec_two + '-alias-ccf.npy', ccf_1d)
