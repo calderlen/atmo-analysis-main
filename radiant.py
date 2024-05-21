@@ -44,9 +44,9 @@ pl.rc('legend', fontsize=14) #fontsize of the legend
 # global varaibles defined for harcoded path to data on my computer
 path_modifier_plots = '/home/calder/Documents/atmo-analysis-main/'  #linux
 path_modifier_data = '/home/calder/Documents/petitRADTRANS_data/'   #linux
-path_modifier_plots = '/Users/calder/Documents/atmo-analysis-main/' #mac
-path_modifier_data = '/Volumes/sabrent/petitRADTRANS_data/'  #mac
-path_modifier_data = '/Users/calder/Documents/petitRADTRANS_data/' #mac
+#path_modifier_plots = '/Users/calder/Documents/atmo-analysis-main/' #mac
+#path_modifier_data = '/Volumes/sabrent/petitRADTRANS_data/'  #mac
+#path_modifier_data = '/Users/calder/Documents/petitRADTRANS_data/' #mac
 
 def get_species_keys(species_label):
     species_names = set()  # Create a set to store unique species names
@@ -640,7 +640,6 @@ def get_pepsi_data(arm, observation_epoch, planet_name, do_molecfit):
     #    errorin[i,:] *= underestimate_factor
 
     
-    #breakpoint()
     return wave, fluxin, errorin, jd, snr_spectra, exptime, airmass, n_spectra, npix
 
 def get_orbital_phase(jd, epoch, Period, RA, Dec):
@@ -666,7 +665,6 @@ def get_orbital_phase(jd, epoch, Period, RA, Dec):
 
 def convolve_atmospheric_model(template_wave, template_flux, profile_width, profile_form, temperature_profile='emission', epsilon=0.6):
     ckms =2.9979e5
-    #breakpoint()
     velocities = (template_wave - np.mean(template_wave)) / template_wave * ckms
     velocities = velocities[np.abs(velocities) <= 100.]
     if profile_form == 'rotational':
@@ -729,16 +727,14 @@ def make_spectrum_plot(template_wave, template_flux, planet_name, species_name_c
 
 def make_new_model(instrument, species_name_new, vmr, spectrum_type, planet_name, temperature_profile, do_plot=False):
 
-
     if instrument == 'PEPSI':
-        if planet_name == 'WASP-189b':
+        if (planet_name == 'WASP-189b' or planet_name == 'KELT-20b'):
             instrument_here = 'PEPSI-25'
-        #elseif planet_name == 'KELT-20b':
-        #    instrument_here = 'PEPSI-25'
         else:
             instrument_here = 'PEPSI-35'
     else:
         instrument_here = instrument
+
         
     lambda_low, lambda_high = get_wavelength_range(instrument_here)
     pressures = np.logspace(-8, 2, 100)
@@ -1081,8 +1077,6 @@ def get_ccfs(wave, corrected_flux, corrected_error, template_wave, template_flux
         if i == 0:
             cross_cor, sigma_cross_cor = np.zeros((n_spectra, len(drv))), np.zeros((n_spectra, len(drv)))
         cross_cor[i,:], sigma_cross_cor[i,:] = cross_cor_out, sigma_cross_cor_out
-    
-    breakpoint()
     return drv, cross_cor, sigma_cross_cor
 
 def get_likelihood(wave, corrected_flux, corrected_error, template_wave, template_flux, n_spectra, U_sysrem, telluric_free):
@@ -1134,7 +1128,6 @@ def combine_ccfs(drv, cross_cor, sigma_cross_cor, orbital_phase, n_spectra, ccf_
 
     #snr = shifted_ccfs / np.std(tempp[use_for_snr_2,:])
     snr = shifted_ccfs / np.std(shifted_ccfs[:,use_for_snr])
-    #breakpoint()
     return snr, Kp, drv, cross_cor, sigma_shifted_ccfs
 
 def gaussian(x, a, mu, sigma):
@@ -1339,7 +1332,8 @@ def gaussian_fit(Kp, Kp_true, drv, species_label, planet_name, observation_epoch
             # If the peak is within the desired range, fit the Gaussian
             if np.abs(drv[peak]) <= 15:
                 slice_peak[i] = plotsnr[i, peak]
-                
+                print(i)
+                print(peak)
                 popt, pcov = curve_fit(gaussian, drv, plotsnr[i,:], p0=[plotsnr[i, peak], drv[peak], 2.55035], sigma = sigma_shifted_ccfs[i,:], maxfev=10000)
 
                 amps[i] = popt[0]
@@ -1351,7 +1345,6 @@ def gaussian_fit(Kp, Kp_true, drv, species_label, planet_name, observation_epoch
                 
                 idx = np.where(Kp == int(np.floor(Kp_true)))[0][0] #Kp slice corresponding to expected Kp
                 idx = np.argmax(slice_peak)                       #Kp slice corresponding to max SNR 
-    
                 # Break the loop as we have found a suitable peak
                 break
             
@@ -1487,11 +1480,11 @@ def make_shifted_plot(snr, planet_name, observation_epoch, arm, species_name_ccf
     else:
         ctable = 'afmhot'
 
-    keeprv = np.abs(drv-apoints[0]) <= 100.
+    #keeprv = np.abs(drv-apoints[0]) <= 100.
     keeprv = np.abs(drv-apoints[0]) <= 401.
 
     plotsnr, drv = plotsnr[:, keeprv], drv[keeprv]
-    keepKp = np.abs(Kp-apoints[1]) <= 100.
+    #keepKp = np.abs(Kp-apoints[1]) <= 100.
     keepKp = np.abs(Kp-apoints[1]) <= 401.
 
     plotsnr, Kp = plotsnr[keepKp, :], Kp[keepKp]
@@ -1828,12 +1821,9 @@ def process_data(observation_epochs, arms, planet_name):
 
 
 def generate_atmospheric_model(planet_name, spectrum_type, instrument, arm, all_species, parameters, atmosphere, pressures, ptprofile='guillot'):
-    #breakpoint()
     #handle the W-189 observations being with CD II
-    if planet_name == 'WASP-189b' and instrument != 'GMT-all':
-        instrument_here = 'PEPSI-25'
-    #elif planet_name == 'KELT-20b' and instrument != 'GMT-all':
-    #    instrument_here = 'PEPSI-25'
+    if (planet_name == 'WASP-189b' or planet_name == 'KELT-20b') and 'GMT-all' not in instrument:
+        instrument_here = 'PEPSI-25' 
     elif instrument == 'PEPSI':
         instrument_here = 'PEPSI-35'
     else:

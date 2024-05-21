@@ -89,7 +89,7 @@ def ccf(wave, flux, flux_error, template_wave, template_flux, rvmin, rvmax, rvsp
     for shift in drv:
         doppler_shift = 1.0 / (1.0 + shift / ckms)
         kernel = np.interp(doppler_shift * wave, template_wave, template_flux)
-        corr = flux
+        corr = kernel*flux
         corr /= variance
         #normalization = kernel * kernel / variance #this normalization is actually just the uncertainty on the CCF, so this should put in in SNR. Can't do this normalization here b/c need to account for his when combine CCFs
         ccf = np.sum(corr)#/np.sqrt(np.sum(normalization))
