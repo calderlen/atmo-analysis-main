@@ -47,9 +47,8 @@ def make_alias(instrument="PEPSI", planet_name="KELT-20b", spectrum_type="transm
 
     mock_wave = np.zeros((n_spectra, len(template_wave_1)))
 
+    
     for i in range (n_spectra): mock_wave[i,:] = template_wave_1
-
-    datastruc = process_data(observation_epochs, arms, planet_name)
     
     #fluxin, Kp_true, V_sys_true = inject_model(Kp_expected, orbital_phase, mock_wave, mock_spectra, template_wave_1, template_flux_1 + np.interp(template_wave_1, template_wave_2, template_flux_2), n_spectra)
     #fluxin, Kp_true, V_sys_true = inject_model(Kp_expected, orbital_phase, mock_wave, mock_spectra, template_wave_1, template_flux_1, n_spectra)
@@ -58,8 +57,7 @@ def make_alias(instrument="PEPSI", planet_name="KELT-20b", spectrum_type="transm
     fluxin, Kp_true, V_sys_true = inject_model(Kp_expected, orbital_phase, mock_wave, mock_spectra, template_wave_2, template_flux_2, n_spectra)
 
     #do the cross-correlation and associated processing
-    drv, cross_cor, sigma_cross_cor = get_ccfs(mock_wave, mock_spectra, np.ones_like(mock_spectra), template_wave_2, template_flux_2, n_spectra)
-                                      get_ccfs(wave, corrected_flux, corrected_error, template_wave, template_flux, n_spectra, U_sysrem, telluric_free)
+    drv, cross_cor, sigma_cross_cor = get_ccfs(mock_wave, mock_spectra, np.ones_like(mock_spectra), template_wave_2, template_flux_2, n_spectra, mock_spectra, np.where(template_wave_1 > 0.))
     
     for i in range (n_spectra): 
         cross_cor[i,:]-=np.mean(cross_cor[i,:])
@@ -67,12 +65,12 @@ def make_alias(instrument="PEPSI", planet_name="KELT-20b", spectrum_type="transm
         #I guess the following is OK as long as there isn't a strong peak, which there shouldn't be in any of the individual CCFs
         cross_cor[i,:]/=np.std(cross_cor[i,:])
 
-    snr, Kp, drv = combine_ccfs(drv, cross_cor, sigma_cross_cor, orbital_phase, n_spectra, np.ones_like(orbital_phase), half_duration_phase, temperature_profile)
-
-    #plotsnr, amps, amps_error, rv, rv_error, width, width_error, idx, drv_restricted, plotsnr_restricted, residual_restricted = make_shifted_plot(snr, planet_name, observation_epoch, arm, species_name_ccf, model_tag, RV_abs, Kp_expected, V_sys_true, Kp_true, do_inject_model, drv, Kp, species_label, temperature_profile, sigma_shifted_ccfs, method, cross_cor_display, sigma_cross_cor, orbital_phase, n_spectra, ccf_weights, half_duration_phase, plotformat = 'pdf')
+    snr, Kp, drv, cross_cor, sigma_shifted_ccfs, ccf_weights = combine_ccfs(drv, cross_cor, sigma_cross_cor, orbital_phase, n_spectra, np.ones_like(orbital_phase), half_duration_phase, temperature_profile)
+    
+    plotsnr, amps, amps_error, rv, rv_error, width, width_error, idx, drv_restricted, plotsnr_restricted, residual_restricted = make_shifted_plot(snr, planet_name, 'mock-obs', arm, spec_two + 'ACF', model_tag, RV_abs, Kp_expected, V_sys_true, Kp_true, False, drv, Kp,  spec_two + 'ACF', temperature_profile, sigma_shifted_ccfs, 'ccf', cross_cor, sigma_cross_cor, ccf_weights, plotformat = 'pdf')
     
     keep = Kp == np.round(unp.nominal_values(Kp_expected))
     ccf_1d = snr[keep,:]
-    breakpoint()
+    
     np.save('alias-drv.npy',drv)
     np.save(spec_two + '-alias-ccf.npy', ccf_1d)
