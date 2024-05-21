@@ -96,7 +96,6 @@ def ccf(wave, flux, flux_error, template_wave, template_flux, rvmin, rvmax, rvsp
         sigma_ccf = np.sqrt(np.sum((kernel/flux_error)**2))#/np.sqrt(np.sum(normalization))
         cross_cor, sigma_cross_cor = np.append(cross_cor,ccf), np.append(sigma_cross_cor,sigma_ccf)
         #import pdb; pdb.set_trace()
-
     return drv, cross_cor, sigma_cross_cor
 
 #this first function just returns a single log-likelihood value
