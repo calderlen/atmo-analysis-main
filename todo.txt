@@ -1,6 +1,13 @@
 todo
 - overlay red, blue, and combined gaussians
 - bin phases for phase-resolved line profiles for stronger signal
+	- the phase binned plot and the phase binned plot overlaid on pcolor plot are different, this needs ot be analyzed
+- figure out discrepancy between past line profiles in snr-gaussian and snr-gaussian-new and new gaussian fit plots. why are the line profiles
+  different? is it just due to the Kp?
+- figure out why the combine_observations or another function is not plotting each arms' snr-gaussian correctly
+- input new Gaussian parameters into paper
+- remove old gaussian fits and phase-resolved line profiles from paper
+- add new gaussian fits and phase-resolved line profiles into paper
 
 todo
 2. 

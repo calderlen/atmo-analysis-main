@@ -1249,7 +1249,7 @@ def combine_ccfs_binned(drv, cross_cor, sigma_cross_cor, orbital_phase, n_spectr
     
     fig, ax = pl.subplots(layout='constrained')
     ax.pcolor(drv[good], phase_bin, binned_ccfs[:,good], edgecolors='none',rasterized=True)
-    ax.plot([0.,0.],[np.min(phase_bin), np.max(phase_bin)],':',color='white')
+    ax.plot([0.,0.],[np.min(phase_bin), np.max(phase_bin)],':',color='grey')
 
     goodrv = (rvs > 0.) & (rvs < 10.)
     ax.plot(rvs[goodrv], phase_bin[goodrv], 'o', color='white')
@@ -1295,21 +1295,19 @@ def combine_ccfs_binned(drv, cross_cor, sigma_cross_cor, orbital_phase, n_spectr
     fig, ax1 = pl.subplots(figsize=(8,8))
 
     ax1.text(0.05, 0.99, species_name_ccf, transform=ax1.transAxes, verticalalignment='top', horizontalalignment='left', fontsize=12)
-    ax1.plot(rv_chars[idx,:], phase_array, '-', label='Center')
+    ax1.plot(rv_chars[idx,:], phase_array, '-', label='Center', color='white')
+    #breakpoint()
     ax1.fill_betweenx(phase_array, rv_chars[idx,:] - rv_chars_error[idx, :], rv_chars[idx,:] + rv_chars_error[idx,:], color='blue', alpha=0.2, zorder=2)
     ax1.set_ylabel('Orbital Phase')
     ax1.set_xlabel('$v_{sys}$ (km/s)', color='b')
     ax1.tick_params(axis='x', labelcolor='b')
     
     # add a vertical line at 0km/s
-    ax1.axvline(x=0, color='black', linestyle='--', alpha=0.5)
+    #ax1.axvline(x=0, color='black', linestyle='--', alpha=0.5)
 
     line_profile = path_modifier_plots + 'plots/' + planet_name + '.' + 'combined' + '.' + 'combined' + '.' + species_name_ccf + '.line-profile-binned.pdf'
     fig.savefig(line_profile, dpi=300, bbox_inches='tight')
 
-
-
-    # equivlent to return snr, 
     return binned_ccfs, rvs, widths, rverrors, widtherrors
         
 
@@ -1493,9 +1491,6 @@ def gaussian_fit(Kp, Kp_true, drv, species_label, planet_name, observation_epoch
     ax1.set_xlabel('$v_{sys}$ (km/s)', color='b')
     ax1.tick_params(axis='x', labelcolor='b')
     
-    # add a vertical line at 0km/s
-    ax1.axvline(x=0, color='black', linestyle='--', alpha=0.5)
-    
     line_profile = path_modifier_plots + 'plots/' + planet_name + '.' + observation_epoch + '.' + arm + '.' + species_name_ccf + model_tag + '.line-profile.pdf'
     fig.savefig(line_profile, dpi=300, bbox_inches='tight')
 
@@ -1534,7 +1529,8 @@ def make_shifted_plot(snr, planet_name, observation_epoch, arm, species_name_ccf
     keepKp = np.abs(Kp-apoints[1]) <= 401.
 
     plotsnr, Kp = plotsnr[keepKp, :], Kp[keepKp]
-    # Fit a Gaussian to the line profile for combined arms
+    
+    # Fit a Gaussian to the line profile
     amps, amps_error, rv, rv_error, width, width_error, residual, do_molecfit, idx, line_profile, drv_restricted, plotsnr_restricted, residual_restricted = gaussian_fit(Kp, Kp_true, drv, species_label, planet_name, observation_epoch, arm, species_name_ccf, model_tag, plotsnr, sigma_shifted_ccfs, temperature_profile, cross_cor_display, sigma_cross_cor, ccf_weights)
 
     psarr(plotsnr, drv, Kp, '$V_{\mathrm{sys}}$ (km/s)', '$K_p$ (km/s)', zlabel, filename=plotname, ctable=ctable, alines=True, apoints=apoints, acolor='cyan', textstr=species_label+' '+model_label, textloc = np.array([apoints[0]-75.,apoints[1]+75.]), textcolor='cyan', fileformat=plotformat)
