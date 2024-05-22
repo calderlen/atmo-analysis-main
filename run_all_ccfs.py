@@ -28,9 +28,9 @@ from create_model import create_model, instantiate_radtrans
 # global varaibles defined for harcoded path to data on my computer
 path_modifier_plots = '/home/calder/Documents/atmo-analysis-main/'  #linux
 path_modifier_data = '/home/calder/Documents/petitRADTRANS_data/'   #linux
-path_modifier_plots = '/Users/calder/Documents/atmo-analysis-main/' #mac
-path_modifier_data = '/Volumes/sabrent/petitRADTRANS_data'  #mac
-path_modifier_data = '/Users/calder/Documents/petitRADTRANS_data/' #mac
+#path_modifier_plots = '/Users/calder/Documents/atmo-analysis-main/' #mac
+#path_modifier_data = '/Volumes/sabrent/petitRADTRANS_data'  #mac
+#path_modifier_data = '/Users/calder/Documents/petitRADTRANS_data/' #mac
 
 def run_one_ccf(species_label, vmr, arm, observation_epoch, template_wave, template_flux, template_wave_in, template_flux_in, planet_name, temperature_profile, do_inject_model, species_name_ccf, model_tag, f, method, do_make_new_model):
 
@@ -500,9 +500,6 @@ def multiSpeciesCCF(planet_name, temperature_profile, species_dict, do_inject_mo
             'rv_error': rv_error,
             'width': width,
             'width_error': width_error,
-            'drv_restricted': drv_restricted,
-            'plotsnr_restricted': plotsnr_restricted,
-            'residual_restricted': residual_restricted
         }
 
         ccf_params[species_label] = {
@@ -512,9 +509,6 @@ def multiSpeciesCCF(planet_name, temperature_profile, species_dict, do_inject_mo
             'rv_error': rv_error[selected_idx],
             'width': width[selected_idx],
             'width_error': width_error[selected_idx],
-            'drv_restricted': drv_restricted[selected_idx],
-            'plotsnr_restricted': plotsnr_restricted[selected_idx],
-            'residual_restricted': residual_restricted[selected_idx]
         }
 
     species_labels = list(ccf_arrays.keys())
