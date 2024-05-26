@@ -8,7 +8,21 @@ todo
 - input new Gaussian parameters into paper
 - remove old gaussian fits and phase-resolved line profiles from paper
 - add new gaussian fits and phase-resolved line profiles into paper
+- need to review VMRs for ionized species with marshall -- FastChem outputs a VMR O(-16) for Fe II not O(-5); why are we approximating it as equal to the Fe I VMR?
+- Fossati 2023 goes into depth comparing PT profiles with other studies/ Maybe explore this further with fastchem to decide if it's worth it.
 
+- feedback from Marshall
+	- define quenching pressure
+		- Transport-induced quenching refers to the mechanism by which the
+		atmospheric composition is driven away from chemical equilibrium as a result of the dominance of transport processes like convection or large-scale “eddy” diffusion (e.g., from gravity-wave breaking or wave-driven circulation) over chemical reactions
+		- As a parcel of gas is transported through the atmosphere, the mole fraction of a constituent can become “quenched” when transport time scales drop below the chemical kinetics time scales required to maintain that constituent in equilibrium with other species. The mole fraction of that species then remains fixed at that quenched abundance. Quenching typically occurs when the temperature of the system drops low enough that reactions no longer occur equally well in both the forward and reverse directions; however, pressure changes can also play a role
+
+
+	- provide references for as to why transmission spectra are less sensitive to vertical temperature structures therby justfying why we can assume a PT profile given by equation 29 of Guillot 2010 with a grid search from Johnson et al 2023 derived from emssion spectra of KELT-20b
+		- 
+
+	- define standard shape within Kp-Vsys space
+		- 
 todo
 2. 
 		
@@ -25,7 +39,6 @@ todo
 				- EXPLAIN WHY THIS STEP IS NECSSARY.
 			- State the methodology for creating the Kp-Vsys map more clearly. Use subfield-proper language to do so. "Map", "grid search", "free parameter".
 				- mention what range of Kp values and Vsys values you consider in the search, and if these differ from the values you actually consider physical
-			- The presentation of CCFs is repetitive. I need to think of a way of presenting these in a less repetitive fashion.
 			- "We select the exposure with peak signal-to-noise ratio (SNR)" WRONG. find the location in the Kp-vsys map with the highest SNR, and use that value of Kp for the rest of this analysis?
 			-
 		- TODO
@@ -38,8 +51,6 @@ todo
 		- FEEDBACK
 			- you need to fix the SNR-gaussian plot fits potentially, as they are showing the velocity at peak SNR, but these velocities are not necessarily representative OR that valuable to the analysis of the wind velocities. their behavior of the course of transit is more valuable.
 				- remove the listing of parameters on each plot as relevant parameters are better displayed on tables anyway.
-			- make it more clear that you're fitting the Gaussian function to the 1-D ccf. Your language is too ambigious
-			- make it more clear that the offset between Gaussian peak and planetary rest frame is the wind velocity. Language is too ambigious
 			- make it clear that you are doing a separate Gaussian fit to each of the in-transit CCFs and it is the peak velocity and width for these fits which is shown.
 			- "We repeat this process for each species meeting the ${3\sigma}$ detection threshold, then overlay the results." Doesn't need to be said in the main text. Put this in the captions. FIgure captions should describe what is shown in the figure, while the main text should be focused more on the reasoning for the analysis and the conclusions enabled by what is shown in the figure.
 		- TODO				

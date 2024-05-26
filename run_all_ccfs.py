@@ -28,9 +28,9 @@ from create_model import create_model, instantiate_radtrans
 # global varaibles defined for harcoded path to data on my computer
 path_modifier_plots = '/home/calder/Documents/atmo-analysis-main/'  #linux
 path_modifier_data = '/home/calder/Documents/petitRADTRANS_data/'   #linux
-#path_modifier_plots = '/Users/calder/Documents/atmo-analysis-main/' #mac
-#path_modifier_data = '/Volumes/sabrent/petitRADTRANS_data'  #mac
-#path_modifier_data = '/Users/calder/Documents/petitRADTRANS_data/' #mac
+path_modifier_plots = '/Users/calder/Documents/atmo-analysis-main/' #mac
+path_modifier_data = '/Volumes/sabrent/petitRADTRANS_data'  #mac
+path_modifier_data = '/Users/calder/Documents/petitRADTRANS_data/' #mac
 
 def run_one_ccf(species_label, vmr, arm, observation_epoch, template_wave, template_flux, template_wave_in, template_flux_in, planet_name, temperature_profile, do_inject_model, species_name_ccf, model_tag, f, method, do_make_new_model):
 
@@ -335,7 +335,8 @@ def run_all_ccfs(planet_name, temperature_profile, species_label, vmr, do_inject
     else:
         template_wave, template_flux = get_atmospheric_model(planet_name, species_name_ccf, vmr, temperature_profile, True, True)
 
-    if species_name_ccf != species_name_inject:
+    # This may break an injection of an ionized species into a neutral species??
+    if species_name_ccf[:2] != species_name_inject[:2]:
         if do_make_new_model:
             template_wave_in, template_flux_in = make_new_model(instrument, species_name_inject, vmr, spectrum_type, planet_name, temperature_profile)
         else:
@@ -445,19 +446,26 @@ def overlayFits(planet_name, temperature_profile, species_label, vmr, do_inject_
         ax1.axhline(y=4, color='g', linestyle='--', label=r'4 $\sigma$')    
         ax2.set_xlabel('$v_{sys}$ (km/s)')
         ax2.set_ylabel('Residuals')
-
+        
         color_map = {
             'blue': 'b',
             'red': 'r',
             'combined': 'k'
         }
+        line_style_map = {
+            'blue': '--',
+            'red': '--',
+            'combined': '-'
+        }
 
         for arm in new_arms:
             color = color_map[arm]
-            ax1.plot(drv_restricted[arm], plotsnr_restricted[arm], f'o--{color}', label='data', markersize=2)
-            ax2.plot(drv_restricted[arm], residual_restricted[arm], f'o-{color}', markersize=1)
+            line_style = line_style_map[arm]
+            ax1.plot(drv_restricted[arm], plotsnr_restricted[arm], f'o{line_style}{color}', label='data', markersize=2)
+            ax2.plot(drv_restricted[arm], residual_restricted[arm], f'o{line_style}{color}', markersize=1)
+                
         # Consider a clearer naming scheme
-        overlay_fits = path_modifier_plots + 'plots/'+ planet_name + '.' + observation_epoch + '.' + arm + '.' + species_label + '.SNR-Gaussian-Overlaid.pdf'
+        overlay_fits = path_modifier_plots + 'plots/'+ planet_name + '.' + observation_epoch + '.' + arm + '.' + species_label + '.line-profiles-overlaidarms.pdf'
         # Save the plot
         fig.savefig(overlay_fits, dpi=300, bbox_inches='tight')
             
@@ -526,7 +534,8 @@ def multiSpeciesCCF(planet_name, temperature_profile, species_dict, do_inject_mo
     # Create a horizontal boxplot for each species
     bp = ax.boxplot(boxplot_data,
                     vert=False,
-                    patch_artist=True)
+                    patch_artist=True,
+                    showfliers=False)
     
     # Apply color to each box
     for patch, color in zip(bp['boxes'], cmap(norm(amps))):

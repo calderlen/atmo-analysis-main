@@ -44,9 +44,9 @@ pl.rc('legend', fontsize=14) #fontsize of the legend
 # global varaibles defined for harcoded path to data on my computer
 path_modifier_plots = '/home/calder/Documents/atmo-analysis-main/'  #linux
 path_modifier_data = '/home/calder/Documents/petitRADTRANS_data/'   #linux
-#path_modifier_plots = '/Users/calder/Documents/atmo-analysis-main/' #mac
-#path_modifier_data = '/Volumes/sabrent/petitRADTRANS_data/'  #mac
-#path_modifier_data = '/Users/calder/Documents/petitRADTRANS_data/' #mac
+path_modifier_plots = '/Users/calder/Documents/atmo-analysis-main/' #mac
+path_modifier_data = '/Volumes/sabrent/petitRADTRANS_data/'  #mac
+path_modifier_data = '/Users/calder/Documents/petitRADTRANS_data/' #mac
 
 def get_species_keys(species_label):
     species_names = set()  # Create a set to store unique species names
@@ -198,10 +198,50 @@ def get_species_keys(species_label):
     if species_label == 'Ca II':
         species_names.add('Ca+')
 
-    species_names = list(set(species_names))  # Convert the set back to a list
-    species_names.append(species_names[0])
-    species_name_inject, species_name_ccf = species_names
+    if species_label == 'Na_Allard':
+        species_names.add(('Na_allard_new', 'Na'))
+    if species_label == 'Na_Burrows':
+        species_names.add(('Na_burrows', 'Na'))
+    if species_label == 'Na_lor_cut':
+        species_names.add(('', 'Na'))
+    if species_label == 'Co_0_Kurucz':
+        species_names.add(('Co_0_Kurucz', 'Co'))
+    if species_label == 'Cr_1_VALD':
+        species_names.add(('Cr_1_VALD', 'Cr'))
+    if species_names == 'Fe_0_Kurucz':
+        species_names.add(('Fe-Kurucz', 'Fe'))
+    if species_label == 'Fe_1_Kurucz':
+        species_names.add(('Fe_1_Kurucz', 'Fe+'))
+    if species_label == 'Fe_0_Vald':
+        species_names.add(('Fe_0_Vald', 'Fe'))
+    if species_label == 'Mg_0_Kurucz':
+        species_names.add(('Mg_0_Kurucz', 'Mg'))
+    if species_label == 'Ni_0_Kurucz':
+        species_names.add(('Ni_0_Kurucz', 'Ni'))
+    if species_label == 'Ti_0_Kurucz':
+        species_names.add(('Ti_0_Kurucz', 'Ti'))
+    if species_label == 'Ti_1_Kurucz':
+        species_names.add(('Ti_1_Kurucz', 'Ti+'))
+    if species_label == 'Ti_0_VALD':
+        species_names.add(('Ti_0_VALD', 'Ti'))
+    if species_label == 'Ti1':
+        species_names.add(('Ti_1_VALD', 'Ti+'))
+    if species_label == 'Ti_1_Kurucz':
+        species_names.add(('Ti_1_Kurucz', 'Ti+'))
         
+        
+        
+    if not species_names:
+        raise ValueError(f"Invalid species_label: {species_label}")
+    species_names = list(set(species_names))  # Convert the set back to a list
+    
+    if type(species_names[0])  == str:
+        species_name_inject = str(species_names[0])
+        species_name_ccf = str(species_names[0])
+    elif type(species_names[0]) == tuple:
+        species_name_inject = str(species_names[0][1])
+        species_name_ccf = str(species_names[0][0])
+    
     return species_name_inject, species_name_ccf
 
 def get_sysrem_parameters(arm, observation_epoch, species_label, planet_name):
@@ -1153,7 +1193,7 @@ def angle2phase(phase):
 
 def combine_ccfs_binned(drv, cross_cor, sigma_cross_cor, orbital_phase, n_spectra, ccf_weights, half_duration_phase, temperature_profile, Kp_here, species_name_ccf, planet_name):
 
-    if 'Fe' in species_name_ccf:
+    if 'Fe' in species_name_ccf or 'Fe+' in species_name_ccf:
         binsize = 0.015
     else:
         binsize = 0.05
@@ -1189,7 +1229,8 @@ def combine_ccfs_binned(drv, cross_cor, sigma_cross_cor, orbital_phase, n_spectr
 
     sigma_shifted_ccfs = np.sqrt(var_shifted_ccfs)
 
-    if planet_name == 'KELT-20b' and (species_name_ccf == 'Fe' or species_name_ccf == 'Fe+' or species_name_ccf == 'Ni'):
+    #if planet_name == 'KELT-20b' and (species_name_ccf == 'Fe' or species_name_ccf == 'Fe+' or species_name_ccf == 'Ni'):
+    if planet_name == 'KELT-20b':
         ecc = 0.019999438851877625#0.0037 + 0.010 * 3.0 #rough 3-sigma limit
         omega = 309.2455607770675#151.
 
@@ -1226,7 +1267,7 @@ def combine_ccfs_binned(drv, cross_cor, sigma_cross_cor, orbital_phase, n_spectr
     for i in range (0, nphase):
         pl.subplot(3, 3, np.mod(i, 9)+1)
         peak = np.argmax(ccffit[i,:])
-        popt, pcov = curve_fit(gaussian, drvfit, ccffit[i,:], p0=[ccffit[i,peak], drvfit[peak], 2.5], sigma = sigmafit[i,:], maxfev=10000)
+        popt, pcov = curve_fit(gaussian, drvfit, ccffit[i,:], p0=[ccffit[i,peak], drvfit[peak], 2.5], sigma = sigmafit[i,:], maxfev=100000)
 
         pl.plot(drvfit, ccffit[i,:], color='blue')
         pl.plot(drvfit, gaussian(drvfit, popt[0], popt[1], popt[2]), color='red')
@@ -1286,7 +1327,7 @@ def combine_ccfs_binned(drv, cross_cor, sigma_cross_cor, orbital_phase, n_spectr
             peak = np.argmax(temp_ccf[390:411]) + 390
             sigma_temp_ccf = np.interp(drv, drv-RV[j], sigma_cross_cor[j, :], left=0., right=0.0)
             sigma_temp_ccf = sigma_temp_ccf**2 * ccf_weights[j]**2
-            popt, pcov = curve_fit(gaussian, drv, temp_ccf, p0=[temp_ccf[peak], drv[peak], 2.5], sigma = np.sqrt(sigma_temp_ccf), maxfev=1000)
+            popt, pcov = curve_fit(gaussian, drv, temp_ccf, p0=[temp_ccf[peak], drv[peak], 2.5], sigma = np.sqrt(sigma_temp_ccf), maxfev=100000)
             rv_chars[i,phase_here] = popt[1]
             rv_chars_error[i,phase_here] = np.sqrt(pcov[1,1])
             slice_peak_chars[i] = temp_ccf[peak]
@@ -1295,12 +1336,13 @@ def combine_ccfs_binned(drv, cross_cor, sigma_cross_cor, orbital_phase, n_spectr
     fig, ax1 = pl.subplots(figsize=(8,8))
 
     ax1.text(0.05, 0.99, species_name_ccf, transform=ax1.transAxes, verticalalignment='top', horizontalalignment='left', fontsize=12)
-    ax1.plot(rv_chars[idx,:], phase_array, '-', label='Center', color='white')
-    #breakpoint()
+    ax1.plot(rv_chars[idx,:], phase_array, '-', label='Center', color='b')
     ax1.fill_betweenx(phase_array, rv_chars[idx,:] - rv_chars_error[idx, :], rv_chars[idx,:] + rv_chars_error[idx,:], color='blue', alpha=0.2, zorder=2)
-    ax1.set_ylabel('Orbital Phase')
+    ax1.set_ylabel('Orbital Phase (fraction)')
     ax1.set_xlabel('$v_{sys}$ (km/s)', color='b')
     ax1.tick_params(axis='x', labelcolor='b')
+    secax = ax1.secondary_yaxis('right', functions = (phase2angle, angle2phase))
+    secax.set_ylabel('Orbital phase (degrees)')
     
     # add a vertical line at 0km/s
     #ax1.axvline(x=0, color='black', linestyle='--', alpha=0.5)
@@ -1364,6 +1406,7 @@ def gaussian_fit(Kp, Kp_true, drv, species_label, planet_name, observation_epoch
     slice_peak = np.zeros(plotsnr.shape[0])
     # Fitting gaussian to all 1D Kp slices
 
+    breakpoint()
     for i in range(plotsnr.shape[0]):
         
         # Sort the peaks in descending order
@@ -1410,8 +1453,7 @@ def gaussian_fit(Kp, Kp_true, drv, species_label, planet_name, observation_epoch
     drv_restricted = drv[plot_mask]
     plotsnr_restricted = plotsnr[idx, plot_mask]
     residual_restricted = residual[plot_mask]
-
-    # Main Plot (ax1)
+   # Main Plot (ax1)
     ax1.plot(drv_restricted, plotsnr_restricted, 'k--', label='data', markersize=2)
     ax1.plot(drv_restricted, gaussian(drv_restricted, *popt_selected), 'r-', label='fit')
 
@@ -1473,7 +1515,7 @@ def gaussian_fit(Kp, Kp_true, drv, species_label, planet_name, observation_epoch
             phase_here = np.argmin(np.abs(phase_array - orbital_phase[j]))
             temp_ccf = np.interp(drv, drv-RV[j], cross_cor[j, :], left=0., right=0.0)
             temp_ccf *= ccf_weights[j]
-            peak = np.argmax(temp_ccf[390:411]) + 390
+            peak = np.argmax(temp_ccf[385:416]) + 385
             sigma_temp_ccf = np.interp(drv, drv-RV[j], sigma_cross_cor[j, :], left=0., right=0.0)
             sigma_temp_ccf = sigma_temp_ccf**2 * ccf_weights[j]**2
             popt, pcov = curve_fit(gaussian, drv, temp_ccf, p0=[temp_ccf[peak], drv[peak], 2.5], sigma = np.sqrt(sigma_temp_ccf), maxfev=1000)
@@ -1487,9 +1529,15 @@ def gaussian_fit(Kp, Kp_true, drv, species_label, planet_name, observation_epoch
     ax1.text(0.05, 0.99, species_label, transform=ax1.transAxes, verticalalignment='top', horizontalalignment='left', fontsize=12)
     ax1.plot(rv_chars[idx,:], phase_array, '-', label='Center')
     ax1.fill_betweenx(phase_array, rv_chars[idx,:] - rv_chars_error[idx, :], rv_chars[idx,:] + rv_chars_error[idx,:], color='blue', alpha=0.2, zorder=2)
-    ax1.set_ylabel('Orbital Phase')
+    ax1.set_ylabel('Orbital Phase (fraction)')
     ax1.set_xlabel('$v_{sys}$ (km/s)', color='b')
     ax1.tick_params(axis='x', labelcolor='b')
+    
+    secax = ax1.secondary_yaxis('right', functions = (phase2angle, angle2phase))
+    secax.set_ylabel('Orbital phase (degrees)')
+    
+    # add a vertical line at 0km/s
+    ax1.axvline(x=0, color='black', linestyle='--', alpha=0.5)
     
     line_profile = path_modifier_plots + 'plots/' + planet_name + '.' + observation_epoch + '.' + arm + '.' + species_name_ccf + model_tag + '.line-profile.pdf'
     fig.savefig(line_profile, dpi=300, bbox_inches='tight')
