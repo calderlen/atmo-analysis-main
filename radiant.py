@@ -197,6 +197,10 @@ def get_species_keys(species_label):
         species_names.add('V+')
     if species_label == 'Ca II':
         species_names.add('Ca+')
+    if species_label == 'Zr II':
+        species_names.add('Zr+')
+    if species_label == 'Tl I':
+        species_names.add('Tl')
 
     if species_label == 'Na_Allard':
         species_names.add(('Na_allard_new', 'Na'))
@@ -229,7 +233,7 @@ def get_species_keys(species_label):
     if species_label == 'Ti_1_Kurucz':
         species_names.add(('Ti_1_Kurucz', 'Ti+'))
         
-        
+    
         
     if not species_names:
         raise ValueError(f"Invalid species_label: {species_label}")
@@ -701,7 +705,6 @@ def get_orbital_phase(jd, epoch, Period, RA, Dec):
 
     negatives = orbital_phase < -0.15
     orbital_phase[negatives] += 1.0
-
     return orbital_phase
 
 def convolve_atmospheric_model(template_wave, template_flux, profile_width, profile_form, temperature_profile='emission', epsilon=0.6):
@@ -1193,11 +1196,13 @@ def angle2phase(phase):
 
 def combine_ccfs_binned(drv, cross_cor, sigma_cross_cor, orbital_phase, n_spectra, ccf_weights, half_duration_phase, temperature_profile, Kp_here, species_name_ccf, planet_name):
 
-    if 'Fe' in species_name_ccf or 'Fe+' in species_name_ccf:
-        binsize = 0.015
-    else:
-        binsize = 0.05
+    #if 'Fe' in species_name_ccf or 'Fe+' in species_name_ccf:
+    #    binsize = 0.015
+    #else:
+    #    binsize = 0.05
 
+    binsize = (np.max(orbital_phase) - np.min(orbital_phase))/len(orbital_phase)*3
+    
     phase_bin = np.arange(np.min(orbital_phase), np.max(orbital_phase), binsize)
     
     nphase, nv = len(phase_bin), len(drv)
@@ -1242,7 +1247,7 @@ def combine_ccfs_binned(drv, cross_cor, sigma_cross_cor, orbital_phase, n_spectr
         RVdiff = RVe - RV
         order = np.argsort(orbital_phase)
 
-    good = np.abs(drv) < 30.
+    good = np.abs(drv) < 15.
     pl.pcolor(drv[good], phase_bin, binned_ccfs[:,good], edgecolors='none',rasterized=True)
     pl.plot([0.,0.],[np.min(phase_bin), np.max(phase_bin)],':',color='white')
     #pl.plot(RVdiff[order], orbital_phase[order], '--', color='white')
@@ -1406,7 +1411,6 @@ def gaussian_fit(Kp, Kp_true, drv, species_label, planet_name, observation_epoch
     slice_peak = np.zeros(plotsnr.shape[0])
     # Fitting gaussian to all 1D Kp slices
 
-    breakpoint()
     for i in range(plotsnr.shape[0]):
         
         # Sort the peaks in descending order
@@ -1418,7 +1422,7 @@ def gaussian_fit(Kp, Kp_true, drv, species_label, planet_name, observation_epoch
             if np.abs(drv[peak]) <= 15:
                 slice_peak[i] = plotsnr[i, peak]
                 
-                popt, pcov = curve_fit(gaussian, drv, plotsnr[i,:], p0=[plotsnr[i, peak], drv[peak], 2.55035], sigma = sigma_shifted_ccfs[i,:], maxfev=10000)
+                popt, pcov = curve_fit(gaussian, drv, plotsnr[i,:], p0=[plotsnr[i, peak], drv[peak], 2.55035], sigma = sigma_shifted_ccfs[i,:], maxfev=100000)
 
                 amps[i] = popt[0]
                 rv[i] = popt[1]
@@ -1518,7 +1522,7 @@ def gaussian_fit(Kp, Kp_true, drv, species_label, planet_name, observation_epoch
             peak = np.argmax(temp_ccf[385:416]) + 385
             sigma_temp_ccf = np.interp(drv, drv-RV[j], sigma_cross_cor[j, :], left=0., right=0.0)
             sigma_temp_ccf = sigma_temp_ccf**2 * ccf_weights[j]**2
-            popt, pcov = curve_fit(gaussian, drv, temp_ccf, p0=[temp_ccf[peak], drv[peak], 2.5], sigma = np.sqrt(sigma_temp_ccf), maxfev=1000)
+            popt, pcov = curve_fit(gaussian, drv, temp_ccf, p0=[temp_ccf[peak], drv[peak], 2.5], sigma = np.sqrt(sigma_temp_ccf), maxfev=100000)
             rv_chars[i,phase_here] = popt[1]
             rv_chars_error[i,phase_here] = np.sqrt(pcov[1,1])
             slice_peak_chars[i] = temp_ccf[peak]

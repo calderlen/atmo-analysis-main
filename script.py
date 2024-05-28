@@ -19,12 +19,14 @@ from run_all_ccfs import *
 #               'Na_Allard': {'vmr': 2.94e-6},
  #               'Na_lor_cut': {'vmr': 2.94e-6},
                 
-species_dict = {'V I': {'vmr': 5.62e-9},  
-                'Ca I': {'vmr': 2.10e-8},
-                'Co I' : {'vmr' : 1.67e-7},
-                'Na I': {'vmr': 2.94e-6},
-                'Fe II' : {'vmr' : 5.39e-5},
-                'Fe I' : {'vmr' : 5.39e-5},
+species_dict = {'V I': {'vmr': 5.63e-9},
+                'Co I' : {'vmr' : 1.49e-7},
+                'Mn I' : {'vmr' : 2.31e-07},
+                'Ni I' : {'vmr' : 2.57e-7},
+                'Ca I': {'vmr': 2.46e-6},
+                'Na I': {'vmr': 2.82e-6},
+                'Fe II' : {'vmr' : 4.95e-5},
+                'Fe I' : {'vmr' : 4.95e-5},
 }                
     #if species_label == 'Na_Allard':
     #    species_names.add(('Na_allard_new', 'Na'))
