@@ -100,8 +100,6 @@ def psarr(inarr,xaxis,yaxis,xname,yname,zname,filename=' ',contour=False,clevels
         pl.clf()
 
 
-
-
 def mktslprplot(profarr,profarrerr,vabsfine,phase,phase2,vsini,bpar,RpRs,filename=' ', maxrange=[0,0], dophase=True, stack=0, zrange=[0,0], weighted=True, usetime=False, dur=0.):
     """
     Inputs:
