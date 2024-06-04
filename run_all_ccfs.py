@@ -474,6 +474,8 @@ def overlayArms(planet_name, temperature_profile, species_label, vmr, do_inject_
     
 
 def multiSpeciesCCF(planet_name, temperature_profile, species_dict, do_inject_model, do_run_all, do_make_new_model, method):
+    # This function only works with a single observation epoch! FIX THIS!
+
     """
     Runs all cross-correlation functions (CCFs) for a given planet, temperature profile, and all species labels with their
     respective VMRs  in the species_dict.
@@ -491,33 +493,61 @@ def multiSpeciesCCF(planet_name, temperature_profile, species_dict, do_inject_mo
     Returns:
         None
     """
-
     ccf_arrays = {}
     ccf_params = {}
+    if planet_name == 'KELT-20b': observation_epoch = '20190504'
 
     for species_label, params in species_dict.items():
         vmr = params.get('vmr')
+        arm = params.get('arm')
+        
+        if do_inject_model:
+            model_tag = '.injected-'+str(vmr)
+        else:
+            model_tag = ''
+
+        species_name_ccf = get_species_label(species_label)
         amps, amps_error, rv, rv_error, width, width_error, selected_idx, orbital_phase, fit_params, observation_epochs, plotsnr_restricted = run_all_ccfs(
             planet_name, temperature_profile, species_label, vmr, do_inject_model, do_run_all, do_make_new_model, method)
         
-        # Store the results in the dictionary with species_label as the key
-        ccf_arrays[species_label] = {
-            'amps': amps,
-            'amps_error': amps_error,
-            'rv': rv,
-            'rv_error': rv_error,
-            'width': width,
-            'width_error': width_error,
-        }
+        if arm != 'combined':
+            ccf_arrays[species_label] = {
+                'amps' : fit_params[species_label][observation_epoch][arm]['amps'],
+                'amps_error' : fit_params[species_label][observation_epoch][arm]['amps_error'],
+                'rv' : fit_params[species_label][observation_epoch][arm]['rv'],
+                'rv_error' : fit_params[species_label][observation_epoch][arm]['rv_error'],
+                'width' : fit_params[species_label][observation_epoch][arm]['width'],
+                'width_error' : fit_params[species_label][observation_epoch][arm]['width_error'],
+            }
 
-        ccf_params[species_label] = {
-            'amps': amps[selected_idx],
-            'amps_error': amps_error[selected_idx],
-            'rv': rv[selected_idx],
-            'rv_error': rv_error[selected_idx],
-            'width': width[selected_idx],
-            'width_error': width_error[selected_idx],
-        }
+            ccf_params[species_label] = {
+                'amps' : fit_params[species_label][observation_epoch][arm]['amps'][selected_idx],
+                'amps_error' : fit_params[species_label][observation_epoch][arm]['amps_error'][selected_idx],
+                'rv' : fit_params[species_label][observation_epoch][arm]['rv'][selected_idx],
+                'rv_error' : fit_params[species_label][observation_epoch][arm]['rv_error'][selected_idx],
+                'width' : fit_params[species_label][observation_epoch][arm]['width'][selected_idx],
+                'width_error' : fit_params[species_label][observation_epoch][arm]['width_error'][selected_idx],
+            }
+
+            # Store the results in the dictionary with species_label as the key
+        else:
+            ccf_arrays[species_label] = {
+                'amps': amps,
+                'amps_error': amps_error,
+                'rv': rv,
+                'rv_error': rv_error,
+                'width': width,
+                'width_error': width_error,
+            }
+
+            ccf_params[species_label] = {
+                'amps': amps[selected_idx],
+                'amps_error': amps_error[selected_idx],
+                'rv': rv[selected_idx],
+                'rv_error': rv_error[selected_idx],
+                'width': width[selected_idx],
+                'width_error': width_error[selected_idx],
+            }
 
     species_labels = list(ccf_arrays.keys())
 
@@ -555,9 +585,6 @@ def multiSpeciesCCF(planet_name, temperature_profile, species_dict, do_inject_mo
     # Save the plot
     plotname = path_modifier_plots + 'plots/' + planet_name + '.' + temperature_profile + '.CombinedLineProfiles.pdf'
     fig.savefig(plotname, dpi=300, bbox_inches='tight')
-
-# example usage
-# multiSpeciesCCF('KELT-20b', 'inverted-transmission-better', {'Fe I' : 5.39e-05, 'Fe II' : 5.39e-05, 'Ni I' :  2.676e-06, 'V I' :  5.623e-09, 'Ca I' :  2.101e-08, 'Co I' : 1.669e-07, 'Mn I' : 2.350e-07, 'Na I' : 2.937e-06, 'H I' : 2.646e-04}, False, True, True, 'ccf')
 
 def combinedPhaseResolvedLineProfiles(planet_name, temperature_profile, species_dict, do_inject_model, do_run_all, do_make_new_model, method, snr_coloring=True):
     """
@@ -711,3 +738,6 @@ def combinedPhaseResolvedLineProfiles(planet_name, temperature_profile, species_
     for arm in ['blue', 'red']:
         plotname_arm = path_modifier_plots + 'plots/' + planet_name + '.' + temperature_profile + f'.CombinedWindCharacteristics_{arm}.pdf'
         fig.savefig(plotname_arm, dpi=300, bbox_inches='tight')
+
+
+#def transitAsymmetries(planet_name, temperature_profile, species_label, vmr, do_inject_model, do_run_all, do_make_new_model, method):
