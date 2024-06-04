@@ -34,8 +34,6 @@ path_modifier_data = '/home/calder/Documents/petitRADTRANS_data/'   #linux
 
 def run_one_ccf(species_label, vmr, arm, observation_epoch, template_wave, template_flux, template_wave_in, template_flux_in, planet_name, temperature_profile, do_inject_model, species_name_ccf, model_tag, f, method, do_make_new_model):
 
-
-
     niter = 10
     n_systematics = np.array(get_sysrem_parameters(arm, observation_epoch, species_label, planet_name))
     ckms = 2.9979e5
@@ -401,13 +399,15 @@ def run_all_ccfs(planet_name, temperature_profile, species_label, vmr, do_inject
     f.close()
     orbital_phase, observation_epochs
     
-    return amps, amps_error, rv, rv_error, width, width_error, selected_idx, orbital_phase, fit_params, observation_epochs, plotsnr_restricted
+    np.save(path_modifier_plots + 'data_products/' + planet_name + '.' + observation_epoch + '.' + species_label + '.' + 'fit_params.npy', fit_params)
+ 
+    return fit_params, observation_epochs, plotsnr_restricted
 
 def overlayArms(planet_name, temperature_profile, species_label, vmr, do_inject_model, do_run_all, do_make_new_model, method):
     
     drv_restricted, plotsnr_restricted, residual_restricted = {}, {}, {}
     arms = ['blue', 'red']
-    amps, amps_error, rv, rv_error, width, width_error, selected_idx, orbital_phase, fit_params, observation_epochs, plotsnr_restricted = run_all_ccfs(planet_name, temperature_profile, species_label, vmr, do_inject_model, do_run_all, do_make_new_model, method)
+    fit_params, observation_epochs, plotsnr_restricted = run_all_ccfs(planet_name, temperature_profile, species_label, vmr, do_inject_model, do_run_all, do_make_new_model, method)
 
     for arm in arms:
         for observation_epoch in observation_epochs:
@@ -492,34 +492,20 @@ def multiSpeciesCCF(planet_name, temperature_profile, species_dict, do_inject_mo
 
     Returns:
         None
-    """
-    ccf_arrays = {}
+    """ 
+
     ccf_params = {}
     if planet_name == 'KELT-20b': observation_epoch = '20190504'
 
     for species_label, params in species_dict.items():
         vmr = params.get('vmr')
-        arm = params.get('arm')
-        
-        if do_inject_model:
-            model_tag = '.injected-'+str(vmr)
-        else:
-            model_tag = ''
+        arm = str(params.get('arm'))
 
         species_name_ccf = get_species_label(species_label)
-        amps, amps_error, rv, rv_error, width, width_error, selected_idx, orbital_phase, fit_params, observation_epochs, plotsnr_restricted = run_all_ccfs(
-            planet_name, temperature_profile, species_label, vmr, do_inject_model, do_run_all, do_make_new_model, method)
+        fit_params, observation_epochs, plotsnr_restricted = run_all_ccfs(planet_name, temperature_profile, species_label, vmr, do_inject_model, do_run_all, do_make_new_model, method)
         
         if arm != 'combined':
-            ccf_arrays[species_label] = {
-                'amps' : fit_params[species_label][observation_epoch][arm]['amps'],
-                'amps_error' : fit_params[species_label][observation_epoch][arm]['amps_error'],
-                'rv' : fit_params[species_label][observation_epoch][arm]['rv'],
-                'rv_error' : fit_params[species_label][observation_epoch][arm]['rv_error'],
-                'width' : fit_params[species_label][observation_epoch][arm]['width'],
-                'width_error' : fit_params[species_label][observation_epoch][arm]['width_error'],
-            }
-
+            selected_idx = fit_params[species_label][observation_epoch][arm]['selected_idx']
             ccf_params[species_label] = {
                 'amps' : fit_params[species_label][observation_epoch][arm]['amps'][selected_idx],
                 'amps_error' : fit_params[species_label][observation_epoch][arm]['amps_error'][selected_idx],
@@ -530,60 +516,45 @@ def multiSpeciesCCF(planet_name, temperature_profile, species_dict, do_inject_mo
             }
 
             # Store the results in the dictionary with species_label as the key
-        else:
-            ccf_arrays[species_label] = {
-                'amps': amps,
-                'amps_error': amps_error,
-                'rv': rv,
-                'rv_error': rv_error,
-                'width': width,
-                'width_error': width_error,
-            }
-
+        elif arm == 'combined':
+            selected_idx = fit_params[species_label]['combined']['combined']['selected_idx']
             ccf_params[species_label] = {
-                'amps': amps[selected_idx],
-                'amps_error': amps_error[selected_idx],
-                'rv': rv[selected_idx],
-                'rv_error': rv_error[selected_idx],
-                'width': width[selected_idx],
-                'width_error': width_error[selected_idx],
+                'amps': fit_params[species_label]['combined']['combined']['amps'][selected_idx],
+                'amps_error': fit_params[species_label]['combined']['combined']['amps_error'][selected_idx],
+                'rv': fit_params[species_label]['combined']['combined']['rv'][selected_idx],
+                'rv_error': fit_params[species_label]['combined']['combined']['rv_error'][selected_idx],
+                'width': fit_params[species_label]['combined']['combined']['width'][selected_idx],
+                'width_error': fit_params[species_label]['combined']['combined']['width_error'][selected_idx],
             }
 
-    species_labels = list(ccf_arrays.keys())
-
-    # Extracting 'rv' for each species
-    boxplot_data = [ccf_arrays[species]['rv'] for species in species_labels]
+    species_labels = list(ccf_params.keys())
+    species_labels.sort()
 
     # Prepare colors based on 'amps' in ccf_params
-    amps = [ccf_params[species]['amps'] for species in species_labels]
-    norm = pl.Normalize(min(amps), max(amps))
+    amps = np.array([ccf_params[species]['amps'] for species in species_labels])
     cmap = pl.cm.viridis
+    colors = cmap(amps / amps.max())
 
     fig, ax = pl.subplots()
 
-    # Create a horizontal boxplot for each species
-    bp = ax.boxplot(boxplot_data,
-                    vert=False,
-                    patch_artist=True,
-                    showfliers=False)
-    
-    # Apply color to each box
-    for patch, color in zip(bp['boxes'], cmap(norm(amps))):
-        patch.set_facecolor(color)
+    # Create a normal plot with error bars for each species
+    for i, species in enumerate(species_labels):
+        rv = ccf_params[species]['rv']
+        rv_error = ccf_params[species]['rv_error']
+        ax.errorbar(rv, i, xerr=rv_error, fmt='o', color=colors[i], markersize=5, markeredgewidth=1, markeredgecolor='black', capsize=5)
 
+    ax.set_yticks(range(len(species_labels)))
     ax.set_yticklabels(species_labels)
     ax.set_xlabel('$\Delta$V(km/s)')
-    #ax.set_ylabel('Species')
-    #ax.set_title('Variation in $\Delta$V for each species across all observations by SNR')
-    
+
     # Adding a colorbar
-    sm = pl.cm.ScalarMappable(cmap=cmap, norm=norm)
+    sm = pl.cm.ScalarMappable(cmap=cmap, norm=pl.Normalize(vmin=amps.min(), vmax=amps.max()))
     sm.set_array([])
     cbar = pl.colorbar(sm, ax=ax)
     cbar.set_label('SNR')
 
     # Save the plot
-    plotname = path_modifier_plots + 'plots/' + planet_name + '.' + temperature_profile + '.CombinedLineProfiles.pdf'
+    plotname = path_modifier_plots + 'plots/' + planet_name + '.' + temperature_profile + '.CombinedRVs.pdf'
     fig.savefig(plotname, dpi=300, bbox_inches='tight')
 
 def combinedPhaseResolvedLineProfiles(planet_name, temperature_profile, species_dict, do_inject_model, do_run_all, do_make_new_model, method, snr_coloring=True):

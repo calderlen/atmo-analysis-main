@@ -1,5 +1,7 @@
 from run_all_ccfs import *
 from plotting_routines import *
+
+
 species_dict = {
     'Mg I' : {'vmr' : 6.08e-5, 'arm':'blue'},
     'Fe I' : {'vmr' : 4.95e-5, 'arm':'combined'},
@@ -14,15 +16,20 @@ species_dict = {
     'Ti I' : {'vmr' : 5.63e-9, 'arm':'blue'},
     'Ti II' : {'vmr' : 5.63e-9, 'arm':'blue'},
     'Sc II' : {'vmr' : 5.63e-9, 'arm':'blue'},
-    'Ru I' : {'vmr' : 9.65e-11, 'arm':'blue'},
+    'Ru I' : {'vmr' : 9.65e-11, 'arm':'blue'}
 }
 
-species_dict = dict(sorted(species_dict.items(), key=lambda item: item[1]['vmr'], reverse=True))
-
+species_dict = dict(sorted(species_dict.items(), key=lambda item: item[1]['vmr']))
+                    
 #Make plot stacking all of the synthetic transmission spectra for appendix
 multiSpeciesCCF('KELT-20b', 'inverted-transmission-better', species_dict, False, True, True, 'ccf')
+
+#for species_label, species_params in species_dict.items():
+#    vmr = species_params['vmr']
+#    overlayArms('KELT-20b', 'inverted-transmission-better', species_label, vmr, False, True, True, 'ccf')
+
+    
+#species_dict = dict(sorted(species_dict.items(), key=lambda item: item[1]['vmr'], reverse=True))
 #make_spectrum_plots(species_dict)
 
-for species_label, species_params in species_dict.items():
-    vmr = species_params['vmr']
-    overlayArms('KELT-20b', 'inverted-transmission-better', species_label, vmr, False, True, True, 'ccf')
+
