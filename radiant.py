@@ -248,6 +248,110 @@ def get_species_keys(species_label):
     
     return species_name_inject, species_name_ccf
 
+
+def get_species_label(species_name, charge_state=None):
+  """
+  This function maps a species name and optionally its charge state to the corresponding species_label.
+
+  Args:
+      species_name: The name of the species (e.g., "Fe").
+      charge_state: The charge state of the species (e.g., "+" for singly ionized). Defaults to None.
+
+  Returns:
+      The corresponding species_label or None if not found.
+  """
+  if charge_state:
+    species_name += "_" + charge_state
+
+  lookup = {
+      "TiO_all_iso_Plez": "TiO",
+      "TiO_46_Exomol_McKemmish": "TiO_46",
+      "TiO_47_Exomol_McKemmish": "TiO_47",
+      "TiO_48_Exomol_McKemmish": "TiO_48",
+      "TiO_49_Exomol_McKemmish": "TiO_49",
+      "TiO_50_Exomol_McKemmish": "TiO_50",
+      "VO_ExoMol_McKemmish": "VO",
+      "FeH_main_iso": "FeH",
+      "CaH": "CaH",
+      "Fe": "Fe I",
+      "Ti": "Ti I",
+      "Ti+": "Ti II",
+      "Mg": "Mg I",
+      "Mg+": "Mg II",
+      "Fe+": "Fe II",
+      "Cr": "Cr I",
+      "Si": "Si I",
+      "Ni": "Ni I",
+      "Al": "Al I",
+      "SiO_main_iso_new_incl_UV": "SiO",
+      "H2O_main_iso": "H2O",
+      "OH_main_iso": "OH",
+      "MgH": "MgH",
+      "Ca": "Ca I",
+      "CO_all_iso": "CO_all",
+      "CO_main_iso": "CO_main",
+      "NaH": "NaH",
+      "H": "H I",
+      "AlO": "AlO",
+      "Ba": "Ba I",
+      "Ba+": "Ba II",
+      "CaO": "CaO",
+      "Co": "Co I",
+      "Cr+": "Cr II",
+      "Cs": "Cs I",
+      "Cu": "Cu I",
+      "Ga": "Ga I",
+      "Ge": "Ge I",
+      "Hf": "Hf I",
+      "In": "In I",
+      "Ir": "Ir I",
+      "Mn": "Mn I",
+      "Mo": "Mo I",
+      "Na": "Na I",
+      "Nb": "Nb I",
+      "O": "O I",
+      "Os": "Os I",
+      "Pb": "Pb I",
+      "Pd": "Pd I",
+      "Rb": "Rb I",
+      "Rh": "Rh I",
+      "Ru": "Ru I",
+      "Sc": "Sc I",
+      "Sc+": "Sc II",
+      "Sn": "Sn I",
+      "Sr": "Sr I",
+      "Sr+": "Sr II",
+      "Tl": "Tl I",
+      "W": "W I",
+      "Y+": "Y II",
+      "Zn": "Zn I",
+      "Zr": "Zr I",
+      "Zr+": "Zr II",
+      "N": "N I",
+      "K": "K I",
+      "Y": "Y I",
+      "Li": "Li I",
+      "V": "V I",
+      "V+": "V II",
+      "Ca+": "Ca II",
+      "Tl+": "Tl1",
+      ('Na_allard_new', 'Na'): "Na_Allard",
+      ('Na_burrows', 'Na'): "Na_Burrows",
+      ('', 'Na'): "Na_lor_cut",
+      ('Co_0_Kurucz', 'Co'): "Co_0_Kurucz",
+      ('Cr_1_VALD', 'Cr'): "Cr_1_VALD",
+      ('Fe-Kurucz', 'Fe'): "Fe_0_Kurucz",  # Handle the case where "Fe" maps to "Fe_0_Kurucz"
+      ('Fe_1_Kurucz', 'Fe+'): "Fe_1_Kurucz",
+      ('Fe_0_Vald', 'Fe'): "Fe_0_Vald",
+      ('Mg_0_Kurucz', 'Mg'): "Mg_0_Kurucz",
+      ('Ni_0_Kurucz', 'Ni'): "Ni_0_Kurucz",
+      ('Ti_0_Kurucz', 'Ti'): "Ti_0_Kurucz",
+      ('Ti_1_Kurucz', 'Ti+'): "Ti_1_Kurucz",
+      ('Ti_0_VALD', 'Ti'): "Ti_0_VALD",
+  }
+  return lookup.get(species_name, None)
+
+
 def get_sysrem_parameters(arm, observation_epoch, species_label, planet_name):
     if species_label == 'TiO':
         if arm == 'red': n_systematics = [1, 1]
@@ -288,8 +392,22 @@ def get_sysrem_parameters(arm, observation_epoch, species_label, planet_name):
         if arm == 'blue': n_systematics = [1,0]
     elif species_label == 'Mn I':
         if arm == 'red': n_systematics = [2,2]
-        if arm == 'blue': n_systematics = [1,0]
-     
+        if arm == 'blue': n_systematics = [12,0]
+    elif species_label == 'Cr I':
+        if arm == 'red': n_systematics = [5, 5]
+        if arm == 'blue': n_systematics = [6, 0]
+    elif species_label == 'Cr II':
+        if arm == 'red': n_systematics = [5, 5]
+        if arm == 'blue': n_systematics = [6, 0]
+    elif species_label == 'Mg I':
+        if arm == 'red': n_systematics = [5, 5]
+        if arm == 'blue': n_systematics = [6, 0]
+    elif species_label == 'Mg II':
+        if arm == 'red': n_systematics = [5, 5]
+        if arm == 'blue': n_systematics = [6, 0]
+    elif species_label == 'Sc I':
+        if arm == 'red': n_systematics = [5, 5]
+        if arm == 'blue': n_systematics = [1, 0]
     else:
         if arm == 'blue':
             n_systematics = [3, 0]
@@ -1273,7 +1391,7 @@ def combine_ccfs_binned(drv, cross_cor, sigma_cross_cor, orbital_phase, n_spectr
     for i in range (0, nphase):
         pl.subplot(3, 3, np.mod(i, 9)+1)
         peak = np.argmax(ccffit[i,:])
-        popt, pcov = curve_fit(gaussian, drvfit, ccffit[i,:], p0=[ccffit[i,peak], drvfit[peak], 2.5], sigma = sigmafit[i,:], maxfev=100000)
+        popt, pcov = curve_fit(gaussian, drvfit, ccffit[i,:], p0=[ccffit[i,peak], drvfit[peak], 2.5], sigma = sigmafit[i,:], maxfev=1000000)
 
         pl.plot(drvfit, ccffit[i,:], color='blue')
         pl.plot(drvfit, gaussian(drvfit, popt[0], popt[1], popt[2]), color='red')
@@ -1333,7 +1451,7 @@ def combine_ccfs_binned(drv, cross_cor, sigma_cross_cor, orbital_phase, n_spectr
             peak = np.argmax(temp_ccf[390:411]) + 390
             sigma_temp_ccf = np.interp(drv, drv-RV[j], sigma_cross_cor[j, :], left=0., right=0.0)
             sigma_temp_ccf = sigma_temp_ccf**2 * ccf_weights[j]**2
-            popt, pcov = curve_fit(gaussian, drv, temp_ccf, p0=[temp_ccf[peak], drv[peak], 2.5], sigma = np.sqrt(sigma_temp_ccf), maxfev=100000)
+            popt, pcov = curve_fit(gaussian, drv, temp_ccf, p0=[temp_ccf[peak], drv[peak], 2.5], sigma = np.sqrt(sigma_temp_ccf), maxfev=1000000)
             rv_chars[i,phase_here] = popt[1]
             rv_chars_error[i,phase_here] = np.sqrt(pcov[1,1])
             slice_peak_chars[i] = temp_ccf[peak]
@@ -1423,7 +1541,7 @@ def gaussian_fit(Kp, Kp_true, drv, species_label, planet_name, observation_epoch
             if np.abs(drv[peak]) <= 15:
                 slice_peak[i] = plotsnr[i, peak]
                 
-                popt, pcov = curve_fit(gaussian, drv, plotsnr[i,:], p0=[plotsnr[i, peak], drv[peak], 2.55035], sigma = sigma_shifted_ccfs[i,:], maxfev=100000)
+                popt, pcov = curve_fit(gaussian, drv, plotsnr[i,:], p0=[plotsnr[i, peak], drv[peak], 2.55035], sigma = sigma_shifted_ccfs[i,:], maxfev=1000000)
 
                 amps[i] = popt[0]
                 rv[i] = popt[1]
@@ -1523,7 +1641,7 @@ def gaussian_fit(Kp, Kp_true, drv, species_label, planet_name, observation_epoch
             peak = np.argmax(temp_ccf[385:416]) + 385
             sigma_temp_ccf = np.interp(drv, drv-RV[j], sigma_cross_cor[j, :], left=0., right=0.0)
             sigma_temp_ccf = sigma_temp_ccf**2 * ccf_weights[j]**2
-            popt, pcov = curve_fit(gaussian, drv, temp_ccf, p0=[temp_ccf[peak], drv[peak], 2.5], sigma = np.sqrt(sigma_temp_ccf), maxfev=100000)
+            popt, pcov = curve_fit(gaussian, drv, temp_ccf, p0=[temp_ccf[peak], drv[peak], 2.5], sigma = np.sqrt(sigma_temp_ccf), maxfev=1000000)
             rv_chars[i,phase_here] = popt[1]
             rv_chars_error[i,phase_here] = np.sqrt(pcov[1,1])
             slice_peak_chars[i] = temp_ccf[peak]
