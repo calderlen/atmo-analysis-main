@@ -407,7 +407,7 @@ def overlayArms(planet_name, temperature_profile, species_label, vmr, do_inject_
     
     drv_restricted, plotsnr_restricted, residual_restricted = {}, {}, {}
     arms = ['blue', 'red']
-    fit_params, observation_epochs, plotsnr_restricted = run_all_ccfs(planet_name, temperature_profile, species_label, vmr, do_inject_model, do_run_all, do_make_new_model, method)
+    fit_params, observation_epochs,_ = run_all_ccfs(planet_name, temperature_profile, species_label, vmr, do_inject_model, do_run_all, do_make_new_model, method)
 
     for arm in arms:
         for observation_epoch in observation_epochs:
