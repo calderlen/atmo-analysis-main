@@ -22,7 +22,7 @@ species_dict = {
 species_dict = dict(sorted(species_dict.items(), key=lambda item: item[1]['vmr']))
                     
 #Make plot stacking all of the synthetic transmission spectra for appendix
-#multiSpeciesCCF('KELT-20b', 'inverted-transmission-better', species_dict, False, True, True, 'ccf')
+multiSpeciesCCF('KELT-20b', 'inverted-transmission-better', species_dict, False, True, True, 'ccf')
 
 for species_label, species_params in species_dict.items():
     vmr = species_params['vmr']
