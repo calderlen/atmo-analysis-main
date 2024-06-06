@@ -51,8 +51,8 @@ def make_spectrum_plots(species_dict):
         vmr = params.get('vmr')        
         template_wave, template_flux = make_new_model(instrument, species_name, vmr, spectrum_type, planet_name, temperature_profile)
 
-        if planet_name == 'WASP-189b' or planet_name == 'KELT-20b':
-            axs[i].fill([4265,4265,4800,4800],[np.nanmin(template_flux),np.nanmax(template_flux),np.nanmax(template_flux),np.nanmin(template_flux)],color='cyan',alpha=0.25)
+        #if planet_name == 'WASP-189b' or planet_name == 'KELT-20b':
+        #    axs[i].fill([4265,4265,4800,4800],[np.nanmin(template_flux),np.nanmax(template_flux),np.nanmax(template_flux),np.nanmin(template_flux)],color='cyan',alpha=0.25)
         if planet_name != 'WASP-189b':
             axs[i].fill([4800,4800,5441,5441],[np.nanmin(template_flux),np.nanmax(template_flux),np.nanmax(template_flux),np.nanmin(template_flux)],color='blue',alpha=0.25)
             

@@ -1,60 +1,46 @@
 import numpy as np
 import matplotlib.pyplot as pl
 
-def psarr(inarr,xaxis,yaxis,xname,yname,zname,filename=' ',contour=False,clevels=10,encapsulated=False,ctable='viridis',flat=False,dtlines=False,dtstruc={},lslines=False,ctrev=False,fsize=1,carr=np.zeros(1),points=False,xypointss=0,xyerr=0,xysyms='o',levels=0,alines=False,apoints=0,acolor='',stack=0,textstr=' ',textloc=0,textcolor='white',colorbar=True,fileformat='pdf'):
-    
+def psarr(inarr, xaxis, yaxis, xname, yname, zname, filename=' ', contour=False, clevels=10, encapsulated=False, ctable='viridis', flat=False, dtlines=False, dtstruc={}, lslines=False, ctrev=False, fsize=1, carr=np.zeros(1), points=False, xypointss=0, xyerr=0, xysyms='o', levels=0, alines=False, apoints=0, acolor='', stack=0, textstr=' ', textloc=0, textcolor='white', colorbar=True, fileformat='pdf', invert=False):
     """
+    Generates a color-mapped 2D plot of a given data array (inarr) against x and y axes. Can include contour lines, a colorbar, 
+    and text labels. It can also save the plot to a file.
 
-        Generates a color-mapped 2D plot of a given data array (inarr) against x and y axes. Can include contour lines, a colorbar, 
-        and text labels. It can also save the plot to a file.
-
-           - Sets the figure size based on provided parameters.
-           - Creates a color map of the data (inarr) against the provided x and y axes.
-           - Depending on the options selected, it can add white dotted lines to the plot.
-           - Adds a color bar (optional).
-           - Can overlay contour lines (optional).
-           - Can overlay text on the plot (optional).
-           - Saves the plot to a file (optional).
-
-        Inputs:
-            inarr - 2D array of values to be plotted
-            xaxis - 2D array of xaxis values
-            yaxis - 2D array of yaxis values
-            xname - x-axis label
-            yname - y-axis label
-            zname - z-axis (colorbar) label
-            filename - name of output file
-            contour - T/F; if true adds contour lines; default = False
-            clevels - determines number of contour levels; default = 10
-            encapsulated - T/F; unused; default = False
-            ctable - color table; default = 'viridis'
-            flat - T/F; if true go to stack
-            dtlines - T/F; if true adds dotted lines
-            dtstruc - dictionary of dtlines parameters
-            lslines - T/F; unused; default = False
-            ctrev - T/F; unused; default = False
-            fsize - font size; unused; default = 1
-            carr - unused; default = np.zeros(1)
-            points - unused; default = False
-            xypoints - unused; default = 0
-            xyerr - unused; default = 0 
-            xysyms - unused; default = 'o'
-            levels - unused; default = 0
-            alines - T/F;  ; default = False
-            apoints - Adds a dotted line parallel to the y-axis to note a feature of one's choosing; default = 0
-            acolor - color of the dotted line; default = ''
-            stack - determines amount of plots stacked into one file; determines individual figure size; default = 0
-            textstr - text overlayed on plot; default = ' '
-            textloc - location of text; default = 0
-            textcolor - color of text; default = 'white'
-            colorbar - T/F; if true adds colorbar
-            fileformat - format of output file; default = 'pdf'
-
-        Outputs:
-            
-
+    Inputs:
+        inarr - 2D array of values to be plotted
+        xaxis - 2D array of xaxis values
+        yaxis - 2D array of yaxis values
+        xname - x-axis label
+        yname - y-axis label
+        zname - z-axis (colorbar) label
+        filename - name of output file
+        contour - T/F; if true adds contour lines; default = False
+        clevels - determines number of contour levels; default = 10
+        encapsulated - T/F; unused; default = False
+        ctable - color table; default = 'viridis'
+        flat - T/F; if true go to stack
+        dtlines - T/F; if true adds dotted lines
+        dtstruc - dictionary of dtlines parameters
+        lslines - T/F; unused; default = False
+        ctrev - T/F; unused; default = False
+        fsize - font size; unused; default = 1
+        carr - unused; default = np.zeros(1)
+        points - unused; default = False
+        xypoints - unused; default = 0
+        xyerr - unused; default = 0 
+        xysyms - unused; default = 'o'
+        levels - unused; default = 0
+        alines - T/F;  ; default = False
+        apoints - Adds a dotted line parallel to the y-axis to note a feature of one's choosing; default = 0
+        acolor - color of the dotted line; default = ''
+        stack - determines amount of plots stacked into one file; determines individual figure size; default = 0
+        textstr - text overlayed on plot; default = ' '
+        textloc - location of text; default = 0
+        textcolor - color of text; default = 'white'
+        colorbar - T/F; if true adds colorbar
+        fileformat - format of output file; default = 'pdf'
+        invert - T/F; if true, inverts the color profile; default = False
     """
-
 
     if flat:
         if stack == 0: pl.figure(figsize=(7,2.5))
@@ -64,9 +50,14 @@ def psarr(inarr,xaxis,yaxis,xname,yname,zname,filename=' ',contour=False,clevels
     else:
         pl.figure(figsize=(7,7))
 
-    pl.pcolor(xaxis,yaxis,inarr, cmap=ctable, edgecolors='none',rasterized=True)
+    if invert:
+        cmap = pl.cm.get_cmap(ctable + '_r')  # Reverse the colormap
+    else:
+        cmap = pl.cm.get_cmap(ctable)
+
+    pl.pcolor(xaxis, yaxis, inarr, cmap=cmap, edgecolors='none', rasterized=True)
     pl.axis([np.min(xaxis), np.max(xaxis), np.min(yaxis), np.max(yaxis)])
-    ax=pl.gca()
+    ax = pl.gca()
     if stack == 0 or stack == 2: pl.xlabel(xname)
     if stack == 0 or stack == 1: pl.ylabel(yname)
     if stack == 1 or stack == 3: ax.axes.get_xaxis().set_visible(False)
@@ -79,26 +70,24 @@ def psarr(inarr,xaxis,yaxis,xname,yname,zname,filename=' ',contour=False,clevels
         pl.plot([0.0,0.0],[np.min(yaxis),np.max(yaxis)],':',color='white')
         pl.plot([np.min(xaxis),np.max(xaxis)],[dtstruc['middle'],dtstruc['middle']],':',color='white')
 
-
-    cbar=pl.colorbar(aspect=10,pad=0.01)
+    cbar = pl.colorbar(aspect=10, pad=0.01)
     cbar.ax.set_ylabel(zname)
 
     if contour:
-        pl.contour(xaxis,yaxis,inarr,clevels,colors='white')
+        pl.contour(xaxis, yaxis, inarr, clevels, colors='white')
 
     if textstr != ' ':
-        pl.text(textloc[0],textloc[1],textstr,color=textcolor,fontsize='x-large')
+        pl.text(textloc[0], textloc[1], textstr, color=textcolor, fontsize='x-large')
 
     if alines and len(apoints) > 1:
         if len(apoints) == 2:
             pl.plot([apoints[0], apoints[0]], [np.min(yaxis), np.max(yaxis)], ':', color=acolor)
             pl.plot([np.min(xaxis), np.max(xaxis)], [apoints[1], apoints[1]], ':', color=acolor)
-    
+
     pl.tight_layout()
     if filename != 'none': 
         pl.savefig(filename, format=fileformat)
         pl.clf()
-
 
 def mktslprplot(profarr,profarrerr,vabsfine,phase,phase2,vsini,bpar,RpRs,filename=' ', maxrange=[0,0], dophase=True, stack=0, zrange=[0,0], weighted=True, usetime=False, dur=0.):
     """

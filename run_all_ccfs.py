@@ -143,7 +143,7 @@ def run_one_ccf(species_label, vmr, arm, observation_epoch, template_wave, templ
         #Make a plot
         plotname = path_modifier_plots + 'plots/' + planet_name + '.' + observation_epoch + '.' + species_name_ccf + model_tag + '.' + arm + '.CCFs-raw.pdf'
         
-        psarr(cross_cor, drv, orbital_phase, 'v (km/s)', 'orbital phase', 'SNR', filename=plotname, ctable='gist_gray', carr = Kp_true * np.sin(2.*np.pi*orbital_phase))
+        psarr(cross_cor, drv, orbital_phase, 'v (km/s)', 'orbital phase', 'SNR', filename=plotname, ctable='gist_yarg', carr = Kp_true * np.sin(2.*np.pi*orbital_phase))
 
         #blank out the non-radial pulsations for now
         if planet_name == 'WASP-33b' or planet_name == 'TOI-1431b':
@@ -172,7 +172,7 @@ def run_one_ccf(species_label, vmr, arm, observation_epoch, template_wave, templ
 
         # Binned CCFs
 
-        binned_ccfs, rvs, widths, rverrors, widtherrors = combine_ccfs_binned(drv, cross_cor, sigma_cross_cor, orbital_phase, n_spectra, ccf_weights, half_duration_phase, temperature_profile, Kp_expected, species_name_ccf, planet_name)
+        binned_ccfs, rvs, widths, rverrors, widtherrors = combine_ccfs_binned(drv, cross_cor, sigma_cross_cor, orbital_phase, n_spectra, ccf_weights, half_duration_phase, temperature_profile, Kp_expected, species_name_ccf, planet_name, arm)
 
         # Asymmetry CCFs
 
@@ -261,7 +261,7 @@ def combine_observations(observation_epochs, arms, planet_name, temperature_prof
         ind = np.unravel_index(np.argmax(snr, axis=None), snr.shape)
         Kp_best, drv_best = Kp[ind[0]], drv[ind[1]]
 
-        if planet_name == 'KELT-20b': ccfs_binned = combine_ccfs_binned(drv_original, cross_cor, sigma_cross_cor, orbital_phase, len(orbital_phase), ccf_weights, half_duration_phase, temperature_profile, Kp_best, species_name_ccf, planet_name)
+        if planet_name == 'KELT-20b': binned_ccfs, rvs, widths, rverrors, widtherrors = combine_ccfs_binned(drv_original, cross_cor, sigma_cross_cor, orbital_phase, len(orbital_phase), ccf_weights, half_duration_phase, temperature_profile, Kp_best, species_name_ccf, planet_name, 'combined')
 
         snr_1, snr_2, Kp, drv, cross_cor, sigma_shifted_ccfs_1, sigma_shifted_ccfs_2, ccf_weights = combine_ccfs_asymmetry(drv, cross_cor, sigma_cross_cor, orbital_phase, len(orbital_phase), ccf_weights, half_duration_phase, temperature_profile)
 
@@ -270,11 +270,11 @@ def combine_observations(observation_epochs, arms, planet_name, temperature_prof
             which_arms = 'combined'
         else:
             which_arms = arms[0]
-        plotname = path_modifier_plots + 'plots/' + planet_name + '.' + which_arms + '.' + species_name_ccf + model_tag + '.' + arm + '.CCFs-raw.pdf'
+        plotname = path_modifier_plots + 'plots/' + planet_name + '.' + which_arms + '.' + species_name_ccf + model_tag + '.' + '.CCFs-raw.pdf'
 
         phase_order = np.argsort(orbital_phase)
         
-        psarr(cross_cor_display[phase_order,:], drv, orbital_phase[phase_order], 'v (km/s)', 'orbital phase', 'SNR', filename=plotname, ctable='gist_gray', carr = Kp_true * np.sin(2.*np.pi*orbital_phase[phase_order]))
+        psarr(cross_cor_display[phase_order,:], drv, orbital_phase[phase_order], 'v (km/s)', 'orbital phase', 'SNR', filename=plotname, ctable='gist_yarg', carr = Kp_true * np.sin(2.*np.pi*orbital_phase[phase_order]))
 
 
     if 'likelihood' in method:
