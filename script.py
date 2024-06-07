@@ -19,7 +19,7 @@ species_dict = {
     'Ru I' : {'vmr' : 9.65e-11, 'arm':'blue'}
 }
 
-species_dict = dict(sorted(species_dict.items(), key=lambda item: item[1]['vmr']))
+species_dict = dict(sorted(species_dict.items(), key=lambda item: item[1]['vmr'], reverse=True))
                     
 #Make plot stacking all of the synthetic transmission spectra for appendix
 multiSpeciesCCF('KELT-20b', 'inverted-transmission-better', species_dict, False, True, True, 'ccf')

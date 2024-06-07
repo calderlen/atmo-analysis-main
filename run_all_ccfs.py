@@ -25,13 +25,6 @@ from dtutils import psarr
 from radiant import *
 from create_model import create_model, instantiate_radtrans
 
-# global varaibles defined for harcoded path to data on my computer
-path_modifier_plots = '/home/calder/Documents/atmo-analysis-main/'  #linux
-path_modifier_data = '/home/calder/Documents/petitRADTRANS_data/'   #linux
-#path_modifier_plots = '/Users/calder/Documents/atmo-analysis-main/' #mac
-#path_modifier_data = '/Volumes/sabrent/petitRADTRANS_data'  #mac
-#path_modifier_data = '/Users/calder/Documents/petitRADTRANS_data/' #mac
-
 def run_one_ccf(species_label, vmr, arm, observation_epoch, template_wave, template_flux, template_wave_in, template_flux_in, planet_name, temperature_profile, do_inject_model, species_name_ccf, model_tag, f, method, do_make_new_model):
 
     niter = 10
@@ -62,13 +55,13 @@ def run_one_ccf(species_label, vmr, arm, observation_epoch, template_wave, templ
     residual_flux = flatten_spectra(flux, npix, n_spectra)
 
     #Make some diagnostic plots
-    plotname = path_modifier_plots + 'plots/' + planet_name + '.' + observation_epoch + '.' + arm + '.spectrum-resids.pdf'
+    plotname = 'plots/' + planet_name + '.' + observation_epoch + '.' + arm + '.spectrum-resids.pdf'
 
     #import pdb; pdb.set_trace()
 
     psarr(unp.nominal_values(residual_flux), wave, orbital_phase, 'wavelength (Angstroms)', 'orbital phase', 'flux residual', filename=plotname,flat=True, ctable='gist_gray')
 
-    sysrem_file = path_modifier_plots + 'data_products/' + planet_name + '.' + observation_epoch + '.' + arm + '.SYSREM-' + str(n_systematics[0]) + '+' + str(n_systematics[1])+model_tag+'.npy'
+    sysrem_file = 'data_products/' + planet_name + '.' + observation_epoch + '.' + arm + '.SYSREM-' + str(n_systematics[0]) + '+' + str(n_systematics[1])+model_tag+'.npy'
 
     #if os.path.isfile(sysrem_file):
     #    do_sysrem = True
@@ -86,7 +79,7 @@ def run_one_ccf(species_label, vmr, arm, observation_epoch, template_wave, templ
         np.save(sysrem_file+'.Umatrix.npy', U_sysrem)
         np.save(sysrem_file+'.telluric-region.npy', telluric_free)
 
-        plotname = path_modifier_plots + 'plots/' + planet_name + '.' + observation_epoch + '.' + arm + '.spectrum-SYSREM-'+ str(n_systematics[0]) + '+' + str(n_systematics[1])+'.pdf'
+        plotname = 'plots/' + planet_name + '.' + observation_epoch + '.' + arm + '.spectrum-SYSREM-'+ str(n_systematics[0]) + '+' + str(n_systematics[1])+'.pdf'
 
         psarr(corrected_flux, wave, orbital_phase, 'wavelength (Angstroms)', 'orbital phase', 'flux residual', filename=plotname,flat=True, ctable='gist_gray')
 
@@ -97,7 +90,7 @@ def run_one_ccf(species_label, vmr, arm, observation_epoch, template_wave, templ
         telluric_free = np.load(sysrem_file+'.telluric-region.npy')
 
     if method == 'ccf':
-        ccf_file = path_modifier_plots + 'data_products/'+ planet_name + '.' + observation_epoch + '.' + arm + '.' + species_name_ccf + model_tag + '.CCFs-raw.npy'
+        ccf_file = 'data_products/'+ planet_name + '.' + observation_epoch + '.' + arm + '.' + species_name_ccf + model_tag + '.CCFs-raw.npy'
 
         drv, cross_cor, sigma_cross_cor = get_ccfs(wave, corrected_flux, corrected_error, template_wave, template_flux, n_spectra, U_sysrem, telluric_free)
         
@@ -141,7 +134,7 @@ def run_one_ccf(species_label, vmr, arm, observation_epoch, template_wave, templ
         cross_cor -= ccf_model
 
         #Make a plot
-        plotname = path_modifier_plots + 'plots/' + planet_name + '.' + observation_epoch + '.' + species_name_ccf + model_tag + '.' + arm + '.CCFs-raw.pdf'
+        plotname = 'plots/' + planet_name + '.' + observation_epoch + '.' + species_name_ccf + model_tag + '.' + arm + '.CCFs-raw.pdf'
         
         psarr(cross_cor, drv, orbital_phase, 'v (km/s)', 'orbital phase', 'SNR', filename=plotname, ctable='gist_yarg', carr = Kp_true * np.sin(2.*np.pi*orbital_phase))
 
@@ -153,7 +146,7 @@ def run_one_ccf(species_label, vmr, arm, observation_epoch, template_wave, templ
             cross_cor[:, bads] = 0.0
             sigma_cross_cor[:, bads] = 1e5
 
-            plotname = path_modifier_plots + 'plots/' + planet_name + '.' + observation_epoch + '.' + species_name_ccf + model_tag + '.' + arm + '.blanked.CCFs-raw.pdf'
+            plotname = 'plots/' + planet_name + '.' + observation_epoch + '.' + species_name_ccf + model_tag + '.' + arm + '.blanked.CCFs-raw.pdf'
 
             psarr(cross_cor, drv, orbital_phase, 'v (km/s)', 'orbital phase', 'SNR', filename=plotname, ctable='gist_gray', carr = Kp_true * np.sin(2.*np.pi*orbital_phase))
 
@@ -165,8 +158,11 @@ def run_one_ccf(species_label, vmr, arm, observation_epoch, template_wave, templ
         snr, Kp, drv, cross_cor_display, sigma_shifted_ccfs, ccf_weights = combine_ccfs(drv, cross_cor, sigma_cross_cor, orbital_phase, n_spectra, ccf_weights, half_duration_phase, temperature_profile)
 
         snr_1, snr_2, Kp, drv, cross_cor, sigma_shifted_ccfs_1, sigma_shifted_ccfs_2, ccf_weights = combine_ccfs_asymmetry(drv, cross_cor, sigma_cross_cor, orbital_phase, n_spectra, ccf_weights, half_duration_phase, temperature_profile)
-        
+
+        make_shifted_plot_asymmetry(snr_1, snr_2, planet_name, observation_epoch, arm, species_name_ccf, model_tag, RV_abs, Kp_expected, V_sys_true, Kp_true, do_inject_model, drv, Kp, species_label, temperature_profile, sigma_shifted_ccfs_1, sigma_shifted_ccfs_2, method, cross_cor_display, sigma_cross_cor, ccf_weights)
+
         plotsnr, amps, amps_error, rv, rv_error, width, width_error, selected_idx, drv_restricted, plotsnr_restricted, residual_restricted, pl = make_shifted_plot(snr, planet_name, observation_epoch, arm, species_name_ccf, model_tag, RV_abs, Kp_expected, V_sys_true, Kp_true, do_inject_model, drv, Kp, species_label, temperature_profile, sigma_shifted_ccfs, method, cross_cor_display, sigma_cross_cor, ccf_weights)
+
 
         get_peak_snr(snr, drv, Kp, do_inject_model, V_sys_true, Kp_true, RV_abs, Kp_expected, arm, observation_epoch, f, method)
 
@@ -174,22 +170,18 @@ def run_one_ccf(species_label, vmr, arm, observation_epoch, template_wave, templ
 
         binned_ccfs, rvs, widths, rverrors, widtherrors = combine_ccfs_binned(drv, cross_cor, sigma_cross_cor, orbital_phase, n_spectra, ccf_weights, half_duration_phase, temperature_profile, Kp_expected, species_name_ccf, planet_name, arm)
 
-        # Asymmetry CCFs
 
-        snr_1, snr_2, Kp, drv, cross_cor, sigma_shifted_ccfs_1, sigma_shifted_ccfs_2, ccf_weights = combine_ccfs_asymmetry(drv, cross_cor, sigma_cross_cor, orbital_phase, n_spectra, ccf_weights, half_duration_phase, temperature_profile)
-
-        make_shifted_plot_asymmetry(snr_1, snr_2, planet_name, observation_epoch, arm, species_name_ccf, model_tag, RV_abs, Kp_expected, V_sys_true, Kp_true, do_inject_model, drv, Kp, species_label, temperature_profile, sigma_shifted_ccfs_1, sigma_shifted_ccfs_2, method, cross_cor_display, sigma_cross_cor, ccf_weights)
 
 
     if 'likelihood' in method:
-        like_file = path_modifier_plots + 'data_products/'+ planet_name + '.' + observation_epoch + '.' + arm + '.' + species_name_ccf + model_tag + '.likelihood-raw.npy'
+        like_file = 'data_products/'+ planet_name + '.' + observation_epoch + '.' + arm + '.' + species_name_ccf + model_tag + '.likelihood-raw.npy'
         drv, lnL = get_likelihood(wave, corrected_flux, corrected_error, template_wave, template_flux, n_spectra, U_sysrem, telluric_free)
 
         np.save(like_file, lnL)
         np.save(like_file+'.phase.npy', orbital_phase)
 
         #Make a plot
-        plotname = path_modifier_plots + 'plots/' + planet_name + '.' + observation_epoch + '.' + species_name_ccf + model_tag + '.likelihoods-raw.pdf'
+        plotname = 'plots/' + planet_name + '.' + observation_epoch + '.' + species_name_ccf + model_tag + '.likelihoods-raw.pdf'
         psarr(lnL, drv, orbital_phase, 'v (km/s)', 'orbital phase', 'ln L', filename=plotname, ctable='gist-gray')
 
         #now need to combine the likelihoods along the planet orbit
@@ -213,9 +205,9 @@ def combine_observations(observation_epochs, arms, planet_name, temperature_prof
     for observation_epoch in observation_epochs:
         for arm in arms:
             if 'likelihood' in method:
-                ccf_file_2 = path_modifier_plots + 'data_products/'+ planet_name + '.' + observation_epoch + '.' + arm + '.' + species_name_ccf + model_tag + '.likelihood-raw.npy'
+                ccf_file_2 = 'data_products/'+ planet_name + '.' + observation_epoch + '.' + arm + '.' + species_name_ccf + model_tag + '.likelihood-raw.npy'
             if method == 'ccf':
-                ccf_file_2 = path_modifier_plots + 'data_products/'+ planet_name + '.' + observation_epoch + '.' + arm + '.' + species_name_ccf + model_tag + '.CCFs-raw.npy'
+                ccf_file_2 = 'data_products/'+ planet_name + '.' + observation_epoch + '.' + arm + '.' + species_name_ccf + model_tag + '.CCFs-raw.npy'
                 sigma_cross_cor_2 = np.load(ccf_file_2+'.sigma.npy')
                 ccf_weights_2 = np.load(ccf_file_2+'.ccf_weights.npy')
 
@@ -270,7 +262,7 @@ def combine_observations(observation_epochs, arms, planet_name, temperature_prof
             which_arms = 'combined'
         else:
             which_arms = arms[0]
-        plotname = path_modifier_plots + 'plots/' + planet_name + '.' + which_arms + '.' + species_name_ccf + model_tag + '.' + '.CCFs-raw.pdf'
+        plotname = 'plots/' + planet_name + '.' + which_arms + '.' + species_name_ccf + model_tag + '.' + '.CCFs-raw.pdf'
 
         phase_order = np.argsort(orbital_phase)
         
@@ -287,7 +279,7 @@ def combine_observations(observation_epochs, arms, planet_name, temperature_prof
 
     plotsnr, amps, amps_error, rv, rv_error, width, width_error, selected_idx, drv_restricted, plotsnr_restricted, residual_restricted, pl = make_shifted_plot(snr, planet_name, all_epochs, which_arms, species_name_ccf, model_tag, RV_abs, Kp_expected, V_sys_true, Kp_true, do_inject_model, drv, Kp, species_label, temperature_profile, sigma_shifted_ccfs, method, cross_cor_display, sigma_cross_cor, ccf_weights)
 
-    make_shifted_plot_asymmetry(snr_1, snr_2, planet_name, observation_epoch, arm, species_name_ccf, model_tag, RV_abs, Kp_expected, V_sys_true, Kp_true, do_inject_model, drv, Kp, species_label, temperature_profile, sigma_shifted_ccfs_1, sigma_shifted_ccfs_2, method, cross_cor_display, sigma_cross_cor, ccf_weights)
+    make_shifted_plot_asymmetry(snr_1, snr_2, planet_name, all_epochs, which_arms, species_name_ccf, model_tag, RV_abs, Kp_expected, V_sys_true, Kp_true, do_inject_model, drv, Kp, species_label, temperature_profile, sigma_shifted_ccfs_1, sigma_shifted_ccfs_2, method, cross_cor_display, sigma_cross_cor, ccf_weights)
 
     get_peak_snr(snr, drv, Kp, do_inject_model, V_sys_true, Kp_true, RV_abs, Kp_expected, which_arms, all_epochs, f, method)
     
@@ -336,7 +328,7 @@ def run_all_ccfs(planet_name, temperature_profile, species_label, vmr, do_inject
             
     species_name_inject, species_name_ccf = get_species_keys(species_label)
 
-    file_out = path_modifier_plots + 'logs/'+ planet_name + '.' + species_name_ccf + model_tag + '.log'
+    file_out = 'logs/'+ planet_name + '.' + species_name_ccf + model_tag + '.log'
     f = open(file_out,'w')
 
     f.write('Log file for ' + planet_name + ' for ' + species_name_ccf + ' \n')
@@ -413,7 +405,7 @@ def run_all_ccfs(planet_name, temperature_profile, species_label, vmr, do_inject
     f.close()
     orbital_phase, observation_epochs
     
-    np.save(path_modifier_plots + 'data_products/' + planet_name + '.' + observation_epoch + '.' + species_label + '.' + 'fit_params.npy', fit_params)
+    np.save('data_products/' + planet_name + '.' + observation_epoch + '.' + species_label + '.' + 'fit_params.npy', fit_params)
  
     return fit_params, observation_epochs, plotsnr_restricted
 
@@ -477,7 +469,7 @@ def overlayArms(planet_name, temperature_profile, species_label, vmr, do_inject_
             ax2.plot(drv_restricted[arm], residual_restricted[arm], f'o{line_style}{color}', markersize=1)
                 
         # Consider a clearer naming scheme
-        overlay_fits = path_modifier_plots + 'plots/'+ planet_name + '.' + observation_epoch + '.' + arm + '.' + species_label + '.line-profiles-overlaidarms.pdf'
+        overlay_fits = 'plots/'+ planet_name + '.' + observation_epoch + '.' + arm + '.' + species_label + '.line-profiles-overlaidarms.pdf'
         # Save the plot
         fig.savefig(overlay_fits, dpi=300, bbox_inches='tight')
         pl.close(fig)
@@ -569,7 +561,7 @@ def multiSpeciesCCF(planet_name, temperature_profile, species_dict, do_inject_mo
     cbar.set_label('SNR')
 
     # Save the plot
-    plotname = path_modifier_plots + 'plots/' + planet_name + '.' + temperature_profile + '.CombinedRVs.pdf'
+    plotname = 'plots/' + planet_name + '.' + temperature_profile + '.CombinedRVs.pdf'
     fig.savefig(plotname, dpi=300, bbox_inches='tight')
     pl.close(fig)
 
@@ -718,13 +710,13 @@ def combinedPhaseResolvedLineProfiles(planet_name, temperature_profile, species_
         ax.legend(custom_lines, [f'{species}' for species in line_profile.keys()])
 
     # Save the plot
-    plotname_combined = path_modifier_plots + 'plots/' + planet_name + '.' + temperature_profile + '.CombinedWindCharacteristics_Combined.pdf'   
+    plotname_combined = 'plots/' + planet_name + '.' + temperature_profile + '.CombinedWindCharacteristics_Combined.pdf'   
     fig.savefig(plotname_combined, dpi=300, bbox_inches='tight')
     pl.close(fig)
 
     # Save the plot for each arm
     for arm in ['blue', 'red']:
-        plotname_arm = path_modifier_plots + 'plots/' + planet_name + '.' + temperature_profile + f'.CombinedWindCharacteristics_{arm}.pdf'
+        plotname_arm = 'plots/' + planet_name + '.' + temperature_profile + f'.CombinedWindCharacteristics_{arm}.pdf'
         fig.savefig(plotname_arm, dpi=300, bbox_inches='tight')
         pl.close(fig)
 
