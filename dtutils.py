@@ -77,12 +77,21 @@ def psarr(inarr, xaxis, yaxis, xname, yname, zname, filename=' ', contour=False,
         pl.contour(xaxis, yaxis, inarr, clevels, colors='white')
 
     if textstr != ' ':
-        pl.text(textloc[0], textloc[1], textstr, color=textcolor, fontsize='x-large')
+            pl.text(0.5, 1.03, textstr, color=textcolor, fontsize='x-large', ha='center', va='bottom', transform=pl.gca().transAxes)
 
     if alines and len(apoints) > 1:
         if len(apoints) == 2:
             pl.plot([apoints[0], apoints[0]], [np.min(yaxis), np.max(yaxis)], ':', color=acolor)
             pl.plot([np.min(xaxis), np.max(xaxis)], [apoints[1], apoints[1]], ':', color=acolor)
+
+    index = np.argmax(inarr)
+
+    y_index, x_index = np.unravel_index(index, inarr.shape)
+
+    x_max = xaxis[x_index]
+    y_max = yaxis[y_index]
+
+    pl.plot(x_max, y_max, 'rx', markersize=10)
 
     pl.tight_layout()
     if filename != 'none': 
@@ -94,7 +103,7 @@ def mktslprplot(profarr,profarrerr,vabsfine,phase,phase2,vsini,bpar,RpRs,filenam
     Inputs:
 
         Processes profile data and then calls the psarr function to generate a plot. Plot represents changes in a stellar line profile 
-        over the phase of a transit.\
+        over the phase of a transit.
         
         - Calculates a parameter called rmsprof that seems to be the standard deviation of the profiles outside a certain velocity range.
         - Re-bins the profile data in phase or time (using a new grid of phases or times).

@@ -1443,8 +1443,8 @@ def combine_ccfs_binned(drv, cross_cor, sigma_cross_cor, orbital_phase, n_spectr
     pl.clf()
 
     
-    fig, ax = pl.subplots(layout='constrained')
-    c = ax.pcolor(drv[good], phase_bin, binned_ccfs[:,good], edgecolors='none',rasterized=True, cmap='magma_r')
+    fig, ax = pl.subplots(layout='constrained', figsize=(10,8))
+    c = ax.pcolor(drv[good], phase_bin, binned_ccfs[:,good], edgecolors='none',rasterized=True, cmap='viridis_r')
     ax.plot([0.,0.],[np.min(phase_bin), np.max(phase_bin)],':',color='grey')
 
     goodrv = (rvs > 0.) & (rvs < 10.)
@@ -1560,8 +1560,8 @@ def gaussian_fit(Kp, Kp_true, drv, species_label, planet_name, observation_epoch
 
     slice_peak = np.zeros(plotsnr.shape[0])
     # Fitting gaussian to all 1D Kp slices
-
-    for i in range(plotsnr.shape[0]):
+    Kp_valid = np.arange(int(np.floor(Kp_true)) - 50, int(np.floor(Kp_true)) + 50, 1)
+    for i in Kp_valid:
         # Get the index of the peak with the maximum value within the desired range
         valid_peaks = np.abs(drv) <= 15
         peak = np.argmax(plotsnr[i, :] * valid_peaks)
@@ -1828,8 +1828,6 @@ def gaussian_fit_asymmetry(Kp, Kp_true, drv, species_label, planet_name, observa
     arm_species_text = f'Arm: {arm}'
     ax1.text(0.15, 0.95, arm_species_text, transform=ax1.transAxes, verticalalignment='top', fontsize=10)
 
-    # Add a legend
-    ax1.legend()
     ax1.set_xlabel('$\Delta V$ (km/s)')
     ax1.set_xlim([-100,100])
 
@@ -1904,7 +1902,7 @@ def make_shifted_plot(snr, planet_name, observation_epoch, arm, species_name_ccf
     drv_masked, plotsnr_masked = drv[mask], plotsnr[:, mask]
     # Fit a Gaussian to the line profile
     amps, amps_error, rv, rv_error, width, width_error, residual, do_molecfit, idx, line_profile, drv_restricted, plotsnr_restricted, residual_restricted, fig1, ax1, ax2, fig2, ax3 = gaussian_fit(Kp, Kp_true, drv, species_label, planet_name, observation_epoch, arm, species_name_ccf, model_tag, plotsnr, sigma_shifted_ccfs, temperature_profile, cross_cor_display, sigma_cross_cor, ccf_weights)
-    psarr(plotsnr_masked, drv_masked, Kp, '$RV - V_{sys}$ (km/s)', '$K_p$ (km/s)', zlabel, filename=plotname, ctable=ctable, alines=True, apoints=apoints, acolor='cyan', textstr=species_label+' '+model_label, textloc = np.array([apoints[0]-75.,apoints[1]+75.]), textcolor='cyan', fileformat=plotformat)
+    psarr(plotsnr_masked, drv_masked, Kp, '$RV - V_{sys}$ (km/s)', '$K_p$ (km/s)', zlabel, filename=plotname, ctable=ctable, alines=True, apoints=apoints, acolor='white', textstr=species_label+' '+model_label, textloc = np.array([apoints[0]-75.,apoints[1]+75.]), textcolor='black', fileformat=plotformat)
     fig, axs = pl.subplots(2, sharex=True)
     #c = axs[0].pcolor(drv, Kp, plotsnr, cmap=ctable)
     #axs[1].plot(drv, plotsnr)

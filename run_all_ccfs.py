@@ -380,6 +380,7 @@ def run_all_ccfs(planet_name, temperature_profile, species_label, vmr, do_inject
     print('Now combining all of the data')
     
     Period, epoch, M_star, RV_abs, i, M_p, R_p, RA, Dec, Kp_expected, half_duration_phase, Ks_expected = get_planet_parameters(planet_name)
+    
     Kp_true, orbital_phase, plotsnr, amps, amps_error, rv, rv_error, width, width_error, selected_idx, drv_restricted, plotsnr_restricted, residual_restricted = combine_observations(observation_epochs, arms, planet_name, temperature_profile, species_label, species_name_ccf, model_tag, RV_abs, Kp_expected, do_inject_model, f, method)
 
     fit_params[species_label]['combined'] = {}
