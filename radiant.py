@@ -1442,9 +1442,11 @@ def combine_ccfs_binned(drv, cross_cor, sigma_cross_cor, orbital_phase, n_spectr
     pp.close()
     pl.clf()
 
-    
+    use_for_snr = np.abs(drv > 100.)
+    snr = binned_ccfs / np.std(binned_ccfs[:,use_for_snr])
+
     fig, ax = pl.subplots(layout='constrained', figsize=(10,8))
-    c = ax.pcolor(drv[good], phase_bin, binned_ccfs[:,good], edgecolors='none',rasterized=True, cmap='viridis_r')
+    c = ax.pcolor(drv[good], phase_bin, snr[:,good], edgecolors='none',rasterized=True, cmap='viridis_r')
     ax.plot([0.,0.],[np.min(phase_bin), np.max(phase_bin)],':',color='grey')
 
     goodrv = (rvs > 0.) & (rvs < 10.)
@@ -1455,7 +1457,7 @@ def combine_ccfs_binned(drv, cross_cor, sigma_cross_cor, orbital_phase, n_spectr
     ax.set_ylabel('Orbital Phase (fraction)')
 
     # add title with species name above the plot
-    ax.text(0.5, 1.05, species_name_ccf, transform=ax.transAxes, verticalalignment='top', horizontalalignment='left', fontsize=12)
+    ax.text(0.5, 1.03, species_name_ccf, transform=ax.transAxes, verticalalignment='top', horizontalalignment='left', fontsize=12)
     
 
     ax.set_xlim([-10.,10.])
