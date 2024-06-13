@@ -1747,8 +1747,11 @@ def gaussian_fit_asymmetry(Kp, Kp_true, drv, species_label, planet_name, observa
     fig, ax1 = pl.subplots()
 
     # Fitting gaussian to all 1D Kp slices
+    Kp_valid = np.arange(int(np.floor(Kp_true)) - 50, int(np.floor(Kp_true)) + 50, 1)
 
-    for i in range(plotsnr_1.shape[0]):
+    slice_peak_1 = np.zeros(plotsnr_1.shape[0])
+    # Fitting gaussian to all 1D Kp slices
+    for i in Kp_valid:
         # Get the index of the peak with the maximum value within the desired range
         valid_peaks = np.abs(drv) <= 15
         peak_1 = np.argmax(plotsnr_1[i, :] * valid_peaks)
@@ -1777,8 +1780,9 @@ def gaussian_fit_asymmetry(Kp, Kp_true, drv, species_label, planet_name, observa
     popt_selected_1 = [amps_1[idx], rv_1[idx], width_1[idx]]
     print('Selected SNR for phase range 1:', amps_1[idx], '\n Selected Vsys for phase range 1:', rv_1[idx], '\n Selected sigma for phase range 1:', width_1[idx], '\n Selected Kp for phase range 1:', Kp[idx])
 
+    slice_peak_2 = np.zeros(plotsnr_2.shape[0])
 
-    for i in range(plotsnr_2.shape[0]):
+    for i in Kp_valid:
         # Get the index of the peak with the maximum value within the desired range
         valid_peaks = np.abs(drv) <=15
         peak_2 = np.argmax(plotsnr_2[i, :] * valid_peaks)
