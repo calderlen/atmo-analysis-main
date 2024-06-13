@@ -1454,6 +1454,10 @@ def combine_ccfs_binned(drv, cross_cor, sigma_cross_cor, orbital_phase, n_spectr
     ax.set_xlabel('$\Delta V$ (km/s)')
     ax.set_ylabel('Orbital Phase (fraction)')
 
+    # add title with species name above the plot
+    ax.text(0.5, 1.05, species_name_ccf, transform=ax.transAxes, verticalalignment='top', horizontalalignment='left', fontsize=12)
+    
+
     ax.set_xlim([-10.,10.])
 
     secax = ax.secondary_yaxis('right', functions = (phase2angle, angle2phase))
@@ -1941,7 +1945,7 @@ def make_shifted_plot_asymmetry(snr_1, snr_2, planet_name, observation_epoch, ar
 
 def dopplerShadowRemove(drv, planet_name, exptime, orbital_phase, obs, inputs = {
                                     'mode':'spec',  
-                                    'res':'medium', 
+                                    'res':'high', 
                                     'resnum': 0,    
                                     'onespec':'n',
                                     'convol':'n',
