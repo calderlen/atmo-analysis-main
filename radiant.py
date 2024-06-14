@@ -1444,9 +1444,10 @@ def combine_ccfs_binned(drv, cross_cor, sigma_cross_cor, orbital_phase, n_spectr
 
     use_for_snr = np.abs(drv > 100.)
     snr = binned_ccfs / np.std(binned_ccfs[:,use_for_snr])
+    masked_snr = np.ma.masked_where(snr <= 3, snr)
 
-    fig, ax = pl.subplots(layout='constrained', figsize=(10,8))
-    c = ax.pcolor(drv[good], phase_bin, snr[:,good], edgecolors='none',rasterized=True, cmap='viridis_r')
+    fig, ax = plt.subplots(layout='constrained', figsize=(10,8))
+    c = ax.pcolor(drv[good], phase_bin, masked_snr[:,good], edgecolors='none',rasterized=True, cmap='viridis_r')
     ax.plot([0.,0.],[np.min(phase_bin), np.max(phase_bin)],':',color='grey')
 
     goodrv = (rvs > 0.) & (rvs < 10.)
@@ -1506,7 +1507,6 @@ def combine_ccfs_binned(drv, cross_cor, sigma_cross_cor, orbital_phase, n_spectr
     ax1.fill_betweenx(phase_array, rv_chars[idx,:] - rv_chars_error[idx, :], rv_chars[idx,:] + rv_chars_error[idx,:], color='blue', alpha=0.2, zorder=2)
     ax1.set_ylabel('Orbital Phase (fraction)')
     ax1.set_xlabel('$\Delta V$ (km/s)', color='b')
-    ax1.tick_params(axis='x', labelcolor='b')
     secax = ax1.secondary_yaxis('right', functions = (phase2angle, angle2phase))
     secax.set_ylabel('Orbital Phase (degrees)')
     

@@ -1,5 +1,11 @@
 from radiant import *
 from run_all_ccfs import *
+import pyfastchem
+import numpy as np
+import os
+import matplotlib.pyplot as plt
+from astropy import constants as const
+
 
 path_modifier_plots = '/home/calder/Documents/atmo-analysis-main/'  #linux
 path_modifier_data = '/home/calder/Documents/petitRADTRANS_data/'   #linux
@@ -71,6 +77,49 @@ def make_spectrum_plots(species_dict):
         plotout = path_modifier_plots+'plots/spectra.' + planet_name +  '.' + temperature_profile + '.pdf'
         pl.savefig(plotout,format='pdf')
 
+# Make plot stacking PT profiles for each species
+
+def fastchem_plot(abundance_species):
+
+
+    #Do the chemistry calculations
+    #this loads the temperatures and pressures produced by petitRADTRANS, you may need to modify these lines if you store these data products somewhere else
+    temperatures = np.load('data_products/radtrans_temperature.npy')
+    pressures = np.load('data_products/radtrans_pressure.npy')
+
+    fastchem = pyfastchem.FastChem('/Users/calder/Documents/FastChem/input/element_abundances/asplund_2020_extended.dat', 
+                                '/Users/calder/Documents/FastChem/input/logK/logK.dat', 
+                                1)
+    input_data = pyfastchem.FastChemInput()
+    output_data = pyfastchem.FastChemOutput()
+    input_data.temperature = temperatures
+    input_data.pressure = pressures
+    fastchem_flag = fastchem.calcDensities(input_data, output_data)
+    number_densities = np.array(output_data.number_densities)
+    gas_number_density = pressures*1e6 / (const.k_B.cgs * temperatures)
+
+    #set the quench pressure to 1 bar
+    quench = np.argmin(np.abs(pressures-1e1))
+
+    a_index = []
+    abundance_species_indices, abundance_species_masses_ordered = [], []
+    n_species = fastchem.getElementNumber()
+
+    for i, species in enumerate(abundance_species):
+        index = fastchem.getGasSpeciesIndex(species)
+        if index != pyfastchem.FASTCHEM_UNKNOWN_SPECIES:
+            abundance_species_indices.append(index) 
+            this_species = number_densities[quench, index]/gas_number_density[quench]
+            print("The VMR for ",species,' is ', this_species)
+            # Plot the species
+            pl.plot(number_densities[:, index]/gas_number_density[:],pressures, label=species)
+        else:
+            print("Species", species, "to plot not found in FastChem")
+
+    pl.xscale('log')
+    pl.yscale('log')
+    pl.legend()  # Add a legend to the plot
+    pl.savefig('plots/' )  # Show the plot
 # Make plot stacking RAW CCF, Doppler Shadow Model, and RAW CCF with Doppler Shadow Model removed
 
 
@@ -79,3 +128,4 @@ def make_spectrum_plots(species_dict):
 
 # Make plot stacking SNR map and 1D CCF with x axis RV-V_sys(kms-1) with different y-axes. For KSNR map the y-axis is Kp. For the 1D CCF the y-axis is the amplitude of the ccf standardized at abs(RV) greater than 40 km/s.
 
+# Make plot overlaying phase-binned phase-resolved line profiles of Fe I and Fe II in blue arm.
