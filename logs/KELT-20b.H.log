@@ -1,5 +1,13 @@
 Log file for KELT-20b for H 
 For the blue data for 20190504: 
-The maximum and minimum SNRs in the image are, 3.4033312583992896, -2.9575997833545786 
-The peak SNR at the right location is, 0.5174100127751313 
+The maximum and minimum SNRs in the image are, 5.193683938393532, -4.44220037678321 
+The peak SNR at the right location is, 0.22564868085148693 
+ 
+For the red data for 20190504: 
+The maximum and minimum SNRs in the image are, 5.774181222863012, -1.416748938813438 
+The peak SNR at the right location is, 0.15048258375000284 
+ 
+For the combined data for 20190504: 
+The maximum and minimum SNRs in the image are, 4.9209316533413485, -1.453573011349253 
+The peak SNR at the right location is, 0.0936831361808276 
  

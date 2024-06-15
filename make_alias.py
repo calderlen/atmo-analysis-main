@@ -2,7 +2,7 @@ from run_all_ccfs import *
 from uncertainties import unumpy as unp
 path_modifier_plots = '/home/calder/Documents/atmo-analysis-main/'
 
-def make_alias(instrument="PEPSI", planet_name="KELT-20b", spectrum_type="transmission", temperature_profile="inverted-transmission-better", model_tag="alias", spec_one="Fe", vmr_one=5.39e-5, spec_two="Fe+", vmr_two=5.39e-5, arm='blue', observation_epoch = '20190504'):    
+def make_alias(instrument="PEPSI", planet_name="KELT-20b", spectrum_type="transmission", temperature_profile="inverted-transmission-better", model_tag="alias", spec_one="Fe+", vmr_one=4.95e-5, spec_two="Mg", vmr_two=6.08e-5, arm='blue', observation_epoch = 'mock-obs'):    
     """
     Generate an alias spectrum for a given planet and two species of interest.
 
@@ -67,10 +67,9 @@ def make_alias(instrument="PEPSI", planet_name="KELT-20b", spectrum_type="transm
 
     snr, Kp, drv, cross_cor, sigma_shifted_ccfs, ccf_weights = combine_ccfs(drv, cross_cor, sigma_cross_cor, orbital_phase, n_spectra, np.ones_like(orbital_phase), half_duration_phase, temperature_profile)
     
-    plotsnr, amps, amps_error, rv, rv_error, width, width_error, idx, drv_restricted, plotsnr_restricted, residual_restricted = make_shifted_plot(snr, planet_name, observation_epoch, arm, spec_two + 'ACF', model_tag, RV_abs, Kp_expected, V_sys_true, Kp_true, False, drv, Kp,  spec_two + 'ACF', temperature_profile, sigma_shifted_ccfs, 'ccf', cross_cor, sigma_cross_cor, ccf_weights, plotformat = 'pdf')
+    plotsnr, amps, amps_error, rv, rv_error, width, width_error, idx, drv_restricted, plotsnr_restricted, residual_restricted, pl = make_shifted_plot(snr, planet_name, observation_epoch, arm, spec_two + 'ACF', model_tag, RV_abs, Kp_expected, V_sys_true, Kp_true, False, drv, Kp,  spec_two + 'ACF', temperature_profile, sigma_shifted_ccfs, 'ccf', cross_cor, sigma_cross_cor, ccf_weights, plotformat = 'pdf')
     
     keep = Kp == np.round(unp.nominal_values(Kp_expected))
     ccf_1d = snr[keep,:]
-    breakpoint()
     np.save('alias-drv.npy',drv)
     np.save(spec_two + '-alias-ccf.npy', ccf_1d)

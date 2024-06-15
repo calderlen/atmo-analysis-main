@@ -6,10 +6,7 @@ import os
 import matplotlib.pyplot as plt
 from astropy import constants as const
 
-
-path_modifier_plots = '/home/calder/Documents/atmo-analysis-main/'  #linux
-path_modifier_data = '/home/calder/Documents/petitRADTRANS_data/'   #linux
-
+abundance_species = ['Mg', 'Fe', 'Fe+', 'Na', 'Co', 'Cr','Cr+', 'Zn', 'Cu', 'Ca', 'Ti', 'Sc', 'Ru',]
 
 # Make plot stacking SYSREM Resids and a single synthetic transmission spectra for the paper
 
@@ -40,7 +37,7 @@ def make_spectrum_plots(species_dict):
 
     
     if planet_name == 'KELT-20b':
-            parameters['Teq'] = 2262.
+            parameters['Teq'] = 3000.
             
             if temperature_profile == 'inverted-emission-better' or temperature_profile == 'inverted-transmission-better':
                 parameters['kappa'] = 0.04
@@ -74,7 +71,7 @@ def make_spectrum_plots(species_dict):
             axs[i].tick_params(axis='x', which='both', labeltop=False, labelbottom=False)  # Don't show x-axis label on other subplots
         axs[i].set_ylabel('normalized flux')
 
-        plotout = path_modifier_plots+'plots/spectra.' + planet_name +  '.' + temperature_profile + '.pdf'
+        plotout = 'plots/spectra.' + planet_name +  '.' + temperature_profile + '.pdf'
         pl.savefig(plotout,format='pdf')
 
 # Make plot stacking PT profiles for each species
@@ -87,14 +84,18 @@ def fastchem_plot(abundance_species):
     temperatures = np.load('data_products/radtrans_temperature.npy')
     pressures = np.load('data_products/radtrans_pressure.npy')
 
-    fastchem = pyfastchem.FastChem('/Users/calder/Documents/FastChem/input/element_abundances/asplund_2020_extended.dat', 
-                                '/Users/calder/Documents/FastChem/input/logK/logK.dat', 
+    fastchem = pyfastchem.FastChem('/home/calder/Documents/FastChem/input/element_abundances/asplund_2020_extended.dat', 
+                                '/home/calder/Documents/FastChem/input/logK/logK.dat', 
                                 1)
+    
     input_data = pyfastchem.FastChemInput()
     output_data = pyfastchem.FastChemOutput()
+
     input_data.temperature = temperatures
     input_data.pressure = pressures
+
     fastchem_flag = fastchem.calcDensities(input_data, output_data)
+
     number_densities = np.array(output_data.number_densities)
     gas_number_density = pressures*1e6 / (const.k_B.cgs * temperatures)
 
@@ -105,21 +106,50 @@ def fastchem_plot(abundance_species):
     abundance_species_indices, abundance_species_masses_ordered = [], []
     n_species = fastchem.getElementNumber()
 
+
+
+    if np.amin(output_data.element_conserved[:]) == 1:
+        print("  - element conservation: ok")
+    else:
+        print("  - element conservation: fail")
+
+
+    #save the monitor output to a file
+
+    line_styles = ['-', '--', '-.', ':']
+
     for i, species in enumerate(abundance_species):
         index = fastchem.getGasSpeciesIndex(species)
         if index != pyfastchem.FASTCHEM_UNKNOWN_SPECIES:
             abundance_species_indices.append(index) 
             this_species = number_densities[quench, index]/gas_number_density[quench]
-            print("The VMR for ",species,' is ', this_species)
-            # Plot the species
-            pl.plot(number_densities[:, index]/gas_number_density[:],pressures, label=species)
+            # Plot the species with different line styles and add a label
+            pl.plot(number_densities[:, index]/gas_number_density[:],pressures, linestyle=line_styles[i % len(line_styles)], label=species)
         else:
             print("Species", species, "to plot not found in FastChem")
 
     pl.xscale('log')
     pl.yscale('log')
-    pl.legend()  # Add a legend to the plot
-    pl.savefig('plots/' )  # Show the plot
+
+    # label the axes
+    pl.xlabel('VMR')
+    pl.ylabel('Pressure (bar)')
+
+    # add ticks to the plot
+    pl.tick_params(axis='both', which='both', direction='in', top=True, right=True)
+
+    # add a legend to the plot without bounding box and small, and dont make it transparent
+    pl.legend(loc='lower left', fontsize='small', frameon=False, facecolor='white', edgecolor='black')   
+
+
+    # increase the size of the plot
+    pl.gcf().set_size_inches(6, 6)
+
+    # set y limit from 10^-12 to 10^0
+    pl.ylim(1e-8, 1e0)
+    pl.gca().invert_yaxis()
+
+    pl.savefig('plots/'+'PT-plots.pdf')  # Save the plot as a PDF
 # Make plot stacking RAW CCF, Doppler Shadow Model, and RAW CCF with Doppler Shadow Model removed
 
 

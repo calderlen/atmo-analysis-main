@@ -25,7 +25,7 @@ from dtutils import psarr
 from radiant import *
 from create_model import create_model, instantiate_radtrans
 
-def run_one_ccf(species_label, vmr, arm, observation_epoch, template_wave, template_flux, template_wave_in, template_flux_in, planet_name, temperature_profile, do_inject_model, species_name_ccf, model_tag, f, method, do_make_new_model):
+def run_one_ccf(species_label, vmr, arm, observation_epoch, template_wave, template_flux, template_wave_in, template_flux_in, planet_name, temperature_profile, do_inject_model, species_name_ccf, model_tag, f, method, do_make_new_model, phase_ranges='halves'):
 
     niter = 10
     n_systematics = np.array(get_sysrem_parameters(arm, observation_epoch, species_label, planet_name))
@@ -157,7 +157,7 @@ def run_one_ccf(species_label, vmr, arm, observation_epoch, template_wave, templ
     
         snr, Kp, drv, cross_cor_display, sigma_shifted_ccfs, ccf_weights = combine_ccfs(drv, cross_cor, sigma_cross_cor, orbital_phase, n_spectra, ccf_weights, half_duration_phase, temperature_profile)
 
-        snr_1, snr_2, Kp, drv, cross_cor, sigma_shifted_ccfs_1, sigma_shifted_ccfs_2, ccf_weights = combine_ccfs_asymmetry(drv, cross_cor, sigma_cross_cor, orbital_phase, n_spectra, ccf_weights, half_duration_phase, temperature_profile)
+        snr_1, snr_2, Kp, drv, cross_cor, sigma_shifted_ccfs_1, sigma_shifted_ccfs_2, ccf_weights = combine_ccfs_asymmetry(drv, cross_cor, sigma_cross_cor, orbital_phase, n_spectra, ccf_weights, half_duration_phase, temperature_profile, phase_ranges)
 
         make_shifted_plot_asymmetry(snr_1, snr_2, planet_name, observation_epoch, arm, species_name_ccf, model_tag, RV_abs, Kp_expected, V_sys_true, Kp_true, do_inject_model, drv, Kp, species_label, temperature_profile, sigma_shifted_ccfs_1, sigma_shifted_ccfs_2, method, cross_cor_display, sigma_cross_cor, ccf_weights)
 
@@ -197,7 +197,7 @@ def run_one_ccf(species_label, vmr, arm, observation_epoch, template_wave, templ
     
     return Kp, Kp_true, drv, species_label, planet_name, observation_epoch, arm, species_name_ccf, model_tag, plotsnr, cross_cor_display, sigma_cross_cor, orbital_phase, n_spectra, ccf_weights, half_duration_phase, temperature_profile, sigma_shifted_ccfs, amps, amps_error, rv, rv_error, width, width_error, selected_idx, drv_restricted, plotsnr_restricted, residual_restricted
 
-def combine_observations(observation_epochs, arms, planet_name, temperature_profile, species_label, species_name_ccf, model_tag, RV_abs, Kp_expected, do_inject_model, f, method):
+def combine_observations(observation_epochs, arms, planet_name, temperature_profile, species_label, species_name_ccf, model_tag, RV_abs, Kp_expected, do_inject_model, f, method, phase_ranges):
     
     Period, epoch, M_star, RV_abs, i, M_p, R_p, RA, Dec, Kp_expected, half_duration_phase, Ks_expected = get_planet_parameters(planet_name)
 
@@ -255,7 +255,7 @@ def combine_observations(observation_epochs, arms, planet_name, temperature_prof
 
         if planet_name == 'KELT-20b': binned_ccfs, rvs, widths, rverrors, widtherrors = combine_ccfs_binned(drv_original, cross_cor, sigma_cross_cor, orbital_phase, len(orbital_phase), ccf_weights, half_duration_phase, temperature_profile, Kp_best, species_name_ccf, planet_name, 'combined')
 
-        snr_1, snr_2, Kp, drv, cross_cor, sigma_shifted_ccfs_1, sigma_shifted_ccfs_2, ccf_weights = combine_ccfs_asymmetry(drv, cross_cor, sigma_cross_cor, orbital_phase, len(orbital_phase), ccf_weights, half_duration_phase, temperature_profile)
+        snr_1, snr_2, Kp, drv, cross_cor, sigma_shifted_ccfs_1, sigma_shifted_ccfs_2, ccf_weights = combine_ccfs_asymmetry(drv, cross_cor, sigma_cross_cor, orbital_phase, len(orbital_phase), ccf_weights, half_duration_phase, temperature_profile, phase_ranges)
 
         #Make a plot
         if len(arms) > 1:
@@ -287,7 +287,7 @@ def combine_observations(observation_epochs, arms, planet_name, temperature_prof
 
 
 
-def run_all_ccfs(planet_name, temperature_profile, species_label, vmr, do_inject_model, do_run_all, do_make_new_model, method):
+def run_all_ccfs(planet_name, temperature_profile, species_label, vmr, do_inject_model, do_run_all, do_make_new_model, method, phase_ranges='halves'):
 
     fit_params = {}
     
@@ -355,7 +355,7 @@ def run_all_ccfs(planet_name, temperature_profile, species_label, vmr, do_inject
         for observation_epoch in observation_epochs:
             for arm in arms:
                 print('Now running the ',arm,' data for ',observation_epoch)
-                Kp, Kp_true, drv, species_label, planet_name, observation_epoch, arm, species_name_ccf, model_tag, plotsnr, cross_cor_display, sigma_cross_cor, orbital_phase, n_spectra, ccf_weights, half_duration_phase, temperature_profile, sigma_shifted_ccfs, amps, amps_error, rv, rv_error, width, width_error, selected_idx, drv_restricted, plotsnr_restricted, residual_restricted = run_one_ccf(species_label, vmr, arm, observation_epoch, template_wave, template_flux, template_wave_in, template_flux_in, planet_name, temperature_profile, do_inject_model, species_name_ccf, model_tag, f, method, do_make_new_model)
+                Kp, Kp_true, drv, species_label, planet_name, observation_epoch, arm, species_name_ccf, model_tag, plotsnr, cross_cor_display, sigma_cross_cor, orbital_phase, n_spectra, ccf_weights, half_duration_phase, temperature_profile, sigma_shifted_ccfs, amps, amps_error, rv, rv_error, width, width_error, selected_idx, drv_restricted, plotsnr_restricted, residual_restricted = run_one_ccf(species_label, vmr, arm, observation_epoch, template_wave, template_flux, template_wave_in, template_flux_in, planet_name, temperature_profile, do_inject_model, species_name_ccf, model_tag, f, method, do_make_new_model, phase_ranges)
 
 
                # Ensure observation_epoch key is initialized in fit_params[species_label]
@@ -381,7 +381,7 @@ def run_all_ccfs(planet_name, temperature_profile, species_label, vmr, do_inject
     
     Period, epoch, M_star, RV_abs, i, M_p, R_p, RA, Dec, Kp_expected, half_duration_phase, Ks_expected = get_planet_parameters(planet_name)
     
-    Kp_true, orbital_phase, plotsnr, amps, amps_error, rv, rv_error, width, width_error, selected_idx, drv_restricted, plotsnr_restricted, residual_restricted = combine_observations(observation_epochs, arms, planet_name, temperature_profile, species_label, species_name_ccf, model_tag, RV_abs, Kp_expected, do_inject_model, f, method)
+    Kp_true, orbital_phase, plotsnr, amps, amps_error, rv, rv_error, width, width_error, selected_idx, drv_restricted, plotsnr_restricted, residual_restricted = combine_observations(observation_epochs, arms, planet_name, temperature_profile, species_label, species_name_ccf, model_tag, RV_abs, Kp_expected, do_inject_model, f, method, phase_ranges)
 
     fit_params[species_label]['combined'] = {}
     fit_params[species_label]['combined']['combined'] = {
@@ -410,11 +410,11 @@ def run_all_ccfs(planet_name, temperature_profile, species_label, vmr, do_inject
  
     return fit_params, observation_epochs, plotsnr_restricted
 
-def overlayArms(planet_name, temperature_profile, species_label, vmr, do_inject_model, do_run_all, do_make_new_model, method):
+def overlayArms(planet_name, temperature_profile, species_label, vmr, do_inject_model, do_run_all, do_make_new_model, method, phase_ranges):
     
     drv_restricted, plotsnr_restricted, residual_restricted = {}, {}, {}
     arms = ['blue', 'red']
-    fit_params, observation_epochs,_ = run_all_ccfs(planet_name, temperature_profile, species_label, vmr, do_inject_model, do_run_all, do_make_new_model, method)
+    fit_params, observation_epochs,_ = run_all_ccfs(planet_name, temperature_profile, species_label, vmr, do_inject_model, do_run_all, do_make_new_model, method, phase_ranges)
 
     for arm in arms:
         for observation_epoch in observation_epochs:
@@ -481,7 +481,7 @@ def overlayArms(planet_name, temperature_profile, species_label, vmr, do_inject_
 #def overlayTransitPeriods(planet_name, temperature_profile, species_label, vmr, do_inject_model, do_run_all, do_make_new_model, method):
     
 
-def multiSpeciesCCF(planet_name, temperature_profile, species_dict, do_inject_model, do_run_all, do_make_new_model, method):
+def multiSpeciesCCF(planet_name, temperature_profile, species_dict, do_inject_model, do_run_all, do_make_new_model, method, phase_ranges):
     # This function only works with a single observation epoch! FIX THIS!
 
     """
@@ -510,7 +510,7 @@ def multiSpeciesCCF(planet_name, temperature_profile, species_dict, do_inject_mo
         arm = str(params.get('arm'))
 
         species_name_ccf = get_species_label(species_label)
-        fit_params, observation_epochs, plotsnr_restricted = run_all_ccfs(planet_name, temperature_profile, species_label, vmr, do_inject_model, do_run_all, do_make_new_model, method)
+        fit_params, observation_epochs, plotsnr_restricted = run_all_ccfs(planet_name, temperature_profile, species_label, vmr, do_inject_model, do_run_all, do_make_new_model, method, phase_ranges)
         
         if arm != 'combined':
             selected_idx = fit_params[species_label][observation_epoch][arm]['selected_idx']
