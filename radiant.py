@@ -1301,7 +1301,7 @@ def combine_ccfs_asymmetry(drv, cross_cor, sigma_cross_cor, orbital_phase, n_spe
         orbital_phase_1 = orbital_phase[orbital_phase < 0]
         orbital_phase_2 = orbital_phase[orbital_phase > 0]
 
-    if phase_ranges == 'ingress/egress':
+    if phase_ranges == 'ingress-egress':
         orbital_phase_1 = orbital_phase[(orbital_phase >= np.min(orbital_phase)) & (orbital_phase <= np.min(orbital_phase)+ingress_egress_phase)]
         orbital_phase_2 = orbital_phase[(orbital_phase >= np.max(orbital_phase)-ingress_egress_phase) & (orbital_phase <= np.max(orbital_phase))]
 
@@ -1340,7 +1340,7 @@ def combine_ccfs_asymmetry(drv, cross_cor, sigma_cross_cor, orbital_phase, n_spe
     snr_1 = shifted_ccfs_1 / np.std(shifted_ccfs_1[:,use_for_snr])
     snr_2 = shifted_ccfs_2 / np.std(shifted_ccfs_2[:,use_for_snr])
 
-    return snr_1, snr_2, Kp, drv, cross_cor, sigma_shifted_ccfs_1, sigma_shifted_ccfs_2, ccf_weights
+    return snr_1, snr_2, Kp, drv, cross_cor, sigma_shifted_ccfs_1, sigma_shifted_ccfs_2, ccf_weights, phase_ranges
 
 def gaussian(x, a, mu, sigma):
 
@@ -1411,7 +1411,7 @@ def combine_ccfs_binned(drv, cross_cor, sigma_cross_cor, orbital_phase, n_spectr
         RVdiff = RVe - RV
         order = np.argsort(orbital_phase)
 
-    good = np.abs(drv) < 15.
+    good = np.abs(drv) < 25.
     c = pl.pcolor(drv[good], phase_bin, binned_ccfs[:,good], edgecolors='none',rasterized=True, cmap='magma_r')
     pl.plot([0.,0.],[np.min(phase_bin), np.max(phase_bin)],':',color='white')
     #pl.plot(RVdiff[order], orbital_phase[order], '--', color='white')
@@ -1457,10 +1457,11 @@ def combine_ccfs_binned(drv, cross_cor, sigma_cross_cor, orbital_phase, n_spectr
     masked_snr = np.ma.masked_where(snr <= 3, snr)
 
     fig, ax = plt.subplots(layout='constrained', figsize=(10,8))
-    c = ax.pcolor(drv[good], phase_bin, masked_snr[:,good], edgecolors='none',rasterized=True, cmap='viridis_r')
+    #c = ax.pcolor(drv[good], phase_bin, masked_snr[:,good], edgecolors='none',rasterized=True, cmap='viridis_r')
+    c = ax.pcolor(drv[good], phase_bin, snr[:,good], edgecolors='none',rasterized=True, cmap='viridis_r')
     ax.plot([0.,0.],[np.min(phase_bin), np.max(phase_bin)],':',color='grey')
 
-    goodrv = (rvs > 0.) & (rvs < 10.)
+    goodrv = (rvs > 0.) & (rvs < 25.)
     ax.plot(rvs[goodrv], phase_bin[goodrv], 'o', color='white')
     ax.errorbar(rvs[goodrv], phase_bin[goodrv], xerr = rverrors[goodrv], color='white', fmt='none')
 
@@ -1471,7 +1472,7 @@ def combine_ccfs_binned(drv, cross_cor, sigma_cross_cor, orbital_phase, n_spectr
     ax.text(0.5, 1.03, species_name_ccf, transform=ax.transAxes, verticalalignment='top', horizontalalignment='left', fontsize=12)
     
 
-    ax.set_xlim([-10.,10.])
+    ax.set_xlim([-25.,25.])
 
     secax = ax.secondary_yaxis('right', functions = (phase2angle, angle2phase))
     secax.set_ylabel('Orbital Phase (degrees)')
@@ -1733,7 +1734,7 @@ def gaussian_fit(Kp, Kp_true, drv, species_label, planet_name, observation_epoch
 
     return amps, amps_error, rv, rv_error, width, width_error, residual, do_molecfit, idx, line_profile, drv_restricted, plotsnr_restricted, residual_restricted, fig1, ax1, ax2, fig2, ax3
 
-def gaussian_fit_asymmetry(Kp, Kp_true, drv, species_label, planet_name, observation_epoch, arm, species_name_ccf, model_tag, plotsnr_1, plotsnr_2, sigma_shifted_ccfs_1, sigma_shifted_ccfs_2):
+def gaussian_fit_asymmetry(Kp, Kp_true, drv, species_label, planet_name, observation_epoch, arm, species_name_ccf, model_tag, plotsnr_1, plotsnr_2, sigma_shifted_ccfs_1, sigma_shifted_ccfs_2, phase_ranges):
     
 
 
@@ -1798,10 +1799,6 @@ def gaussian_fit_asymmetry(Kp, Kp_true, drv, species_label, planet_name, observa
     #idx = np.flatnonzero(Kp == int(np.floor(Kp_true)))[0] #Kp slice corresponding to expected Kp
     idx_1 = np.argmax(slice_peak_1) #Kp slice corresponding to max SNR 
 
-    ax1.plot(drv, plotsnr_1[idx_1, :], color='green', label='$\phi < 0$', alpha=0.5)       
-    ax1.axvline(x=rv_1[idx_1], color='green', linestyle='--', label=f'RV = {rv_1[idx_1]}')
-    ax1.text(0.95, 0.95, f'Kp for phase range 1: {Kp[idx_1]}', transform=ax1.transAxes, verticalalignment='top', horizontalalignment='right', fontsize=10)
-    popt_selected_1 = [amps_1[idx_1], rv_1[idx_1], width_1[idx_1]]
     print('Selected SNR for phase range 1:', amps_1[idx_1], '\n Selected Vsys for phase range 1:', rv_1[idx_1], '\n Selected sigma for phase range 1:', width_1[idx_1], '\n Selected Kp for phase range 1:', Kp[idx_1])
 
     slice_peak_2 = np.zeros(plotsnr_2.shape[0])
@@ -1828,17 +1825,30 @@ def gaussian_fit_asymmetry(Kp, Kp_true, drv, species_label, planet_name, observa
             
     idx_2 = np.argmax(slice_peak_2) #Kp slice corresponding to max SNR 
 
-    ax1.plot(drv, plotsnr_2[idx_2, :], color='blue', label='$\phi > 0$', alpha=0.5)       
-    ax1.axvline(x=rv_2[idx_2], color='blue', linestyle='--', label=f'RV = {rv_2[idx_2]}')
-    ax1.text(0.95, 0.90, f'Kp for phase range 2: {Kp[idx_2]}', transform=ax1.transAxes, verticalalignment='top', horizontalalignment='right', fontsize=10)
+    if phase_ranges == 'halves':
+        ax1.plot(drv, plotsnr_1[idx_1, :], color='green', label='$\phi < 0$', alpha=0.8)       
+        ax1.axvline(x=rv_1[idx_1], color='green', linestyle='--', label=f'$\Delta V$ = {rv_1[idx_1]}')
+        ax1.text(0.95, 0.95, f'$\phi < 0$ $K_p$ slice: {Kp[idx_1]}', transform=ax1.transAxes, verticalalignment='top', horizontalalignment='right', fontsize=10)
+        ax1.plot(drv, plotsnr_2[idx_2, :], color='blue', label='$\phi > 0$', alpha=0.8)       
+        ax1.axvline(x=rv_2[idx_2], color='blue', linestyle='--', label=f'$\Delta V$ = {rv_2[idx_2]}')
+        ax1.text(0.95, 0.90, f'$\phi > 0$ $K_p$ slice: {Kp[idx_2]}', transform=ax1.transAxes, verticalalignment='top', horizontalalignment='right', fontsize=10)
+        ax1.legend(loc='lower right', fontsize=8, frameon=False)
 
-    ax1.legend()
+    if phase_ranges == 'ingress-egress':
+        ax1.plot(drv, plotsnr_1[idx_1, :], color='c', label='Ingress Line Profile', alpha=0.8)       
+        ax1.axvline(x=rv_1[idx_1], color='c', linestyle='--', label=f'$\Delta V$ = {rv_1[idx_1]}')
+        ax1.text(0.95, 0.95, f'Ingress $K_p$ slice: {Kp[idx_1]}', transform=ax1.transAxes, verticalalignment='top', horizontalalignment='right', fontsize=10)
+        ax1.plot(drv, plotsnr_2[idx_2, :], color='m', label='Egress Line Profile', alpha=0.5)       
+        ax1.axvline(x=rv_2[idx_2], color='m', linestyle='--', label=f'$\Delta V$ = {rv_2[idx_2]}')
+        ax1.text(0.95, 0.90, f'Egress $K_p$ slice: {Kp[idx_2]}', transform=ax1.transAxes, verticalalignment='top', horizontalalignment='right', fontsize=10)
+        ax1.legend(loc='lower right', fontsize=8, frameon=False)
+
     print('Selected SNR for phase range 1:', amps_1[idx_1], 
-          '\n Selected Vsys for phase range 1:', rv_1[idx_1], 
-          '\n Selected sigma for phase range 1:', width_1[idx_1], 
-          '\n Selected Kp for phase range 1:', Kp[idx_1],
-          '\n Selected FWHM for phase range 1:', fwhm_1[idx_1]
-          )
+            '\n Selected Vsys for phase range 1:', rv_1[idx_1], 
+            '\n Selected sigma for phase range 1:', width_1[idx_1], 
+            '\n Selected Kp for phase range 1:', Kp[idx_1],
+            '\n Selected FWHM for phase range 1:', fwhm_1[idx_1]
+            )
     print('Selected SNR for phase range 2:', amps_2[idx_2],
             '\n Selected Vsys for phase range 2:', rv_2[idx_2],
             '\n Selected sigma for phase range 2:', width_2[idx_2],
@@ -1859,7 +1869,7 @@ def gaussian_fit_asymmetry(Kp, Kp_true, drv, species_label, planet_name, observa
     ax1.set_xlabel('$\Delta V$ (km/s)')
     ax1.set_xlim([-100,100])
 
-    snr_fit_asymmetry = 'plots/'+ planet_name + '.' + observation_epoch + '.' + arm + '.' + species_name_ccf + model_tag + '.SNR-Gaussian-Asymmetry.pdf'
+    snr_fit_asymmetry = 'plots/'+ planet_name + '.' + observation_epoch + '.' + arm + '.' + species_name_ccf + '.' + model_tag + '.' +phase_ranges + '.SNR-Gaussian-Asymmetry.pdf'
     # Save the plot
     fig.savefig(snr_fit_asymmetry, dpi=300, bbox_inches='tight')
 
@@ -1938,7 +1948,7 @@ def make_shifted_plot(snr, planet_name, observation_epoch, arm, species_name_ccf
 
     return plotsnr, amps, amps_error, rv, rv_error, width, width_error, idx, drv_restricted, plotsnr_restricted, residual_restricted, pl
 
-def make_shifted_plot_asymmetry(snr_1, snr_2, planet_name, observation_epoch, arm, species_name_ccf, model_tag, RV_abs, Kp_expected, V_sys_true, Kp_true, do_inject_model, drv, Kp, species_label, temperature_profile, sigma_shifted_ccfs_1, sigma_shifted_ccfs_2, method, cross_cor_display, sigma_cross_cor, ccf_weights, plotformat = 'pdf'):
+def make_shifted_plot_asymmetry(snr_1, snr_2, planet_name, observation_epoch, arm, species_name_ccf, model_tag, RV_abs, Kp_expected, V_sys_true, Kp_true, do_inject_model, drv, Kp, species_label, temperature_profile, sigma_shifted_ccfs_1, sigma_shifted_ccfs_2, method, cross_cor_display, sigma_cross_cor, ccf_weights, phase_ranges, plotformat = 'pdf'):
     
     if method == 'ccf':
         plotsnr_1, plotsnr_2 = snr_1[:], snr_2[:]
@@ -1961,7 +1971,7 @@ def make_shifted_plot_asymmetry(snr_1, snr_2, planet_name, observation_epoch, ar
     plotsnr_1, plotsnr_2, Kp = plotsnr_1[keepKp, :], plotsnr_2[keepKp, :], Kp[keepKp]
     
     # Fit a Gaussian to the line profile
-    gaussian_fit_asymmetry(Kp, Kp_true, drv, species_label, planet_name, observation_epoch, arm, species_name_ccf, model_tag, plotsnr_1, plotsnr_2, sigma_shifted_ccfs_1, sigma_shifted_ccfs_2)
+    gaussian_fit_asymmetry(Kp, Kp_true, drv, species_label, planet_name, observation_epoch, arm, species_name_ccf, model_tag, plotsnr_1, plotsnr_2, sigma_shifted_ccfs_1, sigma_shifted_ccfs_2, phase_ranges)
 
 def dopplerShadowRemove(drv, planet_name, exptime, orbital_phase, obs, inputs = {
                                     'mode':'spec',  
