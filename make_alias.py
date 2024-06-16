@@ -51,15 +51,15 @@ def make_alias(instrument="PEPSI", planet_name="KELT-20b", spectrum_type="transm
     for i in range (n_spectra): mock_wave[i,:] = template_wave_1
     
     #fluxin, Kp_true, V_sys_true = inject_model(Kp_expected, orbital_phase, mock_wave, mock_spectra, template_wave_1, template_flux_1 + np.interp(template_wave_1, template_wave_2, template_flux_2), n_spectra)
-    #fluxin, Kp_true, V_sys_true = inject_model(Kp_expected, orbital_phase, mock_wave, mock_spectra, template_wave_1, template_flux_1, n_spectra)
+    fluxin, Kp_true, V_sys_true = inject_model(Kp_expected, orbital_phase, mock_wave, mock_spectra, template_wave_1, template_flux_1, n_spectra)
 
     #make a model spectrum with the template appropriately shifted to the planetary orbital motion
-    fluxin, Kp_true, V_sys_true = inject_model(Kp_expected, orbital_phase, mock_wave, mock_spectra, template_wave_2, template_flux_2, n_spectra)
+    #fluxin, Kp_true, V_sys_true = inject_model(Kp_expected, orbital_phase, mock_wave, mock_spectra, template_wave_2, template_flux_2, n_spectra)
 
     #do the cross-correlation and associated processing
     drv, cross_cor, sigma_cross_cor = get_ccfs(mock_wave, mock_spectra, np.ones_like(mock_spectra), template_wave_2, template_flux_2, n_spectra, mock_spectra, np.where(template_wave_1 > 0.))
     
-    for i in range (n_spectra): 
+    for i in range (n_spectra):
         cross_cor[i,:]-=np.mean(cross_cor[i,:])
         sigma_cross_cor[i,:] = np.sqrt(sigma_cross_cor[i,:]**2 + np.sum(sigma_cross_cor[i,:]**2)/len(sigma_cross_cor[i,:])**2)
         #I guess the following is OK as long as there isn't a strong peak, which there shouldn't be in any of the individual CCFs

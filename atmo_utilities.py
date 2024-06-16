@@ -1,17 +1,17 @@
 #Code from Anusha
 
 import numpy as np
-import matplotlib.pyplot as plt
-import petitRADTRANS.nat_cst as nc
-from petitRADTRANS import Radtrans
-from specutils import Spectrum1D
-from specutils.fitting import fit_continuum
-from astropy import units as u
+#import matplotlib.pyplot as plt
+#import petitRADTRANS.nat_cst as nc
+#from petitRADTRANS import radtrans
+#from specutils import Spectrum1D
+#from specutils.fitting import fit_continuum
+#from astropy import units as u
 from scipy.interpolate import UnivariateSpline
 import scipy.interpolate as interpolate
 
 def wav_indices(wav, wav_low, wav_up):
-    ''' Finds lower and upper index of wavelength range.
+    ''' Finds lower and upper index of wavelength rangze.
         Inputs:
         - Array of wavelengths
         - Lower bound of wavelength range

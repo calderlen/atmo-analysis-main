@@ -5,6 +5,11 @@ import numpy as np
 import os
 import matplotlib.pyplot as plt
 from astropy import constants as const
+from scipy.integrate import simps
+from petitRADTRANS import Radtrans
+from run_all_ccfs import *
+from periodic_trends import plotter
+
 
 abundance_species = ['Mg', 'Fe', 'Fe+', 'Na', 'Co', 'Cr','Cr+', 'Zn', 'Cu', 'Ca', 'Ti', 'Sc', 'Ru',]
 
@@ -159,3 +164,65 @@ def fastchem_plot(abundance_species):
 # Make plot stacking SNR map and 1D CCF with x axis RV-V_sys(kms-1) with different y-axes. For KSNR map the y-axis is Kp. For the 1D CCF the y-axis is the amplitude of the ccf standardized at abs(RV) greater than 40 km/s.
 
 # Make plot overlaying phase-binned phase-resolved line profiles of Fe I and Fe II in blue arm.
+
+# Make plot asssessing observability score of each element considered in this analysis
+def calculate_integral(wavelengths, tau):
+    ln_tau = np.log(tau)
+    integral = simps(ln_tau, wavelengths)
+    return integral
+
+# Compute the integral for the combined opacities
+integral_tau_all = calculate_integral(wavelengths, tau_all)
+
+
+# Normalize the observability scores
+max_observability_score = max(observability_scores.values())
+normalized_observability_scores = {species: score / max_observability_score for species, score in observability_scores.items()}
+
+# Print the normalized observability scores
+for species, score in normalized_observability_scores.items():
+    print(f"Observability score for {species}: {score:.3f}")
+
+# Example setup for petitRADTRANS
+def observability_table(species_dict, parameters, planet_name='KELT-20b', spectrum_type='transmission', temperature_profile='inverted-transmission-better', instrument='PEPSI', arm='combined'):
+
+    R_host, R_pl, M_pl, Teff, gravity = get_planetary_parameters(planet_name)
+    spectrum = {}
+
+    for species_name_new, params in species_dict.items():
+        vmr = params.get('vmr')
+
+        template_wave, template_flux, pressures, atmosphere, parameters = make_new_model(instrument, species_name_new, vmr, spectrum_type, planet_name, temperature_profile, do_plot=False)
+
+        temperature = parameters['Teq']
+        abundances = parameters['abundances']
+        P0 = parameters['P0']
+
+        spectrum[species_name_new] = atmosphere.calc_transm(temperature, abundances, gravity, R_pl, P0)
+
+    # Extract wavelength and combined opacity (tau_all)
+    wavelengths = nc.c / atmosphere.freq / 1e-4  # Convert frequency to wavelength in Å
+
+
+    # Example: Extract combined opacity from spectrum (replace with actual data extraction method)
+    tau_all = spectrum['transm_radius']  # Example: Extract transmission radius
+
+    # Example: Extract individual species opacities (replace with actual data extraction method)
+    tau_species = {
+        'Fe': spectrum['species_opacity']['Fe'],  # Example
+        'Na': spectrum['species_opacity']['Na'],  # Example
+        'Ca': spectrum['species_opacity']['Ca']   # Example
+    }
+
+    # Calculate the observability score for each species
+    observability_scores = {}
+    for species, tau in tau_species.items():
+        tau_all_minus_x = tau_all - tau  # Combined opacities without the contribution of species x
+        integral_tau_all_minus_x = calculate_integral(wavelengths, tau_all_minus_x)
+        observability_score = integral_tau_all_minus_x - integral_tau_all
+        observability_scores[species] = observability_score
+
+
+
+
+        

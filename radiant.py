@@ -999,7 +999,7 @@ def make_new_model(instrument, species_name_new, vmr, spectrum_type, planet_name
 
     
 
-    return template_wave, template_flux
+    return template_wave, template_flux, pressures, atmosphere, parameters
 
 def get_atmospheric_model(planet_name, species_name_ccf, vmr, temperature_profile, do_rotate, do_instrument):
 
@@ -2392,7 +2392,7 @@ def generate_atmospheric_model(planet_name, spectrum_type, instrument, arm, all_
     #want to do this for everything except Plez line lists
     if 'Plez' not in species and 'Fe+' not in species and 'Ti+' not in species:
         wav_pl = vacuum2air(wav_pl)
-
+    breakpoint()
     return wav_pl, flux_ratio - 1.0
 
 def make_mocked_data(struc1, index, invals, instruc, atmosphere, pressures, lambda_low, lambda_high):
