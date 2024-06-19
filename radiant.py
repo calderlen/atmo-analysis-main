@@ -225,8 +225,13 @@ def get_species_keys(species_label):
         species_names.add(('Ti_1_VALD', 'Ti+'))
     if species_label == 'Ti_1_Kurucz':
         species_names.add(('Ti_1_Kurucz', 'Ti+'))
-        
-    
+
+    if species_label == 'Al I':
+        species_names.add('Al')
+    if species_label == 'B I':
+        species_names.add('B')
+    if species_label == 'Be I':
+        species_names.add('Be')
         
     if not species_names:
         raise ValueError(f"Invalid species_label: {species_label}")
@@ -433,19 +438,19 @@ def get_planet_parameters(planet_name):
 
     if planet_name == 'KELT-20b':
         #For KELT-20 b:, from Lund et al. 2018
-        Period = ufloat(3.4741085, 0.0000019) #days
-        epoch = ufloat(2457503.120049, 0.000190) #BJD_TDB
+        Period = ufloat(3.47410055, 0.00000024)
+        epoch = ufloat(2459420.823308, 0.000023)
 
         M_star = ufloat(1.76, 0.19) #MSun
         RV_abs = ufloat(0.0, 0.0) #km/s
-        i = ufloat(86.12, 0.28) #degrees
+        i = ufloat(85.165, 0.189) #degrees
         M_p = 3.382 #3-sigma limit
         R_p = 1.741
 
         RA = '19h38m38.74s'
         Dec = '+31d13m09.12s'
 
-        dur = 3.755/24. #hours -> days
+        dur = 0.14848 #hours -> days
 
         Ks_expected = 0.0
         
@@ -862,7 +867,8 @@ def do_convolutions(planet_name, template_wave, template_flux, do_rotate, do_ins
 
 def make_spectrum_plot(template_wave, template_flux, planet_name, species_name_ccf, temperature_profile, vmr):
 
-    if planet_name == 'WASP-189b' or planet_name == 'KELT-20b':
+    #if planet_name == 'WASP-189b' or planet_name == 'KELT-20b':
+    if planet_name == 'WASP-189b':
         pl.fill([4265,4265,4800,4800],[np.nanmin(template_flux),np.nanmax(template_flux),np.nanmax(template_flux),np.nanmin(template_flux)],color='cyan',alpha=0.25)
     if planet_name != 'WASP-189b':
         pl.fill([4800,4800,5441,5441],[np.nanmin(template_flux),np.nanmax(template_flux),np.nanmax(template_flux),np.nanmin(template_flux)],color='blue',alpha=0.25)
@@ -883,14 +889,14 @@ def make_spectrum_plot(template_wave, template_flux, planet_name, species_name_c
 def make_new_model(instrument, species_name_new, vmr, spectrum_type, planet_name, temperature_profile, do_plot=False):
 
     if instrument == 'PEPSI':
-        if (planet_name == 'WASP-189b' or planet_name == 'KELT-20b'):
+        #if (planet_name == 'WASP-189b' or planet_name == 'KELT-20b'):
+        if planet_name == 'WASP-189b':
             instrument_here = 'PEPSI-25'
         else:
             instrument_here = 'PEPSI-35'
     else:
         instrument_here = instrument
 
-        
     lambda_low, lambda_high = get_wavelength_range(instrument_here)
     pressures = np.logspace(-8, 2, 100)
     atmosphere = instantiate_radtrans([species_name_new], lambda_low, lambda_high, pressures)
@@ -1293,17 +1299,16 @@ def combine_ccfs_asymmetry(drv, cross_cor, sigma_cross_cor, orbital_phase, n_spe
     shifted_ccfs_2, var_shifted_ccfs_2 = np.zeros((nKp, nv)), np.zeros((nKp, nv))
 
     # Temporarily hardcoding values in for KELT-20b, REMOVE THESE LATER
-    ingress_egress_dur = 0.01996 #days, per Lund et al. 2017
-    ingress_egress_phase = ingress_egress_dur/3.474
-
+    ingress_egress_dur = 0.04575/2 #days, per Allison's updated parameters 2023
+    ingress_egress_phase = ingress_egress_dur/3.4741020201 #per Allison's updated parameters 2023
 
     if phase_ranges == 'halves':
-        orbital_phase_1 = orbital_phase[orbital_phase < 0]
-        orbital_phase_2 = orbital_phase[orbital_phase > 0]
+        orbital_phase_1 = orbital_phase[(orbital_phase >= -half_duration_phase) & (orbital_phase < 0)]
+        orbital_phase_2 = orbital_phase[(orbital_phase > 0) & (orbital_phase <= half_duration_phase)]
 
     if phase_ranges == 'ingress-egress':
-        orbital_phase_1 = orbital_phase[(orbital_phase >= np.min(orbital_phase)) & (orbital_phase <= np.min(orbital_phase)+ingress_egress_phase)]
-        orbital_phase_2 = orbital_phase[(orbital_phase >= np.max(orbital_phase)-ingress_egress_phase) & (orbital_phase <= np.max(orbital_phase))]
+        orbital_phase_1 = orbital_phase[(orbital_phase >= -half_duration_phase ) & (orbital_phase <= -half_duration_phase+ingress_egress_phase)]
+        orbital_phase_2 = orbital_phase[(orbital_phase >= half_duration_phase-ingress_egress_phase) & (orbital_phase <= half_duration_phase)]
 
     # Find which indices of orbital_phase correspond to orbital_phase_1 and orbital_phase_2
     idx_1 = np.where(np.isin(orbital_phase, orbital_phase_1))[0]
@@ -1456,7 +1461,7 @@ def combine_ccfs_binned(drv, cross_cor, sigma_cross_cor, orbital_phase, n_spectr
     snr = binned_ccfs / np.std(binned_ccfs[:,use_for_snr])
     masked_snr = np.ma.masked_where(snr <= 3, snr)
 
-    fig, ax = plt.subplots(layout='constrained', figsize=(10,8))
+    fig, ax = pl.subplots(layout='constrained', figsize=(10,8))
     #c = ax.pcolor(drv[good], phase_bin, masked_snr[:,good], edgecolors='none',rasterized=True, cmap='viridis_r')
     c = ax.pcolor(drv[good], phase_bin, snr[:,good], edgecolors='none',rasterized=True, cmap='viridis_r')
     ax.plot([0.,0.],[np.min(phase_bin), np.max(phase_bin)],':',color='grey')
@@ -1735,8 +1740,6 @@ def gaussian_fit(Kp, Kp_true, drv, species_label, planet_name, observation_epoch
     return amps, amps_error, rv, rv_error, width, width_error, residual, do_molecfit, idx, line_profile, drv_restricted, plotsnr_restricted, residual_restricted, fig1, ax1, ax2, fig2, ax3
 
 def gaussian_fit_asymmetry(Kp, Kp_true, drv, species_label, planet_name, observation_epoch, arm, species_name_ccf, model_tag, plotsnr_1, plotsnr_2, sigma_shifted_ccfs_1, sigma_shifted_ccfs_2, phase_ranges):
-    
-
 
     if arm == 'red':
         do_molecfit = True
@@ -2299,7 +2302,8 @@ def process_data(observation_epochs, arms, planet_name):
 
 def generate_atmospheric_model(planet_name, spectrum_type, instrument, arm, all_species, parameters, atmosphere, pressures, ptprofile='guillot'):
     #handle the W-189 observations being with CD II
-    if (planet_name == 'WASP-189b' or planet_name == 'KELT-20b') and 'GMT-all' not in instrument:
+    #if (planet_name == 'WASP-189b' or planet_name == 'KELT-20b') and 'GMT-all' not in instrument:
+    if planet_name == 'WASP-189b' and 'GMT-all' not in instrument:
         instrument_here = 'PEPSI-25' 
     elif instrument == 'PEPSI':
         instrument_here = 'PEPSI-35'
@@ -2327,7 +2331,7 @@ def generate_atmospheric_model(planet_name, spectrum_type, instrument, arm, all_
     e_abundance = ((1./1822.8884845)/mmw) * parameters['em']
     H_abundance = (1.00784/mmw) * parameters['H0']
 
-    total_abundance = np.sum(species_abundance) + H2_abundance + He_abundance + e_abundance+ H_abundance + Hm_abundance
+    total_abundance = np.sum(species_abundance) + H2_abundance + He_abundance + e_abundance + H_abundance + Hm_abundance
     abundances = {}
     i=0
     for species in all_species:
@@ -2392,7 +2396,6 @@ def generate_atmospheric_model(planet_name, spectrum_type, instrument, arm, all_
     #want to do this for everything except Plez line lists
     if 'Plez' not in species and 'Fe+' not in species and 'Ti+' not in species:
         wav_pl = vacuum2air(wav_pl)
-    breakpoint()
     return wav_pl, flux_ratio - 1.0
 
 def make_mocked_data(struc1, index, invals, instruc, atmosphere, pressures, lambda_low, lambda_high):
@@ -2463,6 +2466,8 @@ def parameters():
     parameters['kappa'] = 0.01
     parameters['gamma'] = 50.
     parameters['Teq'] = 2262.
+
+    return parameters
 
 def get_parameters(theta, index, instruc, name):
     if any(name in  s for s in index):

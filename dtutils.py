@@ -91,7 +91,7 @@ def psarr(inarr, xaxis, yaxis, xname, yname, zname, filename=' ', contour=False,
     x_max = xaxis[x_index]
     y_max = yaxis[y_index]
 
-    pl.plot(x_max, y_max, 'rx', markersize=10)
+    pl.plot(x_max, y_max, 'cx', markersize=10)
 
     pl.tight_layout()
     if filename != 'none': 

@@ -32,32 +32,6 @@ def instantiate_radtrans(species, lambda_low, lambda_high, pressures, downsample
     
 def create_model(params, spectrum_type, do_contribution, new_atmo, atmosphere='null', ptprofile = 'guillot'):
 
-    ''' 
-    Computes model planet radius as a function of wavelength using petitRADTRANS.
-
-    Takes in:
-    -Parameter list
-        -List of species of interest to be modelled (in the correct format for the respective modelling routines)
-        -Lower bound wavelength for model spectrum plot (Angstroms)
-        -Upper bound wavelength for model spectrum plot (Angstroms)
-        -Radius of planet
-        -Radius of host star
-        -Gravity of planet 
-        -Reference pressure 
-        -Atmospheric opacity in IR
-        -Ratio between optical and IR opacity
-        -Planetary internal temperature
-        -Atmospheric equilibrium temperature
-        -Abundance dictionary
-        -List of pressure structure
-
-    Returns:
-    -List of model wavelengths
-    -List of model fluxes
-    -List of model temperatures
-    -List of model pressures
-    '''
-
     # Select template spectrum routine
     species = params[0]
     lambda_low = params[1]
