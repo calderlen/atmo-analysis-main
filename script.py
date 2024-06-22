@@ -35,7 +35,6 @@ species_dict_full = {
     'Fe II' : {'vmr' : 4.946571802411902e-05, 'arm':'combined'},
     'Ga I' : {'vmr' : 1.7971958817835836e-09, 'arm':'blue'},
     'Ge I' : {'vmr' : 7.154765674272624e-09, 'arm':'blue'},
-    'H I' : {'vmr' : 0.00026525408216060805, 'arm':'blue'},
     'Hf I' : {'vmr' : 1.2150535391184618e-11, 'arm':'blue'},
     'In I' : {'vmr' : 1.0829176066220596e-11, 'arm':'blue'},
     'Ir I' : {'vmr' : 3.585877215540056e-11, 'arm':'blue'},
@@ -72,19 +71,29 @@ species_dict_full = {
     'Zr I' : {'vmr' : 6.677215836709593e-10, 'arm':'blue'}
 }
 
+species_dict_final = {
+    'Ca I' : {'vmr' : 2.4587155473819153e-06, 'arm':'blue'},
+    'Cr I' : {'vmr' : 7.079592959038503e-07, 'arm':'blue'},
+    'Cu I' : {'vmr' : 2.063093447370899e-08, 'arm':'blue'},
+    'Fe I' : {'vmr' : 4.946571802411902e-05, 'arm':'combined'},
+    'Fe II' : {'vmr' : 4.946571802411902e-05, 'arm':'combined'},
+    'Mg I' : {'vmr' : 6.081422083824978e-05, 'arm':'blue'},
+    'Na I' : {'vmr' : 2.8215497643996917e-06, 'arm':'red'}
+}
 
-species_dict = dict(sorted(species_dict.items(), key=lambda item: item[1]['vmr'], reverse=True))
+species_dict_final = dict(sorted(species_dict_final.items(), key=lambda item: item[1]['vmr'], reverse=True))
                     
 #Make plot stacking all of the synthetic transmission spectra for appendix
-#multiSpeciesCCF('KELT-20b', 'inverted-transmission-better', species_dict, False, True, True, 'ccf', 'ingress-egress')
+multiSpeciesCCF('KELT-20b', 'inverted-transmission-better', species_dict_final, False, True, True, 'ccf', 'ingress-egress')
+#multiSpeciesCCF('KELT-20b', 'inverted-transmission-better', species_dict_full, False, True, True, 'ccf', 'halves')
 
-#for species_label, species_params in species_dict.items():
+#for species_label, species_params in species_dict_final.items():
 #   vmr = species_params['vmr']
-#   overlayArms('KELT-20b', 'inverted-transmission-better', species_label, vmr, False, True, True, 'ccf')
+#   overlayArms('KELT-20b', 'inverted-transmission-better', species_label, vmr, False, True, True, 'ccf', 'halves')
 
     
 #species_dict = dict(sorted(species_dict.items(), key=lambda item: item[1]['vmr'], reverse=True))
-#make_spectrum_plots(species_dict)
+#make_spectrum_plots(species_dict_final)
 
 
-generate_observability_table('KELT-20b','inverted-transmission-better', 'PEPSI', species_dict_full, 'guillot')
+#generate_observability_table('KELT-20b','inverted-transmission-better', 'PEPSI', species_dict_full, 'guillot')

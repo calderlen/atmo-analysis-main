@@ -22,7 +22,6 @@ from dtutils import psarr
 
 from create_model import create_model, instantiate_radtrans
 from atmo_utilities import *
-from run_all_ccfs import *
 
 import emcee
 import argparse
@@ -246,7 +245,6 @@ def get_species_keys(species_label):
     
     return species_name_inject, species_name_ccf
 
-
 def get_species_label(species_name, charge_state=None):
   """
   This function maps a species name and optionally its charge state to the corresponding species_label.
@@ -349,7 +347,6 @@ def get_species_label(species_name, charge_state=None):
   }
   return lookup.get(species_name, None)
 
-
 def get_sysrem_parameters(arm, observation_epoch, species_label, planet_name):
     if species_label == 'TiO':
         if arm == 'red': n_systematics = [1, 1]
@@ -438,19 +435,19 @@ def get_planet_parameters(planet_name):
 
     if planet_name == 'KELT-20b':
         #For KELT-20 b:, from Lund et al. 2018
-        Period = ufloat(3.47410055, 0.00000024)
-        epoch = ufloat(2459420.823308, 0.000023)
+        Period = ufloat(3.4741070, 0.0000019)
+        epoch = ufloat(2457503.120049, 0.000190)
 
         M_star = ufloat(1.76, 0.19) #MSun
         RV_abs = ufloat(0.0, 0.0) #km/s
-        i = ufloat(85.165, 0.189) #degrees
+        i = ufloat(86.12, 0.28) #degrees
         M_p = 3.382 #3-sigma limit
         R_p = 1.741
 
         RA = '19h38m38.74s'
         Dec = '+31d13m09.12s'
 
-        dur = 0.14848 #hours -> days
+        dur = 0.14898 #hours -> days
 
         Ks_expected = 0.0
         
@@ -864,7 +861,6 @@ def do_convolutions(planet_name, template_wave, template_flux, do_rotate, do_ins
 
     return template_flux
     
-
 def make_spectrum_plot(template_wave, template_flux, planet_name, species_name_ccf, temperature_profile, vmr):
 
     #if planet_name == 'WASP-189b' or planet_name == 'KELT-20b':
@@ -998,8 +994,9 @@ def make_new_model(instrument, species_name_new, vmr, spectrum_type, planet_name
     template_flux = do_convolutions(planet_name, template_wave, template_flux, True, True, temperature_profile)
 
     #if 'Plez' in species_name_new or species_name_new == 'Fe+' or species_name_new == 'Ti+': # or species_name_new == 'Cr':
-        #template_wave = vacuum2air(template_wave)
-        #template_wave = air2vacuum(template_wave)
+    
+    #    template_wave = vacuum2air(template_wave)
+    #    template_wave = air2vacuum(template_wave)
 
     if do_plot: make_spectrum_plot(template_wave, template_flux, planet_name, species_name_new, temperature_profile, vmr)
 
@@ -1020,7 +1017,6 @@ def get_atmospheric_model(planet_name, species_name_ccf, vmr, temperature_profil
     template_flux = do_convolutions(planet_name, template_wave, template_flux, do_rotate, do_instrument, temperature_profile)
 
     return template_wave, template_flux
-
 
 def correct_for_reflex_motion(Ks_expected, orbital_phase, wave, n_spectra):
 
@@ -1096,7 +1092,6 @@ def flatten_spectra(flux, npix, n_spectra):
     print('The maximum total SNR is ', np.max(total_snr))
 
     return residual_flux
-
 
 def do_sysrem(wave, residual_flux, arm, airmass, n_spectra, niter, n_systematics, do_molecfit):
 
@@ -1223,9 +1218,6 @@ def sysrem_correct_model(wave, corrected_flux, corrected_error, template_wave, t
 
     return Mprime
 
-    
-        
-
 def get_ccfs(wave, corrected_flux, corrected_error, template_wave, template_flux, n_spectra, U_sysrem, telluric_free):
 
     #rvmin, rvmax = -100., 100. #kms
@@ -1243,7 +1235,7 @@ def get_ccfs(wave, corrected_flux, corrected_error, template_wave, template_flux
 def get_likelihood(wave, corrected_flux, corrected_error, template_wave, template_flux, n_spectra, U_sysrem, telluric_free):
 
     rvmin, rvmax = -400., 400. #kms
-    rvspacing = 0.01 #kms
+    rvspacing = 1.0 #kms
 
     alpha, beta, norm_offset = 1.0, 1.0, 0.0 #I think this is correct for this application--only set these scaling factors if do actual fits
 
@@ -1299,8 +1291,8 @@ def combine_ccfs_asymmetry(drv, cross_cor, sigma_cross_cor, orbital_phase, n_spe
     shifted_ccfs_2, var_shifted_ccfs_2 = np.zeros((nKp, nv)), np.zeros((nKp, nv))
 
     # Temporarily hardcoding values in for KELT-20b, REMOVE THESE LATER
-    ingress_egress_dur = 0.04575/2 #days, per Allison's updated parameters 2023
-    ingress_egress_phase = ingress_egress_dur/3.4741020201 #per Allison's updated parameters 2023
+    ingress_egress_dur = 0.01996 #days, Lund et al 2018
+    ingress_egress_phase = ingress_egress_dur/3.4741085 # Lund et al 2018
 
     if phase_ranges == 'halves':
         orbital_phase_1 = orbital_phase[(orbital_phase >= -half_duration_phase) & (orbital_phase < 0)]
@@ -1535,7 +1527,6 @@ def combine_ccfs_binned(drv, cross_cor, sigma_cross_cor, orbital_phase, n_spectr
 
     return binned_ccfs, rvs, widths, rverrors, widtherrors
 
-
 def combine_likelihoods(drv, lnL, orbital_phase, n_spectra, half_duration_phase, temperature_profile):
 
     Kp = np.arange(50, 350, 1)
@@ -1635,7 +1626,7 @@ def gaussian_fit(Kp, Kp_true, drv, species_label, planet_name, observation_epoch
     ax1 = pl.subplot(gs[0])
     ax2 = pl.subplot(gs[1], sharex=ax1)
 
-    plot_mask = np.abs(drv) <= 25.
+    plot_mask = np.abs(drv) <= 50.
     # Restrict arrays to the region of interest for plotting
     drv_restricted = drv[plot_mask]
     plotsnr_restricted = plotsnr[idx, plot_mask]
@@ -1808,7 +1799,7 @@ def gaussian_fit_asymmetry(Kp, Kp_true, drv, species_label, planet_name, observa
 
     for i in Kp_valid:
         # Get the index of the peak with the maximum value within the desired range
-        valid_peaks = np.abs(drv) <=15
+        valid_peaks = np.abs(drv) <=50
         peak_2 = np.argmax(plotsnr_2[i, :] * valid_peaks)
 
         # If a valid peak was found, fit the Gaussian
@@ -2010,8 +2001,8 @@ def dopplerShadowRemove(drv, planet_name, exptime, orbital_phase, obs, inputs = 
             'nres': 48000.0
         }
         if planet_name == 'KELT-20b':
-            vsini = 110
-            lambda_p = 0.5  
+            vsini = 117.4
+            lambda_p = 3.4  
 
         Resolve = resolve_mapping.get(obs, 0.0)  # Default value of 0.0 if obs is not found in the mapping
         
@@ -2030,13 +2021,13 @@ def dopplerShadowRemove(drv, planet_name, exptime, orbital_phase, obs, inputs = 
 
                 # Required for Doppler tomographic model
                 'Pd':Period.n,    # Planetary orbital period (days)
-                'lambda':lambda_p,  # spin-orbit misalignment (deg)
+                'lambda':lambda_p,  # projected_obliquity (deg)
                 'b':0.503,       # transit impact parameter, hardcoded
                 'rplanet': 0.11440, # the Rp/Rstar value for the transit. hardcoded
                 't':orbital_phase * Period.n * 24*60 
                 , # minutes since center of transit
                 'times': np.float64(exptime) * 1/60,    # exposure time (in minutes), array length must match 't'    
-                'a': 7.466,     # scaled semimajor axis of the orbit, a/Rstar, hardcoded?
+                'a': 7.42,     # scaled semimajor axis of the orbit, a/Rstar, hardcoded?
                 'dur': half_duration_phase*2*Period.n, # duration of transit (days), optional?
                 'e': 0.0,     # 
                 'periarg': 90.0,   #  (deg)
@@ -2051,10 +2042,10 @@ def dopplerShadowRemove(drv, planet_name, exptime, orbital_phase, obs, inputs = 
                 #'inc':         # already used in differential rotation, comment out otherwise
                 'beta': 0.1,    # gravity darkening parameter
                 'Omega':7.27e-5,# stellar rotation rate (rad/s)
-                'logg': 4.292,  # stellar logg
-                'rstar': 1.561, # called Reqcm in docs, stellar radius (solar radii)
+                'logg': 4.290,  # stellar logg
+                'rstar': 1.565, # called Reqcm in docs, stellar radius (solar radii)
                 'f': 1.0    ,
-                'psi': 5.0      # doesn't say in docs to input this
+                'psi': 35.6     # doesn't say in docs to input this
                 }
         
 
@@ -2295,10 +2286,6 @@ def process_data(observation_epochs, arms, planet_name):
     datastruc['n_datasets'] = count
 
     return datastruc
-     
-
-
-
 
 def generate_atmospheric_model(planet_name, spectrum_type, instrument, arm, all_species, parameters, atmosphere, pressures, ptprofile='guillot'):
     #handle the W-189 observations being with CD II

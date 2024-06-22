@@ -23,6 +23,7 @@ import time
 from dtutils import psarr
 
 from radiant import *
+
 from create_model import create_model, instantiate_radtrans
 
 def run_one_ccf(species_label, vmr, arm, observation_epoch, template_wave, template_flux, template_wave_in, template_flux_in, planet_name, temperature_profile, do_inject_model, species_name_ccf, model_tag, f, method, do_make_new_model, phase_ranges='halves'):
@@ -59,7 +60,7 @@ def run_one_ccf(species_label, vmr, arm, observation_epoch, template_wave, templ
 
     #import pdb; pdb.set_trace()
 
-    psarr(unp.nominal_values(residual_flux), wave, orbital_phase, 'wavelength (Angstroms)', 'orbital phase', 'flux residual', filename=plotname,flat=True, ctable='gist_gray')
+    psarr(unp.nominal_values(residual_flux), wave, orbital_phase, 'wavelength (Angstroms)', 'orbital phase', 'flux residual', filename=plotname,flat=True, ctable='gist_gray_r')
 
     sysrem_file = 'data_products/' + planet_name + '.' + observation_epoch + '.' + arm + '.SYSREM-' + str(n_systematics[0]) + '+' + str(n_systematics[1])+model_tag+'.npy'
 
@@ -284,8 +285,6 @@ def combine_observations(observation_epochs, arms, planet_name, temperature_prof
     
     return Kp_true, orbital_phase, plotsnr, amps, amps_error, rv, rv_error, width, width_error, selected_idx, drv_restricted, plotsnr_restricted, residual_restricted
 
-
-
 def run_all_ccfs(planet_name, temperature_profile, species_label, vmr, do_inject_model, do_run_all, do_make_new_model, method, phase_ranges='halves'):
 
     fit_params = {}
@@ -407,5 +406,5 @@ def run_all_ccfs(planet_name, temperature_profile, species_label, vmr, do_inject
     
     np.save('data_products/' + planet_name + '.' + observation_epoch + '.' + species_label + '.' + 'fit_params.npy', fit_params)
  
-    return fit_params, observation_epochs, plotsnr_restricted
-    
+ 
+    return fit_params, observation_epochs, plotsnr_restricted 
