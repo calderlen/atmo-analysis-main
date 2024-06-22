@@ -736,7 +736,7 @@ def get_pepsi_data(arm, observation_epoch, planet_name, do_molecfit):
             if any('SSBVEL' in s for s in hdu[0].header):
                 total_velocity += hdu[0].header['SSBVEL']
                 
-        if planet_name == 'KELT-20b': total_velocity += 3.2234 * 1000.
+        #if planet_name == 'KELT-20b': total_velocity += 3.2234 * 1000.
         if planet_name == 'TOI-1431b': total_velocity += 24.903 * 1000.
         if planet_name == 'TOI-1518b': total_velocity += 11.170 * 1000.
         
