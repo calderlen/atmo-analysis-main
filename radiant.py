@@ -1320,8 +1320,8 @@ def combine_ccfs_asymmetry(drv, cross_cor, sigma_cross_cor, orbital_phase, n_spe
         RV_2 = Kp_i*np.sin(2.*np.pi*orbital_phase_2)
         for k in range(len(orbital_phase_2)):
             #if not 'transmission' in temperature_profile or np.abs(orbital_phase_2[j]) <= half_duration_phase or np.abs(orbital_phase_2[k]-0.5) >= half_duration_phase:
-                temp_ccf_2 = np.interp(drv, drv-RV_2[k], cross_cor[j,:], left=0., right=0.0)
-                sigma_temp_ccf_2 = np.interp(drv, drv-RV_2[k], sigma_cross_cor[j,:], left=0., right=0.0)
+                temp_ccf_2 = np.interp(drv, drv-RV_2[k], cross_cor[k,:], left=0., right=0.0)
+                sigma_temp_ccf_2 = np.interp(drv, drv-RV_2[k], sigma_cross_cor[k,:], left=0., right=0.0)
                 shifted_ccfs_2[i,:] += temp_ccf_2 * ccf_weights[k]
                 var_shifted_ccfs_2[i,:] += sigma_temp_ccf_2**2 * ccf_weights[k]**2
 
@@ -1411,7 +1411,7 @@ def combine_ccfs_binned(drv, cross_cor, sigma_cross_cor, orbital_phase, n_spectr
     good = np.abs(drv) < 25.
     c = pl.pcolor(drv[good], phase_bin, binned_ccfs[:,good], edgecolors='none',rasterized=True, cmap='magma_r')
     pl.plot([0.,0.],[np.min(phase_bin), np.max(phase_bin)],':',color='white')
-    #pl.plot(RVdiff[order], orbital_phase[order], '--', color='white')
+    pl.plot(RVdiff[order], orbital_phase[order], '--', color='white')
     pl.colorbar(c)
 
     pl.xlabel('$\Delta V$ (km/s)')
@@ -1489,11 +1489,25 @@ def combine_ccfs_binned(drv, cross_cor, sigma_cross_cor, orbital_phase, n_spectr
     phase_array = np.linspace(np.min(orbital_phase), np.max(orbital_phase), num=n_spectra)   
     slice_peak_chars = np.zeros(len(Kp))
 
+
+
+    if planet_name == 'KELT-20b':
+        ecc = 0.019999438851877625#0.0037 + 0.010 * 3.0 #rough 3-sigma limit
+        omega = 309.2455607770675#151.
+
+        ftransit=np.pi/2.-omega*np.pi/180.#-np.pi #true anomaly at transit
+        Etransit=2.*np.arctan(np.sqrt((1.-ecc)/(1.+ecc))*np.tan(ftransit/2.)) #eccentric anomaly at transit
+        timesince=1.0/(2.*np.pi)*(Etransit-ecc*np.sin(Etransit)) #time since periastron to transit
+        RVe = radvel.kepler.rv_drive(orbital_phase, np.array([1.0, 0.0-timesince, ecc, omega*np.pi/180.-np.pi, Kp_here])) 
+        
+    RV_diff = np.zeros(n_spectra)
+
     i = 0
     for Kp_i in Kp:
         RV = Kp_i*np.sin(2.*np.pi*orbital_phase)
-        
+
         for j in range(n_spectra):
+            
             #restrict to only in-transit spectra if doing transmission:
             #also want to leave out observations in 2ndary eclipse!
             phase_here = np.argmin(np.abs(phase_array - orbital_phase[j]))
@@ -1505,9 +1519,16 @@ def combine_ccfs_binned(drv, cross_cor, sigma_cross_cor, orbital_phase, n_spectr
             popt, pcov = curve_fit(gaussian, drv, temp_ccf, p0=[temp_ccf[peak], drv[peak], 2.5], sigma = np.sqrt(sigma_temp_ccf), maxfev=1000000)
             rv_chars[i,phase_here] = popt[1]
             rv_chars_error[i,phase_here] = np.sqrt(pcov[1,1])
+            RVdiff[phase_here] = RVe[phase_here] - RV[phase_here]
             slice_peak_chars[i] = temp_ccf[peak]
         i+=1
 
+
+    good = np.abs(drv) < 25.
+    c = pl.pcolor(drv[good], phase_bin, binned_ccfs[:,good], edgecolors='none',rasterized=True, cmap='magma_r')
+    pl.plot([0.,0.],[np.min(phase_bin), np.max(phase_bin)],':',color='white')
+    pl.plot(RVdiff[order], orbital_phase[order], '--', color='white')
+    pl.colorbar(c)
     fig, ax1 = pl.subplots(figsize=(8,8))
 
     ax1.text(0.05, 0.99, species_name_ccf, transform=ax1.transAxes, verticalalignment='top', horizontalalignment='left', fontsize=12)
