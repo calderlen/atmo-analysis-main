@@ -1,5 +1,5 @@
-from plotting_routines import *
-
+#from plotting_routines import *
+from run_all_ccfs_old import *
 
 species_dict = {
     'Mg I' : {'vmr' : 6.08e-5, 'arm':'blue'},
@@ -81,15 +81,16 @@ species_dict_final = {
     'Na I' : {'vmr' : 2.8215497643996917e-06, 'arm':'red'}
 }
 
-species_dict_final = dict(sorted(species_dict_final.items(), key=lambda item: item[1]['vmr'], reverse=True))
+#species_dict_final = dict(sorted(species_dict_final.items(), key=lambda item: item[1]['vmr'], reverse=True))
                     
 #Make plot stacking all of the synthetic transmission spectra for appendix
-multiSpeciesCCF('KELT-20b', 'inverted-transmission-better', species_dict_final, False, True, True, 'ccf', 'ingress-egress')
+#multiSpeciesCCF('KELT-20b', 'inverted-transmission-better', species_dict_final, False, True, True, 'ccf', 'ingress-egress')
 #multiSpeciesCCF('KELT-20b', 'inverted-transmission-better', species_dict_full, False, True, True, 'ccf', 'halves')
-
-#for species_label, species_params in species_dict_final.items():
-#   vmr = species_params['vmr']
-#   overlayArms('KELT-20b', 'inverted-transmission-better', species_label, vmr, False, True, True, 'ccf', 'halves')
+multiSpeciesCCF('KELT-20b', 'inverted-transmission-better', species_dict_final, False, True, True, 'ccf')
+for species_label, species_params in species_dict_final.items():
+    vmr = species_params['vmr']
+    overlayArms('KELT-20b', 'inverted-transmission-better', species_label, vmr, False, True, True, 'ccf')
+    #overlayArms('KELT-20b', 'inverted-transmission-better', species_label, vmr, False, True, True, 'ccf', 'halves')
 
     
 #species_dict = dict(sorted(species_dict.items(), key=lambda item: item[1]['vmr'], reverse=True))

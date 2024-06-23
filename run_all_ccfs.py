@@ -123,7 +123,6 @@ def run_one_ccf(species_label, vmr, arm, observation_epoch, template_wave, templ
                 ccf_model_scaled = ccf_model * scale
                 residuals = cross_cor - ccf_model_scaled
                 
-
                 # Compute rms
                 rms[k] = np.sqrt(np.square((np.array(residuals))).mean())
                             
@@ -134,10 +133,17 @@ def run_one_ccf(species_label, vmr, arm, observation_epoch, template_wave, templ
         ccf_model *= scale_factor
         cross_cor -= ccf_model
 
+
+        #Make a plot of doppler shadow
+       # plotname = 'plots/' + planet_name + '.' + observation_epoch + '.' + species_name_ccf + model_tag + '.' + arm + '.DopplerShadow.pdf'
+       # breakpoint()
+       # psarr(ccf_model, drv, orbital_phase, 'v (km/s)', 'orbital phase', 'SNR', filename=plotname, ctable='gist_yarg')
+
+
         #Make a plot
         plotname = 'plots/' + planet_name + '.' + observation_epoch + '.' + species_name_ccf + model_tag + '.' + arm + '.CCFs-raw.pdf'
         
-        psarr(cross_cor, drv, orbital_phase, 'v (km/s)', 'orbital phase', 'SNR', filename=plotname, ctable='gist_yarg', carr = Kp_true * np.sin(2.*np.pi*orbital_phase))
+        psarr(cross_cor, drv, orbital_phase, 'v (km/s)', 'orbital phase', 'SNR', filename=plotname, ctable='gist_yarg')
 
         #blank out the non-radial pulsations for now
         if planet_name == 'WASP-33b' or planet_name == 'TOI-1431b':
@@ -402,7 +408,6 @@ def run_all_ccfs(planet_name, temperature_profile, species_label, vmr, do_inject
     #if species_label != 'CaH': Kp_true, orbital_phase, plotsnr, amps, amps_error, rv, rv_error, width, width_error, selected_idx, drv_restricted, plotsnr_restricted, residual_restricted = combine_observations(observation_epochs, ['red'], planet_name, temperature_profile, species_label, species_name_ccf, model_tag, RV_abs, Kp_expected, do_inject_model, f, method)
     
     f.close()
-    orbital_phase, observation_epochs
     
     np.save('data_products/' + planet_name + '.' + observation_epoch + '.' + species_label + '.' + 'fit_params.npy', fit_params)
  
