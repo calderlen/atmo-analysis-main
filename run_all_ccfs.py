@@ -56,7 +56,7 @@ def run_one_ccf(species_label, vmr, arm, observation_epoch, template_wave, templ
     residual_flux = flatten_spectra(flux, npix, n_spectra)
 
     #Make some diagnostic plots
-    plotname = 'plots/' + planet_name + '.' + observation_epoch + '.' + arm + '.spectrum-resids.pdf'
+    plotname = 'plots-argmax/' + planet_name + '.' + observation_epoch + '.' + arm + '.spectrum-resids.pdf'
 
     #import pdb; pdb.set_trace()
 
@@ -80,7 +80,7 @@ def run_one_ccf(species_label, vmr, arm, observation_epoch, template_wave, templ
         np.save(sysrem_file+'.Umatrix.npy', U_sysrem)
         np.save(sysrem_file+'.telluric-region.npy', telluric_free)
 
-        plotname = 'plots/' + planet_name + '.' + observation_epoch + '.' + arm + '.spectrum-SYSREM-'+ str(n_systematics[0]) + '+' + str(n_systematics[1])+'.pdf'
+        plotname = 'plots-argmax/' + planet_name + '.' + observation_epoch + '.' + arm + '.spectrum-SYSREM-'+ str(n_systematics[0]) + '+' + str(n_systematics[1])+'.pdf'
 
         psarr(corrected_flux, wave, orbital_phase, 'wavelength (Angstroms)', 'orbital phase', 'flux residual', filename=plotname,flat=True, ctable='gist_gray')
 
@@ -135,13 +135,13 @@ def run_one_ccf(species_label, vmr, arm, observation_epoch, template_wave, templ
 
 
         #Make a plot of doppler shadow
-       # plotname = 'plots/' + planet_name + '.' + observation_epoch + '.' + species_name_ccf + model_tag + '.' + arm + '.DopplerShadow.pdf'
+       # plotname = 'plots-argmax/' + planet_name + '.' + observation_epoch + '.' + species_name_ccf + model_tag + '.' + arm + '.DopplerShadow.pdf'
        # breakpoint()
        # psarr(ccf_model, drv, orbital_phase, 'v (km/s)', 'orbital phase', 'SNR', filename=plotname, ctable='gist_yarg')
 
 
         #Make a plot
-        plotname = 'plots/' + planet_name + '.' + observation_epoch + '.' + species_name_ccf + model_tag + '.' + arm + '.CCFs-raw.pdf'
+        plotname = 'plots-argmax/' + planet_name + '.' + observation_epoch + '.' + str(do_inject_model) + '.' + species_name_ccf + model_tag + '.' + arm + '.CCFs-raw.pdf'
         
         psarr(cross_cor, drv, orbital_phase, 'v (km/s)', 'orbital phase', 'SNR', filename=plotname, ctable='gist_yarg')
 
@@ -153,7 +153,7 @@ def run_one_ccf(species_label, vmr, arm, observation_epoch, template_wave, templ
             cross_cor[:, bads] = 0.0
             sigma_cross_cor[:, bads] = 1e5
 
-            plotname = 'plots/' + planet_name + '.' + observation_epoch + '.' + species_name_ccf + model_tag + '.' + arm + '.blanked.CCFs-raw.pdf'
+            plotname = 'plots-argmax/' + planet_name + '.' + observation_epoch + '.' + species_name_ccf + model_tag + '.' + arm + '.blanked.CCFs-raw.pdf'
 
             psarr(cross_cor, drv, orbital_phase, 'v (km/s)', 'orbital phase', 'SNR', filename=plotname, ctable='gist_gray', carr = Kp_true * np.sin(2.*np.pi*orbital_phase))
 
@@ -188,7 +188,7 @@ def run_one_ccf(species_label, vmr, arm, observation_epoch, template_wave, templ
         np.save(like_file+'.phase.npy', orbital_phase)
 
         #Make a plot
-        plotname = 'plots/' + planet_name + '.' + observation_epoch + '.' + species_name_ccf + model_tag + '.likelihoods-raw.pdf'
+        plotname = 'plots-argmax/' + planet_name + '.' + observation_epoch + '.' + species_name_ccf + model_tag + '.likelihoods-raw.pdf'
         psarr(lnL, drv, orbital_phase, 'v (km/s)', 'orbital phase', 'ln L', filename=plotname, ctable='gist-gray')
 
         #now need to combine the likelihoods along the planet orbit
@@ -268,7 +268,7 @@ def combine_observations(observation_epochs, arms, planet_name, temperature_prof
             which_arms = 'combined'
         else:
             which_arms = arms[0]
-        plotname = 'plots/' + planet_name + '.' + which_arms + '.' + species_name_ccf + model_tag + '.' + '.CCFs-raw.pdf'
+        plotname = 'plots-argmax/' + planet_name + '.' + which_arms + '.' + str(do_inject_model) + '.' + species_name_ccf + model_tag + '.' + '.CCFs-raw.pdf'
 
         phase_order = np.argsort(orbital_phase)
         

@@ -1,0 +1,727 @@
+Read line opacities of Al...
+ Done.
+
+  Read CIA opacities for H2-H2...
+  Read CIA opacities for H2-He...
+Done.
+
+Now running the  blue  data for  20190504
+The maximum total SNR is  1420.901987322645
+Selected SNR for phase range 1: 0.08450146952847676 
+ Selected Vsys for phase range 1: 20.0 
+ Selected sigma for phase range 1: 2.55035 
+ Selected Kp for phase range 1: 238
+Selected SNR for phase range 1: 0.08450146952847676 
+ Selected Vsys for phase range 1: 20.0 
+ Selected sigma for phase range 1: 2.55035 
+ Selected Kp for phase range 1: 238 
+ Selected FWHM for phase range 1: 6.005615301844681
+Selected SNR for phase range 2: 0.0 
+ Selected Vsys for phase range 2: 0.0 
+ Selected sigma for phase range 2: 0.0 
+ Selected Kp for phase range 2: 50 
+ Selected FWHM for phase range 2: 0.0
+Selected SNR: 0.8776102191098427 $/pm$ 0.714733265540417 
+ Selected Vsys: 3.4107760949784804 $/pm$ 1.7322758493705603 
+ Selected sigma: 1.8338764757555894 $/pm$ 1.7322758519937467 
+ Selected Kp: 231 
+ Selected FWHM: 4.318449085219976 $/pm$ 4.079197899797941
+Now running the  red  data for  20190504
+The maximum total SNR is  7744.3228985129235
+Selected SNR for phase range 1: 2.553354719914837 
+ Selected Vsys for phase range 1: -15.0 
+ Selected sigma for phase range 1: 2.55035 
+ Selected Kp for phase range 1: 268
+Selected SNR for phase range 1: 2.553354719914837 
+ Selected Vsys for phase range 1: -15.0 
+ Selected sigma for phase range 1: 2.55035 
+ Selected Kp for phase range 1: 268 
+ Selected FWHM for phase range 1: 6.005615301844681
+Selected SNR for phase range 2: 0.862602257775478 
+ Selected Vsys for phase range 2: -19.0 
+ Selected sigma for phase range 2: 2.55035 
+ Selected Kp for phase range 2: 262 
+ Selected FWHM for phase range 2: 6.005615301844681
+Selected SNR: 2.747075022736069 $/pm$ 0.5393980338818914 
+ Selected Vsys: 13.278085747006244 $/pm$ 0.5761296844963159 
+ Selected sigma: 2.543125376268739 $/pm$ 0.5761297000516526 
+ Selected Kp: 221 
+ Selected FWHM: 5.9886026130645025 $/pm$ 1.3566817662193
+Now combining all of the data
+Selected SNR: 1.206022188880618 $/pm$ 0.5040222979130279 
+ Selected Vsys: 3.497828285782271 $/pm$ 1.8036818959707277 
+ Selected sigma: 3.7407858446861058 $/pm$ 1.8036819058451017 
+ Selected Kp: 231 
+ Selected FWHM: 8.808877491234874 $/pm$ 4.247346306743671
+Selected SNR for phase range 1: 0.0 
+ Selected Vsys for phase range 1: 0.0 
+ Selected sigma for phase range 1: 0.0 
+ Selected Kp for phase range 1: 50
+Selected SNR for phase range 1: 0.0 
+ Selected Vsys for phase range 1: 0.0 
+ Selected sigma for phase range 1: 0.0 
+ Selected Kp for phase range 1: 50 
+ Selected FWHM for phase range 1: 0.0
+Selected SNR for phase range 2: 1.2319033469626308 
+ Selected Vsys for phase range 2: 20.0 
+ Selected sigma for phase range 2: 2.55035 
+ Selected Kp for phase range 2: 268 
+ Selected FWHM for phase range 2: 0.0
+  Read line opacities of B...
+ Done.
+
+  Read CIA opacities for H2-H2...
+  Read CIA opacities for H2-He...
+Done.
+
+Now running the  blue  data for  20190504
+The maximum total SNR is  1420.901987322645
+Selected SNR for phase range 1: 0.0 
+ Selected Vsys for phase range 1: 0.0 
+ Selected sigma for phase range 1: 0.0 
+ Selected Kp for phase range 1: 50
+Selected SNR for phase range 1: 0.0 
+ Selected Vsys for phase range 1: 0.0 
+ Selected sigma for phase range 1: 0.0 
+ Selected Kp for phase range 1: 50 
+ Selected FWHM for phase range 1: 0.0
+Selected SNR for phase range 2: 0.0 
+ Selected Vsys for phase range 2: 0.0 
+ Selected sigma for phase range 2: 0.0 
+ Selected Kp for phase range 2: 50 
+ Selected FWHM for phase range 2: 0.0
+Selected SNR: 0.719269514666599 $/pm$ 0.7168540183990836 
+ Selected Vsys: 3.4122259921258573 $/pm$ 2.020079015510611 
+ Selected sigma: 1.748072880693279 $/pm$ 2.020079032610779 
+ Selected Kp: 232 
+ Selected FWHM: 4.116397059631528 $/pm$ 4.756922598538591
+Now running the  red  data for  20190504
+The maximum total SNR is  7744.3228985129235
+Selected SNR for phase range 1: 1.5361970879208198 
+ Selected Vsys for phase range 1: 20.0 
+ Selected sigma for phase range 1: 2.55035 
+ Selected Kp for phase range 1: 229
+Selected SNR for phase range 1: 1.5361970879208198 
+ Selected Vsys for phase range 1: 20.0 
+ Selected sigma for phase range 1: 2.55035 
+ Selected Kp for phase range 1: 229 
+ Selected FWHM for phase range 1: 6.005615301844681
+Selected SNR for phase range 2: 0.7314850275032302 
+ Selected Vsys for phase range 2: 17.0 
+ Selected sigma for phase range 2: 2.55035 
+ Selected Kp for phase range 2: 262 
+ Selected FWHM for phase range 2: 6.005615301844681
+Selected SNR: 3.965031428354062 $/pm$ 0.4447050274683559 
+ Selected Vsys: 444.23669300284234 $/pm$ 52.40443298802773 
+ Selected sigma: 183.86416418125708 $/pm$ 27.76556459814179 
+ Selected Kp: 169 
+ Selected FWHM: 432.9670193768857 $/pm$ 65.38290807730598
+Now combining all of the data
+Selected SNR: 1.025831733428924 $/pm$ 0.4869897371244071 
+ Selected Vsys: 3.5249402295185055 $/pm$ 2.188954037705711 
+ Selected sigma: 3.998471842334357 $/pm$ 2.188954038071201 
+ Selected Kp: 232 
+ Selected FWHM: 9.415681643820774 $/pm$ 5.1545928465015045
+Selected SNR for phase range 1: 0.0 
+ Selected Vsys for phase range 1: 0.0 
+ Selected sigma for phase range 1: 0.0 
+ Selected Kp for phase range 1: 50
+Selected SNR for phase range 1: 0.0 
+ Selected Vsys for phase range 1: 0.0 
+ Selected sigma for phase range 1: 0.0 
+ Selected Kp for phase range 1: 50 
+ Selected FWHM for phase range 1: 0.0
+Selected SNR for phase range 2: 1.1553144778508122 
+ Selected Vsys for phase range 2: 20.0 
+ Selected sigma for phase range 2: 2.55035 
+ Selected Kp for phase range 2: 256 
+ Selected FWHM for phase range 2: 0.0
+  Read line opacities of Ba...
+ Done.
+
+  Read CIA opacities for H2-H2...
+  Read CIA opacities for H2-He...
+Done.
+
+Now running the  blue  data for  20190504
+The maximum total SNR is  1420.901987322645
+Selected SNR for phase range 1: 1.9213931537342046 
+ Selected Vsys for phase range 1: 17.0 
+ Selected sigma for phase range 1: 2.55035 
+ Selected Kp for phase range 1: 262
+Selected SNR for phase range 1: 1.9213931537342046 
+ Selected Vsys for phase range 1: 17.0 
+ Selected sigma for phase range 1: 2.55035 
+ Selected Kp for phase range 1: 262 
+ Selected FWHM for phase range 1: 6.005615301844681
+Selected SNR for phase range 2: 0.45483100066044013 
+ Selected Vsys for phase range 2: 10.0 
+ Selected sigma for phase range 2: 2.55035 
+ Selected Kp for phase range 2: 264 
+ Selected FWHM for phase range 2: 6.005615301844681
+Selected SNR: 2.3140568684728557 $/pm$ 0.7352553638803252 
+ Selected Vsys: 16.729462589233666 $/pm$ 0.7013893396859244 
+ Selected sigma: 1.9097207224509578 $/pm$ 0.7013893419773667 
+ Selected Kp: 203 
+ Selected FWHM: 4.4970486376385015 $/pm$ 1.6516456818593706
+Now running the  red  data for  20190504
+The maximum total SNR is  7744.3228985129235
+Selected SNR for phase range 1: 1.0047035734116814 
+ Selected Vsys for phase range 1: 19.0 
+ Selected sigma for phase range 1: 2.55035 
+ Selected Kp for phase range 1: 172
+Selected SNR for phase range 1: 1.0047035734116814 
+ Selected Vsys for phase range 1: 19.0 
+ Selected sigma for phase range 1: 2.55035 
+ Selected Kp for phase range 1: 172 
+ Selected FWHM for phase range 1: 6.005615301844681
+Selected SNR for phase range 2: 2.9366604799133467 
+ Selected Vsys for phase range 2: 20.0 
+ Selected sigma for phase range 2: 2.55035 
+ Selected Kp for phase range 2: 268 
+ Selected FWHM for phase range 2: 6.005615301844681
+Selected SNR: 2.2992882584976306 $/pm$ 0.6851481942365659 
+ Selected Vsys: 8.750331612315374 $/pm$ 0.8537274261521918 
+ Selected sigma: 2.484160896011548 $/pm$ 0.8537273434819113 
+ Selected Kp: 268 
+ Selected FWHM: 5.849751873010037 $/pm$ 2.010374261422227
+Now combining all of the data
+Selected SNR: 2.8932683576432527 $/pm$ 0.5955113218911666 
+ Selected Vsys: 16.898643349546635 $/pm$ 0.6513822006566659 
+ Selected sigma: 2.7422845917411345 $/pm$ 0.6513821887605185 
+ Selected Kp: 209 
+ Selected FWHM: 6.457586725811537 $/pm$ 1.5338878350694023
+Selected SNR for phase range 1: 0.3088650489528452 
+ Selected Vsys for phase range 1: 20.0 
+ Selected sigma for phase range 1: 2.55035 
+ Selected Kp for phase range 1: 169
+Selected SNR for phase range 1: 0.3088650489528452 
+ Selected Vsys for phase range 1: 20.0 
+ Selected sigma for phase range 1: 2.55035 
+ Selected Kp for phase range 1: 169 
+ Selected FWHM for phase range 1: 6.005615301844681
+Selected SNR for phase range 2: 2.0840056084895004 
+ Selected Vsys for phase range 2: 11.0 
+ Selected sigma for phase range 2: 2.55035 
+ Selected Kp for phase range 2: 259 
+ Selected FWHM for phase range 2: 0.0
+  Read line opacities of Ba+...
+ Done.
+
+  Read CIA opacities for H2-H2...
+  Read CIA opacities for H2-He...
+Done.
+
+Now running the  blue  data for  20190504
+The maximum total SNR is  1420.901987322645
+Selected SNR for phase range 1: 1.1363188312832426 
+ Selected Vsys for phase range 1: -1.0 
+ Selected sigma for phase range 1: 2.55035 
+ Selected Kp for phase range 1: 211
+Selected SNR for phase range 1: 1.1363188312832426 
+ Selected Vsys for phase range 1: -1.0 
+ Selected sigma for phase range 1: 2.55035 
+ Selected Kp for phase range 1: 211 
+ Selected FWHM for phase range 1: 6.005615301844681
+Selected SNR for phase range 2: 1.9207844312043523 
+ Selected Vsys for phase range 2: 18.0 
+ Selected sigma for phase range 2: 2.55035 
+ Selected Kp for phase range 2: 264 
+ Selected FWHM for phase range 2: 6.005615301844681
+Selected SNR: 2.6602881026681584 $/pm$ 0.37350383513801416 
+ Selected Vsys: 0.8120991687786583 $/pm$ 1.2593409950664551 
+ Selected sigma: 7.772951061268211 $/pm$ 1.2593401806829734 
+ Selected Kp: 229 
+ Selected FWHM: 18.303900968118974 $/pm$ 2.965519500985163
+Now running the  red  data for  20190504
+The maximum total SNR is  7744.3228985129235
+Selected SNR for phase range 1: 2.377465715267321 
+ Selected Vsys for phase range 1: -9.0 
+ Selected sigma for phase range 1: 2.55035 
+ Selected Kp for phase range 1: 266
+Selected SNR for phase range 1: 2.377465715267321 
+ Selected Vsys for phase range 1: -9.0 
+ Selected sigma for phase range 1: 2.55035 
+ Selected Kp for phase range 1: 266 
+ Selected FWHM for phase range 1: 6.005615301844681
+Selected SNR for phase range 2: 1.6839741267983166 
+ Selected Vsys for phase range 2: -12.0 
+ Selected sigma for phase range 2: 2.55035 
+ Selected Kp for phase range 2: 210 
+ Selected FWHM for phase range 2: 6.005615301844681
+Selected SNR: 5.146422253358214 $/pm$ 0.6011316445115169 
+ Selected Vsys: -4.14583817670832 $/pm$ 0.3834684042985246 
+ Selected sigma: 2.8424031395011116 $/pm$ 0.3834683926034384 
+ Selected Kp: 268 
+ Selected FWHM: 6.6933478889561195 $/pm$ 0.9029990575383746
+Now combining all of the data
+Selected SNR: 2.266335360984462 $/pm$ 0.5000492599451263 
+ Selected Vsys: 0.8510374231104132 $/pm$ 0.7846461534707502 
+ Selected sigma: 3.078533084462364 $/pm$ 0.7846460816236013 
+ Selected Kp: 174 
+ Selected FWHM: 7.249391416582931 $/pm$ 1.8477003212622467
+Selected SNR for phase range 1: 2.3668093987823564 
+ Selected Vsys for phase range 1: -14.0 
+ Selected sigma for phase range 1: 2.55035 
+ Selected Kp for phase range 1: 264
+Selected SNR for phase range 1: 2.3668093987823564 
+ Selected Vsys for phase range 1: -14.0 
+ Selected sigma for phase range 1: 2.55035 
+ Selected Kp for phase range 1: 264 
+ Selected FWHM for phase range 1: 6.005615301844681
+Selected SNR for phase range 2: 2.138494657352133 
+ Selected Vsys for phase range 2: -20.0 
+ Selected sigma for phase range 2: 2.55035 
+ Selected Kp for phase range 2: 268 
+ Selected FWHM for phase range 2: 6.005615301844681
+  Read line opacities of Be...
+ Done.
+
+  Read CIA opacities for H2-H2...
+  Read CIA opacities for H2-He...
+Done.
+
+ Read line opacities of Be...
+ Done.
+
+  Read CIA opacities for H2-H2...
+  Read CIA opacities for H2-He...
+Done.
+
+Now running the  blue  data for  20190504
+The maximum total SNR is  1420.901987322645
+Selected SNR for phase range 1: 0.0 
+ Selected Vsys for phase range 1: 0.0 
+ Selected sigma for phase range 1: 0.0 
+ Selected Kp for phase range 1: 50
+Selected SNR for phase range 1: 0.0 
+ Selected Vsys for phase range 1: 0.0 
+ Selected sigma for phase range 1: 0.0 
+ Selected Kp for phase range 1: 50 
+ Selected FWHM for phase range 1: 0.0
+Selected SNR for phase range 2: 0.0 
+ Selected Vsys for phase range 2: 0.0 
+ Selected sigma for phase range 2: 0.0 
+ Selected Kp for phase range 2: 50 
+ Selected FWHM for phase range 2: 0.0
+Selected SNR: 0.7192700482941631 $/pm$ 0.7168537822846724 
+ Selected Vsys: 3.412228972571737 $/pm$ 2.020077791113653 
+ Selected sigma: 1.748073588682688 $/pm$ 2.0200777889869888 
+ Selected Kp: 232 
+ Selected FWHM: 4.11639872681918 $/pm$ 4.756919670028362
+Now running the  red  data for  20190504
+The maximum total SNR is  7744.3228985129235
+Selected SNR for phase range 1: 0.6095918110283126 
+ Selected Vsys for phase range 1: 20.0 
+ Selected sigma for phase range 1: 2.55035 
+ Selected Kp for phase range 1: 169
+Selected SNR for phase range 1: 0.6095918110283126 
+ Selected Vsys for phase range 1: 20.0 
+ Selected sigma for phase range 1: 2.55035 
+ Selected Kp for phase range 1: 169 
+ Selected FWHM for phase range 1: 6.005615301844681
+Selected SNR for phase range 2: 0.5842368559606702 
+ Selected Vsys for phase range 2: 20.0 
+ Selected sigma for phase range 2: 2.55035 
+ Selected Kp for phase range 2: 268 
+ Selected FWHM for phase range 2: 6.005615301844681
+Selected SNR: 3.981175966280563 $/pm$ 0.49868017722715324 
+ Selected Vsys: 449.5376830717929 $/pm$ 56.59938400862528 
+ Selected sigma: 183.12047037502313 $/pm$ 29.379373449304993 
+ Selected Kp: 169 
+ Selected FWHM: 431.2157542946006 $/pm$ 69.18313750887346
+Now combining all of the data
+Selected SNR: 1.0271126110558628 $/pm$ 0.48676945620603107 
+ Selected Vsys: 3.52929576785494 $/pm$ 2.1865988304255666 
+ Selected sigma: 4.000957216934876 $/pm$ 2.186598836414113 
+ Selected Kp: 232 
+ Selected FWHM: 9.421534253749487 $/pm$ 5.149046770429304
+Selected SNR for phase range 1: 0.0 
+ Selected Vsys for phase range 1: 0.0 
+ Selected sigma for phase range 1: 0.0 
+ Selected Kp for phase range 1: 50
+Selected SNR for phase range 1: 0.0 
+ Selected Vsys for phase range 1: 0.0 
+ Selected sigma for phase range 1: 0.0 
+ Selected Kp for phase range 1: 50 
+ Selected FWHM for phase range 1: 0.0
+Selected SNR for phase range 2: 1.1553138684365025 
+ Selected Vsys for phase range 2: 20.0 
+ Selected sigma for phase range 2: 2.55035 
+ Selected Kp for phase range 2: 256 
+ Selected FWHM for phase range 2: 0.0
+  Read line opacities of Ca...
+ Done.
+
+  Read CIA opacities for H2-H2...
+  Read CIA opacities for H2-He...
+Done.
+
+Now running the  blue  data for  20190504
+The maximum total SNR is  1420.901987322645
+Selected SNR for phase range 1: 2.518019224477437 
+ Selected Vsys for phase range 1: -1.0 
+ Selected sigma for phase range 1: 2.55035 
+ Selected Kp for phase range 1: 172
+Selected SNR for phase range 1: 2.518019224477437 
+ Selected Vsys for phase range 1: -1.0 
+ Selected sigma for phase range 1: 2.55035 
+ Selected Kp for phase range 1: 172 
+ Selected FWHM for phase range 1: 6.005615301844681
+Selected SNR for phase range 2: 0.0 
+ Selected Vsys for phase range 2: 0.0 
+ Selected sigma for phase range 2: 0.0 
+ Selected Kp for phase range 2: 50 
+ Selected FWHM for phase range 2: 0.0
+Selected SNR: 2.7123878574265854 $/pm$ 0.487048685827535 
+ Selected Vsys: 1.0452325273655578 $/pm$ 0.8870735901810236 
+ Selected sigma: 4.28066110021293 $/pm$ 0.8870743362354837 
+ Selected Kp: 231 
+ Selected FWHM: 10.080186564765645 $/pm$ 2.088900428399841
+Now running the  red  data for  20190504
+The maximum total SNR is  7744.3228985129235
+Selected SNR for phase range 1: 0.5694729679159309 
+ Selected Vsys for phase range 1: 16.0 
+ Selected sigma for phase range 1: 2.55035 
+ Selected Kp for phase range 1: 266
+Selected SNR for phase range 1: 0.5694729679159309 
+ Selected Vsys for phase range 1: 16.0 
+ Selected sigma for phase range 1: 2.55035 
+ Selected Kp for phase range 1: 266 
+ Selected FWHM for phase range 1: 6.005615301844681
+Selected SNR for phase range 2: 0.0 
+ Selected Vsys for phase range 2: 0.0 
+ Selected sigma for phase range 2: 0.0 
+ Selected Kp for phase range 2: 50 
+ Selected FWHM for phase range 2: 0.0
+Selected SNR: 2.5044703114260005 $/pm$ 0.41616509889983333 
+ Selected Vsys: -0.89025780741793 $/pm$ 0.8014800103757235 
+ Selected sigma: 4.177101758030783 $/pm$ 0.8014785862045365 
+ Selected Kp: 169 
+ Selected FWHM: 9.836322949944908 $/pm$ 1.8873378404575083
+Now combining all of the data
+Selected SNR: 2.322087558051984 $/pm$ 0.5804382680116481 
+ Selected Vsys: 1.2296278867659172 $/pm$ 0.889526765526947 
+ Selected sigma: 3.080171088010909 $/pm$ 0.8895276744578074 
+ Selected Kp: 230 
+ Selected FWHM: 7.253248620172878 $/pm$ 2.0946775984230097
+Selected SNR for phase range 1: 1.9720513684899055 
+ Selected Vsys for phase range 1: -12.0 
+ Selected sigma for phase range 1: 2.55035 
+ Selected Kp for phase range 1: 264
+Selected SNR for phase range 1: 1.9720513684899055 
+ Selected Vsys for phase range 1: -12.0 
+ Selected sigma for phase range 1: 2.55035 
+ Selected Kp for phase range 1: 264 
+ Selected FWHM for phase range 1: 6.005615301844681
+Selected SNR for phase range 2: 2.43484039500321 
+ Selected Vsys for phase range 2: -6.0 
+ Selected sigma for phase range 2: 2.55035 
+ Selected Kp for phase range 2: 179 
+ Selected FWHM for phase range 2: 6.005615301844681
+  Read line opacities of Ca+...
+ Done.
+
+  Read CIA opacities for H2-H2...
+  Read CIA opacities for H2-He...
+Done.
+
+Now running the  blue  data for  20190504
+The maximum total SNR is  1420.901987322645
+Selected SNR for phase range 1: 0.0 
+ Selected Vsys for phase range 1: 0.0 
+ Selected sigma for phase range 1: 0.0 
+ Selected Kp for phase range 1: 50
+Selected SNR for phase range 1: 0.0 
+ Selected Vsys for phase range 1: 0.0 
+ Selected sigma for phase range 1: 0.0 
+ Selected Kp for phase range 1: 50 
+ Selected FWHM for phase range 1: 0.0
+Selected SNR for phase range 2: 0.0 
+ Selected Vsys for phase range 2: 0.0 
+ Selected sigma for phase range 2: 0.0 
+ Selected Kp for phase range 2: 50 
+ Selected FWHM for phase range 2: 0.0
+Selected SNR: 0.7164662260987551 $/pm$ 0.7177353314925072 
+ Selected Vsys: 3.4040577439884587 $/pm$ 2.0235379335494654 
+ Selected sigma: 1.742337385545837 $/pm$ 2.0235379475690762 
+ Selected Kp: 232 
+ Selected FWHM: 4.102891000690154 $/pm$ 4.765067720816447
+Now running the  red  data for  20190504
+The maximum total SNR is  7744.3228985129235
+Selected SNR for phase range 1: 0.627325484925899 
+ Selected Vsys for phase range 1: 20.0 
+ Selected sigma for phase range 1: 2.55035 
+ Selected Kp for phase range 1: 229
+Selected SNR for phase range 1: 0.627325484925899 
+ Selected Vsys for phase range 1: 20.0 
+ Selected sigma for phase range 1: 2.55035 
+ Selected Kp for phase range 1: 229 
+ Selected FWHM for phase range 1: 6.005615301844681
+Selected SNR for phase range 2: 1.5468465659586883 
+ Selected Vsys for phase range 2: -3.0 
+ Selected sigma for phase range 2: 2.55035 
+ Selected Kp for phase range 2: 262 
+ Selected FWHM for phase range 2: 6.005615301844681
+Selected SNR: 0.21352665973985302 $/pm$ 1.2766751974866106 
+ Selected Vsys: 15.883534210867674 $/pm$ 12.184454507673648 
+ Selected sigma: 1.7188546130382591 $/pm$ 12.184454536707753 
+ Selected Kp: 169 
+ Selected FWHM: 4.047593297276409 $/pm$ 28.692197780807703
+Now combining all of the data
+Selected SNR: 1.0079621612130214 $/pm$ 0.48722365288643854 
+ Selected Vsys: 3.518727648111611 $/pm$ 2.213579605847002 
+ Selected sigma: 3.9713136129648023 $/pm$ 2.2135796132249403 
+ Selected Kp: 232 
+ Selected FWHM: 9.351728900913798 $/pm$ 5.2125816444939455
+Selected SNR for phase range 1: 0.0 
+ Selected Vsys for phase range 1: 0.0 
+ Selected sigma for phase range 1: 0.0 
+ Selected Kp for phase range 1: 50
+Selected SNR for phase range 1: 0.0 
+ Selected Vsys for phase range 1: 0.0 
+ Selected sigma for phase range 1: 0.0 
+ Selected Kp for phase range 1: 50 
+ Selected FWHM for phase range 1: 0.0
+Selected SNR for phase range 2: 1.1565462719851425 
+ Selected Vsys for phase range 2: 20.0 
+ Selected sigma for phase range 2: 2.55035 
+ Selected Kp for phase range 2: 256 
+ Selected FWHM for phase range 2: 0.0
+  Read line opacities of Co...
+ Done.
+
+  Read CIA opacities for H2-H2...
+  Read CIA opacities for H2-He...
+Done.
+
+Now running the  blue  data for  20190504
+The maximum total SNR is  1420.901987322645
+Selected SNR for phase range 1: 0.7074686608581147 
+ Selected Vsys for phase range 1: -20.0 
+ Selected sigma for phase range 1: 2.55035 
+ Selected Kp for phase range 1: 255
+Selected SNR for phase range 1: 0.7074686608581147 
+ Selected Vsys for phase range 1: -20.0 
+ Selected sigma for phase range 1: 2.55035 
+ Selected Kp for phase range 1: 255 
+ Selected FWHM for phase range 1: 6.005615301844681
+Selected SNR for phase range 2: 1.8536976896608452 
+ Selected Vsys for phase range 2: -4.0 
+ Selected sigma for phase range 2: 2.55035 
+ Selected Kp for phase range 2: 268 
+ Selected FWHM for phase range 2: 6.005615301844681
+Selected SNR: 2.282876272794305 $/pm$ 0.4672754977254528 
+ Selected Vsys: -7.873668018153924 $/pm$ 0.8828271018839081 
+ Selected sigma: 3.7323229100578312 $/pm$ 0.8828272611964846 
+ Selected Kp: 172 
+ Selected FWHM: 8.788948803132426 $/pm$ 2.0788993309652555
+Now running the  red  data for  20190504
+The maximum total SNR is  7744.3228985129235
+Selected SNR for phase range 1: 1.0254139183044633 
+ Selected Vsys for phase range 1: 3.0 
+ Selected sigma for phase range 1: 2.55035 
+ Selected Kp for phase range 1: 180
+Selected SNR for phase range 1: 1.0254139183044633 
+ Selected Vsys for phase range 1: 3.0 
+ Selected sigma for phase range 1: 2.55035 
+ Selected Kp for phase range 1: 180 
+ Selected FWHM for phase range 1: 6.005615301844681
+Selected SNR for phase range 2: 0.9837027106162234 
+ Selected Vsys for phase range 2: -17.0 
+ Selected sigma for phase range 2: 2.55035 
+ Selected Kp for phase range 2: 268 
+ Selected FWHM for phase range 2: 6.005615301844681
+Selected SNR: 1.4998919352070406 $/pm$ 0.8287669826499001 
+ Selected Vsys: -6.809792719877785 $/pm$ 1.5223427087447265 
+ Selected sigma: 2.3851827391537417 $/pm$ 1.5223429766719578 
+ Selected Kp: 256 
+ Selected FWHM: 5.616676125221057 $/pm$ 3.5848437568792093
+Now combining all of the data
+Selected SNR: 2.069816660890575 $/pm$ 0.49032811911507895 
+ Selected Vsys: -7.888441449681487 $/pm$ 0.9275156636115087 
+ Selected sigma: 3.3948730239408387 $/pm$ 0.927515852583314 
+ Selected Kp: 172 
+ Selected FWHM: 7.994315047110721 $/pm$ 2.184132921747159
+Selected SNR for phase range 1: 1.3032179861875692 
+ Selected Vsys for phase range 1: -19.0 
+ Selected sigma for phase range 1: 2.55035 
+ Selected Kp for phase range 1: 264
+Selected SNR for phase range 1: 1.3032179861875692 
+ Selected Vsys for phase range 1: -19.0 
+ Selected sigma for phase range 1: 2.55035 
+ Selected Kp for phase range 1: 264 
+ Selected FWHM for phase range 1: 6.005615301844681
+Selected SNR for phase range 2: 1.5467875326957257 
+ Selected Vsys for phase range 2: -3.0 
+ Selected sigma for phase range 2: 2.55035 
+ Selected Kp for phase range 2: 264 
+ Selected FWHM for phase range 2: 6.005615301844681
+  Read line opacities of Cr...
+ Done.
+
+  Read CIA opacities for H2-H2...
+  Read CIA opacities for H2-He...
+Done.
+
+Now running the  blue  data for  20190504
+The maximum total SNR is  1420.901987322645
+Selected SNR for phase range 1: 2.6511283071665543 
+ Selected Vsys for phase range 1: -20.0 
+ Selected sigma for phase range 1: 2.55035 
+ Selected Kp for phase range 1: 268
+Selected SNR for phase range 1: 2.6511283071665543 
+ Selected Vsys for phase range 1: -20.0 
+ Selected sigma for phase range 1: 2.55035 
+ Selected Kp for phase range 1: 268 
+ Selected FWHM for phase range 1: 6.005615301844681
+Selected SNR for phase range 2: 0.860416376968173 
+ Selected Vsys for phase range 2: 0.0 
+ Selected sigma for phase range 2: 2.55035 
+ Selected Kp for phase range 2: 179 
+ Selected FWHM for phase range 2: 6.005615301844681
+Selected SNR: 4.537245870570019 $/pm$ 0.4395731330714772 
+ Selected Vsys: -1.141461949743894 $/pm$ 0.5516628309948505 
+ Selected sigma: 4.930196701264729 $/pm$ 0.5516634258442976 
+ Selected Kp: 209 
+ Selected FWHM: 11.609726018083649 $/pm$ 1.2990680932885967
+Now running the  red  data for  20190504
+The maximum total SNR is  7744.3228985129235
+Selected SNR for phase range 1: 0.6853130660169053 
+ Selected Vsys for phase range 1: -20.0 
+ Selected sigma for phase range 1: 2.55035 
+ Selected Kp for phase range 1: 203
+Selected SNR for phase range 1: 0.6853130660169053 
+ Selected Vsys for phase range 1: -20.0 
+ Selected sigma for phase range 1: 2.55035 
+ Selected Kp for phase range 1: 203 
+ Selected FWHM for phase range 1: 6.005615301844681
+Selected SNR for phase range 2: 0.9367850678069909 
+ Selected Vsys for phase range 2: -9.0 
+ Selected sigma for phase range 2: 2.55035 
+ Selected Kp for phase range 2: 268 
+ Selected FWHM for phase range 2: 6.005615301844681
+Selected SNR: 3.3471083269882818 $/pm$ 0.6183884304714686 
+ Selected Vsys: -8.086860854977367 $/pm$ 0.5427045005210996 
+ Selected sigma: 2.545945898845257 $/pm$ 0.5427046696068464 
+ Selected Kp: 249 
+ Selected FWHM: 5.995244436165149 $/pm$ 1.2779718345221005
+Now combining all of the data
+Selected SNR: 3.5849915864744886 $/pm$ 0.5188342591559948 
+ Selected Vsys: -1.220466836190577 $/pm$ 0.6587078216679422 
+ Selected sigma: 3.9400549129807767 $/pm$ 0.6587085795417834 
+ Selected Kp: 209 
+ Selected FWHM: 9.278120287609806 $/pm$ 1.5511401669388551
+Selected SNR for phase range 1: 2.829261581956326 
+ Selected Vsys for phase range 1: -10.0 
+ Selected sigma for phase range 1: 2.55035 
+ Selected Kp for phase range 1: 264
+Selected SNR for phase range 1: 2.829261581956326 
+ Selected Vsys for phase range 1: -10.0 
+ Selected sigma for phase range 1: 2.55035 
+ Selected Kp for phase range 1: 264 
+ Selected FWHM for phase range 1: 6.005615301844681
+Selected SNR for phase range 2: 1.0190121528575238 
+ Selected Vsys for phase range 2: 14.0 
+ Selected sigma for phase range 2: 2.55035 
+ Selected Kp for phase range 2: 249 
+ Selected FWHM for phase range 2: 6.005615301844681
+  Read line opacities of Cr+...
+ Done.
+
+  Read CIA opacities for H2-H2...
+  Read CIA opacities for H2-He...
+Done.
+
+Now running the  blue  data for  20190504
+The maximum total SNR is  1420.901987322645
+Selected SNR for phase range 1: 0.0 
+ Selected Vsys for phase range 1: 0.0 
+ Selected sigma for phase range 1: 0.0 
+ Selected Kp for phase range 1: 50
+Selected SNR for phase range 1: 0.0 
+ Selected Vsys for phase range 1: 0.0 
+ Selected sigma for phase range 1: 0.0 
+ Selected Kp for phase range 1: 50 
+ Selected FWHM for phase range 1: 0.0
+Selected SNR for phase range 2: 0.0 
+ Selected Vsys for phase range 2: 0.0 
+ Selected sigma for phase range 2: 0.0 
+ Selected Kp for phase range 2: 50 
+ Selected FWHM for phase range 2: 0.0
+Selected SNR: 0.8947169301542943 $/pm$ 0.6217862911126976 
+ Selected Vsys: -5.6388826593342625 $/pm$ 1.824536351366544 
+ Selected sigma: 2.278888146580613 $/pm$ 1.8245362953247615 
+ Selected Kp: 172 
+ Selected FWHM: 5.366371487951455 $/pm$ 4.296454641117256
+Now running the  red  data for  20190504
+The maximum total SNR is  7744.3228985129235
+Selected SNR for phase range 1: 0.05179886602114942 
+ Selected Vsys for phase range 1: 20.0 
+ Selected sigma for phase range 1: 2.55035 
+ Selected Kp for phase range 1: 171
+Selected SNR for phase range 1: 0.05179886602114942 
+ Selected Vsys for phase range 1: 20.0 
+ Selected sigma for phase range 1: 2.55035 
+ Selected Kp for phase range 1: 171 
+ Selected FWHM for phase range 1: 6.005615301844681
+Selected SNR for phase range 2: 0.4760432659722874 
+ Selected Vsys for phase range 2: 20.0 
+ Selected sigma for phase range 2: 2.55035 
+ Selected Kp for phase range 2: 268 
+ Selected FWHM for phase range 2: 0.0
+Selected SNR: 0.5314980265577939 $/pm$ 0.5128609065023512 
+ Selected Vsys: 11.280173925224503 $/pm$ 4.063652305507251 
+ Selected sigma: 3.6642848906131773 $/pm$ 4.06365231548019 
+ Selected Kp: 169 
+ Selected FWHM: 8.62873151111995 $/pm$ 9.569169928529183
+Now combining all of the data
+Selected SNR: 0.921543188951769 $/pm$ 0.6050754419459167 
+ Selected Vsys: -5.6055481338738185 $/pm$ 1.8085267255442694 
+ Selected sigma: 2.37967208288962 $/pm$ 1.8085266699411586 
+ Selected Kp: 172 
+ Selected FWHM: 5.603699521389028 $/pm$ 4.258754854350512
+Selected SNR for phase range 1: 0.2104166219175904 
+ Selected Vsys for phase range 1: -20.0 
+ Selected sigma for phase range 1: 2.55035 
+ Selected Kp for phase range 1: 268
+Selected SNR for phase range 1: 0.2104166219175904 
+ Selected Vsys for phase range 1: -20.0 
+ Selected sigma for phase range 1: 2.55035 
+ Selected Kp for phase range 1: 268 
+ Selected FWHM for phase range 1: 6.005615301844681
+Selected SNR for phase range 2: 0.8255204055074712 
+ Selected Vsys for phase range 2: 14.0 
+ Selected sigma for phase range 2: 2.55035 
+ Selected Kp for phase range 2: 264 
+ Selected FWHM for phase range 2: 6.005615301844681
+  Read line opacities of Cs...
+ Done.
+
+  Read CIA opacities for H2-H2...
+  Read CIA opacities for H2-He...
+Done.
+
+Now running the  blue  data for  20190504
+The maximum total SNR is  1420.901987322645
+Selected SNR for phase range 1: 0.0 
+ Selected Vsys for phase range 1: 0.0 
+ Selected sigma for phase range 1: 0.0 
+ Selected Kp for phase range 1: 50
+Selected SNR for phase range 1: 0.0 
+ Selected Vsys for phase range 1: 0.0 
+ Selected sigma for phase range 1: 0.0 
+ Selected Kp for phase range 1: 50 
+ Selected FWHM for phase range 1: 0.0
+Selected SNR for phase range 2: 0.0 
+ Selected Vsys for phase range 2: 0.0 
+ Selected sigma for phase range 2: 0.0 
+ Selected Kp for phase range 2: 50 
+ Selected FWHM for phase range 2: 0.0
+Selected SNR: 0.7192695079982366 $/pm$ 0.7168540252360684 
+ Selected Vsys: 3.4122259851545262 $/pm$ 2.0200790266992388 
+ Selected sigma: 1.748072866329718 $/pm$ 2.0200790325676072 
+ Selected Kp: 232 
+ Selected FWHM: 4.116397025807927 $/pm$ 4.75692259843693
+Now running the  red  data for  20190504
+The maximum total SNR is  7744.3228985129235

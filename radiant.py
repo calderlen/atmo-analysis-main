@@ -435,8 +435,10 @@ def get_planet_parameters(planet_name):
 
     if planet_name == 'KELT-20b':
         #For KELT-20 b:, from Lund et al. 2018
-        Period = ufloat(3.4741070, 0.0000019)
-        epoch = ufloat(2457503.120049, 0.000190)
+        Period = ufloat(3.4741070, 0.0000019) # Lund et al. 2017
+        #Period = ufloat(3.4741085, 0.0000019) # Lund et al. 2017
+        epoch = ufloat(2457503.120049, 0.000190) #Lund et al. 2017
+        #epoch = ufloat(2457485.74965, 0.000190) #Lund et al. 2017
 
         M_star = ufloat(1.76, 0.19) #MSun
         RV_abs = ufloat(0.0, 0.0) #km/s
@@ -447,7 +449,7 @@ def get_planet_parameters(planet_name):
         RA = '19h38m38.74s'
         Dec = '+31d13m09.12s'
 
-        dur = 0.14898 #hours -> days
+        dur = 0.14898 #d, Lund et al. 2017
 
         Ks_expected = 0.0
         
@@ -601,10 +603,6 @@ def get_planet_parameters(planet_name):
         Period = ufloat(1.902603, 0.000011) #days
         epoch = ufloat(2458787.049255, 0.000094) #BJD_TDB
 
-        #this is the updated ephemeris from Alison
-        Period = ufloat(1.9026055, 0.0000066) #days
-        epoch = ufloat(2459854.41433, 0.00012) #BJD_TDB
-
         M_star = ufloat(1.79, 0.26) #MSun
         RV_abs = ufloat(0.0, 0.0) #km/s
         i = ufloat(77.84, 0.26) #degrees
@@ -736,7 +734,8 @@ def get_pepsi_data(arm, observation_epoch, planet_name, do_molecfit):
             if any('SSBVEL' in s for s in hdu[0].header):
                 total_velocity += hdu[0].header['SSBVEL']
                 
-        if planet_name == 'KELT-20b': total_velocity += 3.2234 * 1000.
+        #if planet_name == 'KELT-20b': total_velocity += 3.2234 * 1000.
+        if planet_name == 'KELT-20b': total_velocity += 0.
         if planet_name == 'TOI-1431b': total_velocity += 24.903 * 1000.
         if planet_name == 'TOI-1518b': total_velocity += 11.170 * 1000.
         
@@ -1416,7 +1415,7 @@ def combine_ccfs_binned(drv, cross_cor, sigma_cross_cor, orbital_phase, n_spectr
 
     pl.xlabel('$\Delta V$ (km/s)')
     pl.ylabel('orbital phase')
-    pl.savefig('plots/'+planet_name+'.'+species_name_ccf + '.' + arm + '.phase-binned.pdf', format='pdf')
+    pl.savefig('plots-argmax/'+planet_name+'.'+species_name_ccf + '.' + arm + '.phase-binned.pdf', format='pdf')
     pl.clf()
 
     rvs, widths, rverrors, widtherrors = np.zeros(nphase), np.zeros(nphase), np.zeros(nphase), np.zeros(nphase)
@@ -1424,7 +1423,7 @@ def combine_ccfs_binned(drv, cross_cor, sigma_cross_cor, orbital_phase, n_spectr
     ccffit = binned_ccfs[:,good]
     sigmafit = sigma_shifted_ccfs[:,good]
 
-    pp = PdfPages('plots/'+planet_name+'.'+species_name_ccf+ '.' + arm +'.phase-binned-RV-fits.pdf')
+    pp = PdfPages('plots-argmax/'+planet_name+'.'+species_name_ccf+ '.' + arm +'.phase-binned-RV-fits.pdf')
 
     for i in range (0, nphase):
         pl.subplot(3, 3, np.mod(i, 9)+1)
@@ -1478,7 +1477,7 @@ def combine_ccfs_binned(drv, cross_cor, sigma_cross_cor, orbital_phase, n_spectr
     fig.colorbar(c, ax=ax, label='SNR ($\sigma$)')
 
     
-    pl.savefig('plots/'+planet_name+'.'+species_name_ccf+ '.' + arm +'.phase-binned+RVs.pdf', format='pdf')
+    pl.savefig('plots-argmax/'+planet_name+'.'+species_name_ccf+ '.' + arm +'.phase-binned+RVs.pdf', format='pdf')
     pl.clf()
     
     Kp = np.arange(50, 350, 1)
@@ -1542,7 +1541,7 @@ def combine_ccfs_binned(drv, cross_cor, sigma_cross_cor, orbital_phase, n_spectr
     # add a vertical line at 0km/s
     #ax1.axvline(x=0, color='black', linestyle='--', alpha=0.5)
 
-    line_profile = 'plots/' + planet_name + '.' + 'combined' + '.' + 'combined' + '.' + species_name_ccf + '.line-profile-binned.pdf'
+    line_profile = 'plots-argmax/' + planet_name + '.' + 'combined' + '.' + 'combined' + '.' + species_name_ccf + '.line-profile-binned.pdf'
     fig.savefig(line_profile, dpi=300, bbox_inches='tight')
     pl.close(fig)
 
@@ -1697,13 +1696,14 @@ def gaussian_fit(Kp, Kp_true, drv, species_label, planet_name, observation_epoch
     ax2.set_ylabel('Residuals')
 
     # Consider a clearer naming scheme
-    snr_fit = 'plots/'+ planet_name + '.' + observation_epoch + '.' + arm + '.' + species_name_ccf + model_tag + '.SNR-Gaussian.pdf'
+    snr_fit = 'plots-argmax/'+ planet_name + '.' + observation_epoch + '.' + arm + '.' + species_name_ccf + model_tag + '.SNR-Gaussian.pdf'
     # Save the plot
     fig1.savefig(snr_fit, dpi=300, bbox_inches='tight')
     pl.close(fig1)
 
     # Line Profile plot
     idx = np.where(Kp == int(np.floor(Kp_true)))[0][0] #Kp slice corresponding to expected Kp
+    idx = np.argmax(slice_peak) #Kp slice corresponding to max SNR
 
     Kp = np.arange(50, 350, 1)
     rv_chars, rv_chars_error = np.zeros((len(Kp), n_spectra)), np.zeros((len(Kp), n_spectra))
@@ -1744,7 +1744,7 @@ def gaussian_fit(Kp, Kp_true, drv, species_label, planet_name, observation_epoch
     # add a vertical line at 0km/s
     ax3.axvline(x=0, color='black', linestyle='--', alpha=0.5)
     
-    line_profile = 'plots/' + planet_name + '.' + observation_epoch + '.' + arm + '.' + species_name_ccf + model_tag + '.line-profile.pdf'
+    line_profile = 'plots-argmax/' + planet_name + '.' + observation_epoch + '.' + arm + '.' + species_name_ccf + model_tag + '.line-profile.pdf'
     fig2.savefig(line_profile, dpi=300, bbox_inches='tight')
 
     pl.close(fig2)
@@ -1792,7 +1792,7 @@ def gaussian_fit_asymmetry(Kp, Kp_true, drv, species_label, planet_name, observa
     # Fitting gaussian to all 1D Kp slices
     for i in Kp_valid:
         # Get the index of the peak with the maximum value within the desired range
-        valid_peaks = np.abs(drv) <= 15
+        valid_peaks = np.abs(drv) <= 20
         peak_1 = np.argmax(plotsnr_1[i, :] * valid_peaks)
 
         # If a valid peak was found, fit the Gaussian
@@ -1820,7 +1820,7 @@ def gaussian_fit_asymmetry(Kp, Kp_true, drv, species_label, planet_name, observa
 
     for i in Kp_valid:
         # Get the index of the peak with the maximum value within the desired range
-        valid_peaks = np.abs(drv) <=50
+        valid_peaks = np.abs(drv) <=20
         peak_2 = np.argmax(plotsnr_2[i, :] * valid_peaks)
 
         # If a valid peak was found, fit the Gaussian
@@ -1884,7 +1884,7 @@ def gaussian_fit_asymmetry(Kp, Kp_true, drv, species_label, planet_name, observa
     ax1.set_xlabel('$\Delta V$ (km/s)')
     ax1.set_xlim([-100,100])
 
-    snr_fit_asymmetry = 'plots/'+ planet_name + '.' + observation_epoch + '.' + arm + '.' + species_name_ccf + '.' + model_tag + '.' +phase_ranges + '.SNR-Gaussian-Asymmetry.pdf'
+    snr_fit_asymmetry = 'plots-argmax/'+ planet_name + '.' + observation_epoch + '.' + arm + '.' + species_name_ccf + '.' + model_tag + '.' +phase_ranges + '.SNR-Gaussian-Asymmetry.pdf'
     # Save the plot
     fig.savefig(snr_fit_asymmetry, dpi=300, bbox_inches='tight')
 
@@ -1923,7 +1923,7 @@ def make_shifted_plot(snr, planet_name, observation_epoch, arm, species_name_ccf
     if 'likelihood' in method:
         outtag, zlabel = 'likelihood-shifted', '$\Delta\ln \mathcal{L}$'
         plotsnr=snr - np.max(snr)
-    plotname = 'plots/'+ planet_name + '.' + observation_epoch + '.' + arm + '.' + species_name_ccf + model_tag + '.' + outtag + '.' + plotformat
+    plotname = 'plots-argmax/'+ planet_name + '.' + observation_epoch + '.' + arm + '.' + species_name_ccf + model_tag + '.' + outtag + '.' + plotformat
 
     if not do_inject_model:
         apoints = [unp.nominal_values(RV_abs), unp.nominal_values(Kp_expected)]
@@ -1955,7 +1955,7 @@ def make_shifted_plot(snr, planet_name, observation_epoch, arm, species_name_ccf
     drv_masked, plotsnr_masked = drv[mask], plotsnr[:, mask]
     # Fit a Gaussian to the line profile
     amps, amps_error, rv, rv_error, width, width_error, residual, do_molecfit, idx, line_profile, drv_restricted, plotsnr_restricted, residual_restricted, fig1, ax1, ax2, fig2, ax3 = gaussian_fit(Kp, Kp_true, drv, species_label, planet_name, observation_epoch, arm, species_name_ccf, model_tag, plotsnr, sigma_shifted_ccfs, temperature_profile, cross_cor_display, sigma_cross_cor, ccf_weights)
-    psarr(plotsnr_masked, drv_masked, Kp, '$RV - V_{sys}$ (km/s)', '$K_p$ (km/s)', zlabel, filename=plotname, ctable=ctable, alines=True, apoints=apoints, acolor='white', textstr=species_label+' '+model_label, textloc = np.array([apoints[0]-75.,apoints[1]+75.]), textcolor='black', fileformat=plotformat)
+    psarr(plotsnr_masked, drv_masked, Kp, '$\Delta V$ (km/s)', '$K_p$ (km/s)', zlabel, filename=plotname, ctable=ctable, alines=True, apoints=apoints, acolor='white', textstr=species_label+' '+model_label, textloc = np.array([apoints[0]-75.,apoints[1]+75.]), textcolor='black', fileformat=plotformat)
     fig, axs = pl.subplots(2, sharex=True)
     #c = axs[0].pcolor(drv, Kp, plotsnr, cmap=ctable)
     #axs[1].plot(drv, plotsnr)

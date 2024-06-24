@@ -355,7 +355,7 @@ def overlayArms(planet_name, temperature_profile, species_label, vmr, do_inject_
             ax2.plot(drv_restricted[arm], residual_restricted[arm], f'o{line_style}{color}', markersize=1)
                 
         # Consider a clearer naming scheme
-        overlay_fits = 'plots/'+ planet_name + '.' + observation_epoch + '.' + arm + '.' + species_label + '.line-profiles-overlaidarms.pdf'
+        overlay_fits = 'plots-argmax/'+ planet_name + '.' + observation_epoch + '.' + arm + '.' + species_label + '.line-profiles-overlaidarms.pdf'
         # Save the plot
         fig.savefig(overlay_fits, dpi=300, bbox_inches='tight')
         pl.close(fig)
@@ -429,7 +429,7 @@ def multiSpeciesCCF(planet_name, temperature_profile, species_dict, do_inject_mo
     cbar.set_label('SNR')
 
     # Save the plot
-    plotname = 'plots/' + planet_name + '.' + temperature_profile + '.CombinedRVs.pdf'
+    plotname = 'plots-argmax/' + planet_name + '.' + temperature_profile +'.'+ str(do_inject_model) +'.CombinedRVs.pdf'
     fig.savefig(plotname, dpi=300, bbox_inches='tight')
     pl.close(fig)
 
@@ -578,13 +578,13 @@ def combinedPhaseResolvedLineProfiles(planet_name, temperature_profile, species_
         ax.legend(custom_lines, [f'{species}' for species in line_profile.keys()])
 
     # Save the plot
-    plotname_combined = 'plots/' + planet_name + '.' + temperature_profile + '.CombinedWindCharacteristics_Combined.pdf'   
+    plotname_combined = 'plots-argmax/' + planet_name + '.' + temperature_profile + '.CombinedWindCharacteristics_Combined.pdf'   
     fig.savefig(plotname_combined, dpi=300, bbox_inches='tight')
     pl.close(fig)
 
     # Save the plot for each arm
     for arm in ['blue', 'red']:
-        plotname_arm = 'plots/' + planet_name + '.' + temperature_profile + f'.CombinedWindCharacteristics_{arm}.pdf'
+        plotname_arm = 'plots-argmax/' + planet_name + '.' + temperature_profile + f'.CombinedWindCharacteristics_{arm}.pdf'
         fig.savefig(plotname_arm, dpi=300, bbox_inches='tight')
         pl.close(fig)
 
@@ -729,7 +729,7 @@ def fastchem_plot(abundance_species):
     pl.ylim(1e-8, 1e0)
     pl.gca().invert_yaxis()
 
-    pl.savefig('plots/'+'PT-plots.pdf')  # Save the plot as a PDF
+    pl.savefig('plots-argmax/'+'PT-plots.pdf')  # Save the plot as a PDF
 
 
 def calculate_observability_score(instrument_here, opacities_all, opacities_without_species, wavelengths):
