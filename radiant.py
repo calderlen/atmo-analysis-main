@@ -686,11 +686,11 @@ def get_pepsi_data(arm, observation_epoch, planet_name, do_molecfit):
         if not do_molecfit:
             errorin[i,:]=np.sqrt(errorin[i,:])
             total_velocity = 0.0
-            #if planet_name == 'KELT-20b':
-            #    total_velocity = 3.2234 * 1000.
+            if planet_name == 'KELT-20b':
+                #total_velocity = 3.2234 * 1000.
 
-            #    doppler_shift = 1.0 / (1.0 - total_velocity / 1000. / ckms)
-                #wave[i,:] *= doppler_shift
+                doppler_shift = 1.0 / (1.0 - total_velocity / 1000. / ckms)
+                wave[i,:] *= doppler_shift
             
         if do_molecfit:
             wave[i,:]*=10000. #microns -> Angstroms
@@ -735,7 +735,6 @@ def get_pepsi_data(arm, observation_epoch, planet_name, do_molecfit):
                 total_velocity += hdu[0].header['SSBVEL']
                 
         #if planet_name == 'KELT-20b': total_velocity += 3.2234 * 1000.
-        if planet_name == 'KELT-20b': total_velocity += 0.
         if planet_name == 'TOI-1431b': total_velocity += 24.903 * 1000.
         if planet_name == 'TOI-1518b': total_velocity += 11.170 * 1000.
         
@@ -796,7 +795,6 @@ def get_pepsi_data(arm, observation_epoch, planet_name, do_molecfit):
     #    underestimate_factor = np.nanmedian(error_estimated[i,10:npix-10]/errorin[i,10:npix-10])
     #    errorin[i,:] *= underestimate_factor
 
-    
     return wave, fluxin, errorin, jd, snr_spectra, exptime, airmass, n_spectra, npix
 
 def get_orbital_phase(jd, epoch, Period, RA, Dec):
@@ -1383,7 +1381,7 @@ def combine_ccfs_binned(drv, cross_cor, sigma_cross_cor, orbital_phase, n_spectr
         #if not 'transmission' in temperature_profile or np.abs(orbital_phase[j]) <= half_duration_phase:
         if np.abs(orbital_phase[j]) <= half_duration_phase:
             phase_here = np.argmin(np.abs(phase_bin - orbital_phase[j]))
-            
+            #breakpoint()
             temp_ccf = np.interp(drv, drv-RV[j], cross_cor[j, :], left=0., right=0.0)
             sigma_temp_ccf = np.interp(drv, drv-RV[j], sigma_cross_cor[j, :], left=0., right=0.0)
             binned_ccfs[phase_here,:] += temp_ccf * ccf_weights[j]
@@ -1415,7 +1413,7 @@ def combine_ccfs_binned(drv, cross_cor, sigma_cross_cor, orbital_phase, n_spectr
 
     pl.xlabel('$\Delta V$ (km/s)')
     pl.ylabel('orbital phase')
-    pl.savefig('plots-argmax/'+planet_name+'.'+species_name_ccf + '.' + arm + '.phase-binned.pdf', format='pdf')
+    pl.savefig('plots/'+planet_name+'.'+species_name_ccf + '.' + arm + '.phase-binned.pdf', format='pdf')
     pl.clf()
 
     rvs, widths, rverrors, widtherrors = np.zeros(nphase), np.zeros(nphase), np.zeros(nphase), np.zeros(nphase)
@@ -1423,7 +1421,7 @@ def combine_ccfs_binned(drv, cross_cor, sigma_cross_cor, orbital_phase, n_spectr
     ccffit = binned_ccfs[:,good]
     sigmafit = sigma_shifted_ccfs[:,good]
 
-    pp = PdfPages('plots-argmax/'+planet_name+'.'+species_name_ccf+ '.' + arm +'.phase-binned-RV-fits.pdf')
+    pp = PdfPages('plots/'+planet_name+'.'+species_name_ccf+ '.' + arm +'.phase-binned-RV-fits.pdf')
 
     for i in range (0, nphase):
         pl.subplot(3, 3, np.mod(i, 9)+1)
@@ -1477,7 +1475,7 @@ def combine_ccfs_binned(drv, cross_cor, sigma_cross_cor, orbital_phase, n_spectr
     fig.colorbar(c, ax=ax, label='SNR ($\sigma$)')
 
     
-    pl.savefig('plots-argmax/'+planet_name+'.'+species_name_ccf+ '.' + arm +'.phase-binned+RVs.pdf', format='pdf')
+    pl.savefig('plots/'+planet_name+'.'+species_name_ccf+ '.' + arm +'.phase-binned+RVs.pdf', format='pdf')
     pl.clf()
     
     Kp = np.arange(50, 350, 1)
@@ -1541,7 +1539,7 @@ def combine_ccfs_binned(drv, cross_cor, sigma_cross_cor, orbital_phase, n_spectr
     # add a vertical line at 0km/s
     #ax1.axvline(x=0, color='black', linestyle='--', alpha=0.5)
 
-    line_profile = 'plots-argmax/' + planet_name + '.' + 'combined' + '.' + 'combined' + '.' + species_name_ccf + '.line-profile-binned.pdf'
+    line_profile = 'plots/' + planet_name + '.' + 'combined' + '.' + 'combined' + '.' + species_name_ccf + '.line-profile-binned.pdf'
     fig.savefig(line_profile, dpi=300, bbox_inches='tight')
     pl.close(fig)
 
@@ -1696,13 +1694,13 @@ def gaussian_fit(Kp, Kp_true, drv, species_label, planet_name, observation_epoch
     ax2.set_ylabel('Residuals')
 
     # Consider a clearer naming scheme
-    snr_fit = 'plots-argmax/'+ planet_name + '.' + observation_epoch + '.' + arm + '.' + species_name_ccf + model_tag + '.SNR-Gaussian.pdf'
+    snr_fit = 'plots/'+ planet_name + '.' + observation_epoch + '.' + arm + '.' + species_name_ccf + model_tag + '.SNR-Gaussian.pdf'
     # Save the plot
     fig1.savefig(snr_fit, dpi=300, bbox_inches='tight')
     pl.close(fig1)
 
     # Line Profile plot
-    idx = np.where(Kp == int(np.floor(Kp_true)))[0][0] #Kp slice corresponding to expected Kp
+    #idx = np.where(Kp == int(np.floor(Kp_true)))[0][0] #Kp slice corresponding to expected Kp
     idx = np.argmax(slice_peak) #Kp slice corresponding to max SNR
 
     Kp = np.arange(50, 350, 1)
@@ -1744,7 +1742,7 @@ def gaussian_fit(Kp, Kp_true, drv, species_label, planet_name, observation_epoch
     # add a vertical line at 0km/s
     ax3.axvline(x=0, color='black', linestyle='--', alpha=0.5)
     
-    line_profile = 'plots-argmax/' + planet_name + '.' + observation_epoch + '.' + arm + '.' + species_name_ccf + model_tag + '.line-profile.pdf'
+    line_profile = 'plots/' + planet_name + '.' + observation_epoch + '.' + arm + '.' + species_name_ccf + model_tag + '.line-profile.pdf'
     fig2.savefig(line_profile, dpi=300, bbox_inches='tight')
 
     pl.close(fig2)
@@ -1884,7 +1882,7 @@ def gaussian_fit_asymmetry(Kp, Kp_true, drv, species_label, planet_name, observa
     ax1.set_xlabel('$\Delta V$ (km/s)')
     ax1.set_xlim([-100,100])
 
-    snr_fit_asymmetry = 'plots-argmax/'+ planet_name + '.' + observation_epoch + '.' + arm + '.' + species_name_ccf + '.' + model_tag + '.' +phase_ranges + '.SNR-Gaussian-Asymmetry.pdf'
+    snr_fit_asymmetry = 'plots/'+ planet_name + '.' + observation_epoch + '.' + arm + '.' + species_name_ccf + '.' + model_tag + '.' +phase_ranges + '.SNR-Gaussian-Asymmetry.pdf'
     # Save the plot
     fig.savefig(snr_fit_asymmetry, dpi=300, bbox_inches='tight')
 
@@ -1923,7 +1921,7 @@ def make_shifted_plot(snr, planet_name, observation_epoch, arm, species_name_ccf
     if 'likelihood' in method:
         outtag, zlabel = 'likelihood-shifted', '$\Delta\ln \mathcal{L}$'
         plotsnr=snr - np.max(snr)
-    plotname = 'plots-argmax/'+ planet_name + '.' + observation_epoch + '.' + arm + '.' + species_name_ccf + model_tag + '.' + outtag + '.' + plotformat
+    plotname = 'plots/'+ planet_name + '.' + observation_epoch + '.' + arm + '.' + species_name_ccf + model_tag + '.' + outtag + '.' + plotformat
 
     if not do_inject_model:
         apoints = [unp.nominal_values(RV_abs), unp.nominal_values(Kp_expected)]
@@ -1960,8 +1958,9 @@ def make_shifted_plot(snr, planet_name, observation_epoch, arm, species_name_ccf
     #c = axs[0].pcolor(drv, Kp, plotsnr, cmap=ctable)
     #axs[1].plot(drv, plotsnr)
     #pl.show()
-
+    #breakpoint()
     return plotsnr, amps, amps_error, rv, rv_error, width, width_error, idx, drv_restricted, plotsnr_restricted, residual_restricted, pl
+    
 
 def make_shifted_plot_asymmetry(snr_1, snr_2, planet_name, observation_epoch, arm, species_name_ccf, model_tag, RV_abs, Kp_expected, V_sys_true, Kp_true, do_inject_model, drv, Kp, species_label, temperature_profile, sigma_shifted_ccfs_1, sigma_shifted_ccfs_2, method, cross_cor_display, sigma_cross_cor, ccf_weights, phase_ranges, plotformat = 'pdf'):
     

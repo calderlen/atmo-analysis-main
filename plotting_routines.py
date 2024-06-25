@@ -299,7 +299,7 @@ def overlayArms(planet_name, temperature_profile, species_label, vmr, do_inject_
     
     drv_restricted, plotsnr_restricted, residual_restricted = {}, {}, {}
     arms = ['blue', 'red']
-    fit_params, observation_epochs,_ = run_all_ccfs(planet_name, temperature_profile, species_label, vmr, do_inject_model, do_run_all, do_make_new_model, method, phase_ranges)
+    fit_params, ccf_parameters, observation_epochs,_ = run_all_ccfs(planet_name, temperature_profile, species_label, vmr, do_inject_model, do_run_all, do_make_new_model, method, phase_ranges)
 
     for arm in arms:
         for observation_epoch in observation_epochs:
@@ -316,7 +316,7 @@ def overlayArms(planet_name, temperature_profile, species_label, vmr, do_inject_
     plotsnr_restricted['combined'] = fit_params[species_label]['combined']['combined']['plotsnr_restricted']
     residual_restricted['combined'] = fit_params[species_label]['combined']['combined']['residual_restricted']
 
-    new_arms = ['blue', 'red', 'combined']
+    all_arms = ['blue', 'red', 'combined']
         
 #Check if drv_restricteds are the same
     if np.array_equal(drv_restricted['blue'], drv_restricted['red']) and np.array_equal(drv_restricted['red'], drv_restricted['combined']):        
@@ -348,7 +348,7 @@ def overlayArms(planet_name, temperature_profile, species_label, vmr, do_inject_
             'combined': '-'
         }
 
-        for arm in new_arms:
+        for arm in all_arms:
             color = color_map[arm]
             line_style = line_style_map[arm]
             ax1.plot(drv_restricted[arm], plotsnr_restricted[arm], f'o{line_style}{color}', label='data', markersize=2)
@@ -376,8 +376,7 @@ def multiSpeciesCCF(planet_name, temperature_profile, species_dict, do_inject_mo
         vmr = params.get('vmr')
         arm = str(params.get('arm'))
 
-        species_name_ccf = get_species_label(species_label)
-        fit_params, observation_epochs, plotsnr_restricted = run_all_ccfs(planet_name, temperature_profile, species_label, vmr, do_inject_model, do_run_all, do_make_new_model, method, phase_ranges)
+        fit_params, ccf_params, observation_epochs, plotsnr_restricted = run_all_ccfs(planet_name, temperature_profile, species_label, vmr, do_inject_model, do_run_all, do_make_new_model, method, phase_ranges)
         
         if arm != 'combined':
             selected_idx = fit_params[species_label][observation_epoch][arm]['selected_idx']
@@ -458,7 +457,7 @@ def combinedPhaseResolvedLineProfiles(planet_name, temperature_profile, species_
     # Loop through each species
     for species_label, params in species_dict.items():
         vmr = params['vmr']
-        amps, amps_error, rv, rv_error, width, width_error, selected_idx, orbital_phase, fit_params, observation_epochs, plotsnr_restricted = run_all_ccfs(planet_name, temperature_profile, species_label, vmr, do_inject_model, do_run_all, do_make_new_model, method)
+        amps, amps_error, rv, rv_error, width, width_error, selected_idx, orbital_phase, fit_params, ccf_parameters, observation_epochs, plotsnr_restricted = run_all_ccfs(planet_name, temperature_profile, species_label, vmr, do_inject_model, do_run_all, do_make_new_model, method)
 
         # Initialize 'combined' key for each species
         if species_label not in line_profile:
@@ -876,3 +875,201 @@ def generate_observability_table(planet_name, temperature_profile, instrument, s
             writer.writerow([species, score])
     p = plotter(filename ,cmap='magma',extended=False, log_scale=False)
     export_png(p, filename='plots/observability_scores.pdf', webdriver=webdriver.Chrome())
+
+
+
+
+def phaseResolvedBinnedVelocities(planet_name, temperature_profile, species_dict, do_inject_model, do_run_all, do_make_new_model, method, phase_ranges='halves'):
+
+    #if 'Fe' in species_name_ccf or 'Fe+' in species_name_ccf:
+    #    binsize = 0.015
+    #else:
+    #    binsize = 0.05
+    cross_cor_display, sigma_cross_cor, ccf_weights, sigma_shifted_ccfs = {}, {}, {}, {}
+    orbital_phases = {}
+    orbital_phase = {}
+    binsize, phase_bin, drv, binned_ccfs, var_shifted_ccfs = {}, {}, {}, {}, {}
+    RV, RVe, RVdiff = {}, {}, {}
+    nphase, nv = {}, {}
+    drvfit, ccffit, sigmafit = {}, {}, {}
+    rvs, widths, rverrors, widtherrors = {}, {}, {}, {}
+
+    Period, epoch, M_star, RV_abs, i, M_p, R_p, RA, Dec, Kp_expected, half_duration_phase, Ks_expected = get_planet_parameters(planet_name)
+
+    Kp_here = unp.nominal_values(Kp_expected)
+
+    arms = ['blue', 'red', 'combined']
+   
+    for species_label, params in species_dict.items():
+        vmr = params.get('vmr')
+    
+        fit_params, ccf_parameters, observation_epochs, plotsnr_restricted = run_all_ccfs(planet_name, temperature_profile, species_label, vmr, do_inject_model, do_run_all, do_make_new_model, method, phase_ranges)
+
+
+        if species_label not in orbital_phases:
+            orbital_phases[species_label] = {}
+            cross_cor_display[species_label] = {}
+            cross_cor_display[species_label] = {}
+            sigma_cross_cor[species_label] = {}
+            ccf_weights[species_label] = {}
+            sigma_shifted_ccfs[species_label] = {}
+            drv[species_label] = {}
+
+
+        for arm in arms:
+
+            if arm not in orbital_phases[species_label]:
+                orbital_phases[species_label][arm] = {}
+
+            for observation_epoch in observation_epochs:   
+                # This function only works with a single observation epoch! FIX THIS!
+                    
+                if observation_epoch not in cross_cor_display[species_label]:  
+                    cross_cor_display[species_label][observation_epoch] = {}
+                    cross_cor_display[species_label][observation_epoch][arm] = {}
+                    sigma_cross_cor[species_label][observation_epoch] = {}
+                    sigma_cross_cor[species_label][observation_epoch][arm] = {}
+                    ccf_weights[species_label][observation_epoch] = {}
+                    ccf_weights[species_label][observation_epoch][arm] = {}
+                    sigma_shifted_ccfs[species_label][observation_epoch] = {}
+                    sigma_shifted_ccfs[species_label][observation_epoch][arm] = {}
+                    drv[species_label][observation_epoch] = {}
+                    drv[species_label][observation_epoch][arm] = {}
+
+                # This function only works with a single observation epoch! FIX THIS!
+                if arm != 'combined':
+                    orbital_phases[species_label][arm] = fit_params[species_label][observation_epoch][arm]['orbital_phase']
+                    cross_cor_display[species_label][observation_epoch][arm] = ccf_parameters[species_label][observation_epoch][arm]['cross_cor_display']
+                    sigma_cross_cor[species_label][observation_epoch][arm] = ccf_parameters[species_label][observation_epoch][arm]['sigma_cross_cor']
+                    ccf_weights[species_label][observation_epoch][arm] = ccf_parameters[species_label][observation_epoch][arm]['ccf_weights']
+                    sigma_shifted_ccfs[species_label][observation_epoch][arm] = ccf_parameters[species_label][observation_epoch][arm]['sigma_shifted_ccfs']
+                    drv[species_label][observation_epoch][arm] = fit_params[species_label][observation_epoch][arm]['drv_restricted']
+                else:
+                    orbital_phases[species_label][arm] = fit_params[species_label]['combined']['combined']['orbital_phase']
+                    cross_cor_display[species_label][observation_epoch][arm] = ccf_parameters[species_label]['combined']['combined']['cross_cor_display']
+                    sigma_cross_cor[species_label][observation_epoch][arm] = ccf_parameters[species_label]['combined']['combined']['sigma_cross_cor']
+                    ccf_weights[species_label][observation_epoch][arm] = ccf_parameters[species_label]['combined']['combined']['ccf_weights']
+                    sigma_shifted_ccfs[species_label][observation_epoch][arm] = ccf_parameters[species_label]['combined']['combined']['sigma_shifted_ccfs']
+                    drv[species_label][observation_epoch][arm] = fit_params[species_label]['combined']['combined']['drv_restricted']
+
+
+    #no  Check if drv arrays are the same for all arms. FIX!
+    # no Check if each orbital phase is the same for common arms of each species. FIX!
+    # no Check if the number of spectra is the same for all arms. FIX!
+
+
+    for species_label, params in species_dict.items():
+        for observation_epoch in observation_epochs:
+            for arm in arms:
+                if arm not in nphase:
+                    nphase[arm], nv[arm], phase_bin[arm], binsize[arm], orbital_phase[arm] = {}, {}, {}, {}, {}
+                    
+                if species_label not in binned_ccfs:
+                    binned_ccfs[species_label] = {}
+                    binned_ccfs[species_label][observation_epoch] = {}
+                    binned_ccfs[species_label][observation_epoch][arm] = {}
+                    var_shifted_ccfs[species_label] = {}
+                    var_shifted_ccfs[species_label][observation_epoch] = {}
+                    var_shifted_ccfs[species_label][observation_epoch][arm] = {}
+
+                    orbital_phase[arm] = orbital_phases[species_label][arm]
+                    binsize[arm] = (np.max(orbital_phase[arm]) - np.min(orbital_phase[arm]))/len(orbital_phase[arm])*3
+                    phase_bin[arm] = np.arange(np.min(orbital_phase[arm]), np.max(orbital_phase[arm]), binsize[arm])
+                    breakpoint()
+                    nphase[arm], nv[arm] = len(phase_bin[arm]), len(drv[species_label][observation_epoch][arm])
+                    #shifted_ccfs, var_shifted_ccfs = np.zeros((nKp, nv)), np.zeros((nKp, nv))
+                    binned_ccfs[species_label][observation_epoch][arm], var_shifted_ccfs[species_label][observation_epoch][arm] = np.zeros((nphase[arm], nv[arm])), np.zeros((nphase[arm], nv[arm]))
+                    
+                    i = 0
+                    RV[arm] = Kp_here*np.sin(2.*np.pi*orbital_phase[arm])
+                    breakpoint()
+                    for j in range(len(orbital_phase[arm])):
+                        #restrict to only in-transit spectra if doing transmission:
+                        #also want to leave out observations in 2ndary eclipse!
+
+                        breakpoint()
+                        if not 'transmission' in temperature_profile or np.abs(orbital_phase[arm][j]) <= half_duration_phase or np.abs(orbital_phase[arm][j]-0.5) >= half_duration_phase:
+                            phase_here = np.argmin(np.abs(phase_bin[arm] - orbital_phase[arm][j]))
+                            temp_ccf = np.interp(drv[species_label][observation_epoch][arm], drv[species_label][observation_epoch][arm]-RV[arm][j], cross_cor_display[species_label][observation_epoch][arm][j, :], left=0., right=0.0)
+                            sigma_temp_ccf = np.interp(drv[species_label][observation_epoch][arm], drv[species_label][observation_epoch][arm]-RV[arm][j], sigma_cross_cor[species_label][observation_epoch][arm][j, :], left=0., right=0.0)
+                            binned_ccfs[species_label][observation_epoch][arm][phase_here,:] += temp_ccf * ccf_weights[species_label][observation_epoch][arm][j]
+                            use_for_sigma = (np.abs(drv[species_label][observation_epoch][arm]) > 100.) & (temp_ccf != 0.)
+                            var_shifted_ccfs[species_label][arm][observation_epoch][phase_here,:] += np.std(temp_ccf[use_for_sigma])**2 * ccf_weights[species_label][observation_epoch][arm][j]**2
+                        i+=1
+                    sigma_shifted_ccfs[species_label][observation_epoch][arm] = np.sqrt(var_shifted_ccfs[species_label][observation_epoch][arm])
+                breakpoint()
+                if planet_name == 'KELT-20b':
+                    ecc = 0.019999438851877625#0.0037 + 0.010 * 3.0 #rough 3-sigma limit
+                    omega = 309.2455607770675#151.
+
+                    ftransit=np.pi/2.-omega*np.pi/180.#-np.pi #true anomaly at transit
+                    Etransit=2.*np.arctan(np.sqrt((1.-ecc)/(1.+ecc))*np.tan(ftransit/2.)) #eccentric anomaly at transit
+                    timesince=1.0/(2.*np.pi)*(Etransit-ecc*np.sin(Etransit)) #time since periastron to transit
+                    RVe[arm] = radvel.kepler.rv_drive(orbital_phase[arm], np.array([1.0, 0.0-timesince, ecc, omega*np.pi/180.-np.pi, Kp_here]))
+
+                    RVdiff[arm] = RVe[arm] - RV[arm]
+                    order = np.argsort(orbital_phase[arm])
+
+                    good = np.abs(drv[species_label][observation_epoch][arm]) < 25.
+
+    colors = ['red', 'blue', 'green', 'purple', 'orange', 'brown', 'pink', 'grey', 'olive', 'cyan']
+    species_colors = {species: colors[i % len(colors)] for i, species in enumerate(species_dict.keys())} 
+    
+    for arm in arms:
+        for observation_epoch in observation_epochs:
+
+            #pl.plot([0.,0.],[np.min(phase_bin[arm]), np.max(phase_bin[arm])],':',color='white')
+            #pl.plot(RVdiff[arm][order], orbital_phase[arm][order], '--', color='white')
+
+            fig, ax = pl.subplots(layout='constrained', figsize=(10,8))
+            ax.plot([0.,0.],[np.min(phase_bin[arm]), np.max(phase_bin[arm])],':',color='grey')
+
+            for species_label in species_dict.keys():
+
+                if species_label not in rvs:
+                    rvs[species_label] = {}
+                    widths[species_label] = {}
+                    rverrors[species_label] = {}
+                    widtherrors[species_label] = {}
+                if arm not in rvs[species_label]:
+                    rvs[species_label][arm] = {}
+                    widths[species_label][arm] = {}
+                    rverrors[species_label][arm] = {}
+                    widtherrors[species_label][arm] = {}
+
+                species_color = species_colors[species_label]
+
+                rvs[species_label][arm], widths[species_label][arm], rverrors[species_label][arm], widtherrors[species_label][arm] = np.zeros(nphase), np.zeros(nphase), np.zeros(nphase), np.zeros(nphase)
+                
+                drvfit[arm] = drv[species_label][observation_epoch][arm][good]
+                ccffit[species_label][arm] = binned_ccfs[species_label][observation_epoch][arm][:,good]
+                sigmafit[species_label][arm] = sigma_shifted_ccfs[species_label][observation_epoch][arm][:,good]
+                
+                for i in range(0,nphase[arm]):
+                    peak = np.argmax(ccffit[i,:])
+                    popt, pcov = curve_fit(gaussian, drvfit, ccffit[i,:], p0=[ccffit[i,peak], drvfit[peak], 2.5], sigma = sigmafit[i,:], maxfev=1000000)
+
+                    rvs[species_label][arm][i] = popt[1]
+                    widths[species_label][arm][i] = popt[2]
+                    rverrors[species_label][arm][i] = np.sqrt(pcov[1,1])
+                    widtherrors[species_label][arm][i] = np.sqrt(pcov[2,2])
+
+                species_name_ccf = get_species_keys(species_label)[1]
+
+                use_for_snr = np.abs(drv[species_label][observation_epoch][arm] > 100.)
+                snr = binned_ccfs[species_label][observation_epoch][arm] / np.std(binned_ccfs[species_label][observation_epoch][arm][:,use_for_snr])
+                masked_snr = np.ma.masked_where(snr <= 3, snr)
+
+                goodrv = (rvs > 0.) & (rvs < 25.)
+
+                ax.plot(rvs[species_label][arm][goodrv], phase_bin[arm][goodrv], 'o', color=species_color)
+                ax.errorbar(rvs[species_label][arm][goodrv], phase_bin[arm][goodrv], xerr = rverrors[species_label][arm][goodrv], color=species_color, fmt='none')
+
+
+        pl.xlabel('$\Delta V$ (km/s)')
+        pl.ylabel('Orbital Phase (fraction)')
+        ax.set_xlim([-25.,25.])
+        secax = ax.secondary_yaxis('right', functions=(phase2angle, angle2phase))
+        secax.set_ylabel('Orbital Phase (degrees)')
+        pl.savefig('plots/'+planet_name+'.' + arm +'.phase-binned+RVs-overlaid.pdf', format='pdf')
+        pl.clf()

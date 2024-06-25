@@ -15,7 +15,6 @@ species_dict = {
     'Ti II' : {'vmr' : 5.63e-9, 'arm':'blue'}}
 
 species_dict_temp = {
-    'Mg I' : {'vmr' : 6.08e-5, 'arm':'blue'},
     'Fe I' : {'vmr' : 4.95e-5, 'arm':'combined'},
     'Fe II' : {'vmr' : 4.95e-5, 'arm':'combined'}}
 
@@ -91,11 +90,12 @@ species_dict_final = {
 
 #multiSpeciesCCF('KELT-20b', 'inverted-transmission-better', species_dict_final, False, True, True, 'ccf')
 
-for species_label, species_params in species_dict_full.items():
-    vmr = species_params['vmr']
-    #overlayArms('KELT-20b', 'inverted-transmission-better', species_label, vmr, False, True, True, 'ccf')
-    overlayArms('KELT-20b', 'inverted-transmission-better', species_label, vmr, False, True, True, 'ccf', 'ingress-egress')
+#for species_label, species_params in species_dict_final.items():
+#    vmr = species_params['vmr']
+#    #overlayArms('KELT-20b', 'inverted-transmission-better', species_label, vmr, False, True, True, 'ccf')
+#    overlayArms('KELT-20b', 'inverted-transmission-better', species_label, vmr, False, True, True, 'ccf', 'halves')
 
+phaseResolvedBinnedVelocities('KELT-20b', 'inverted-transmission-better', species_dict_temp, False, True, True, 'ccf', phase_ranges='halves')
     
 #species_dict = dict(sorted(species_dict.items(), key=lambda item: item[1]['vmr'], reverse=True))
 #make_spectrum_plots(species_dict_final)
