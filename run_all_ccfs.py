@@ -380,6 +380,7 @@ def run_all_ccfs(planet_name, temperature_profile, species_label, vmr, do_inject
                     'width_error': width_error,
                     'selected_idx': selected_idx,
                     'orbital_phase': orbital_phase,
+                    'drv': drv,
                     'drv_restricted': drv_restricted,
                     'plotsnr_restricted': plotsnr_restricted,
                     'residual_restricted': residual_restricted
@@ -412,6 +413,7 @@ def run_all_ccfs(planet_name, temperature_profile, species_label, vmr, do_inject
         'width_error': width_error,
         'selected_idx': selected_idx,
         'orbital_phase': orbital_phase,
+        'drv': drv,
         'drv_restricted': drv_restricted,
         'plotsnr_restricted': plotsnr_restricted,
         'residual_restricted': residual_restricted
@@ -435,5 +437,5 @@ def run_all_ccfs(planet_name, temperature_profile, species_label, vmr, do_inject
     
     np.save('data_products/' + planet_name + '.' + observation_epoch + '.' + species_label + '.' + 'fit_params.npy', fit_params)
  
- 
+    breakpoint()
     return fit_params, ccf_parameters, observation_epochs, plotsnr_restricted 

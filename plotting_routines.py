@@ -943,14 +943,14 @@ def phaseResolvedBinnedVelocities(planet_name, temperature_profile, species_dict
                     sigma_cross_cor[species_label][observation_epoch][arm] = ccf_parameters[species_label][observation_epoch][arm]['sigma_cross_cor']
                     ccf_weights[species_label][observation_epoch][arm] = ccf_parameters[species_label][observation_epoch][arm]['ccf_weights']
                     sigma_shifted_ccfs[species_label][observation_epoch][arm] = ccf_parameters[species_label][observation_epoch][arm]['sigma_shifted_ccfs']
-                    drv[species_label][observation_epoch][arm] = fit_params[species_label][observation_epoch][arm]['drv_restricted']
+                    drv[species_label][observation_epoch][arm] = fit_params[species_label][observation_epoch][arm]['drv']
                 else:
                     orbital_phases[species_label][arm] = fit_params[species_label]['combined']['combined']['orbital_phase']
                     cross_cor_display[species_label][observation_epoch][arm] = ccf_parameters[species_label]['combined']['combined']['cross_cor_display']
                     sigma_cross_cor[species_label][observation_epoch][arm] = ccf_parameters[species_label]['combined']['combined']['sigma_cross_cor']
                     ccf_weights[species_label][observation_epoch][arm] = ccf_parameters[species_label]['combined']['combined']['ccf_weights']
                     sigma_shifted_ccfs[species_label][observation_epoch][arm] = ccf_parameters[species_label]['combined']['combined']['sigma_shifted_ccfs']
-                    drv[species_label][observation_epoch][arm] = fit_params[species_label]['combined']['combined']['drv_restricted']
+                    drv[species_label][observation_epoch][arm] = fit_params[species_label]['combined']['combined']['drv']
 
 
     #no  Check if drv arrays are the same for all arms. FIX!
@@ -972,32 +972,31 @@ def phaseResolvedBinnedVelocities(planet_name, temperature_profile, species_dict
                     var_shifted_ccfs[species_label][observation_epoch] = {}
                     var_shifted_ccfs[species_label][observation_epoch][arm] = {}
 
-                    orbital_phase[arm] = orbital_phases[species_label][arm]
-                    binsize[arm] = (np.max(orbital_phase[arm]) - np.min(orbital_phase[arm]))/len(orbital_phase[arm])*3
-                    phase_bin[arm] = np.arange(np.min(orbital_phase[arm]), np.max(orbital_phase[arm]), binsize[arm])
-                    breakpoint()
-                    nphase[arm], nv[arm] = len(phase_bin[arm]), len(drv[species_label][observation_epoch][arm])
-                    #shifted_ccfs, var_shifted_ccfs = np.zeros((nKp, nv)), np.zeros((nKp, nv))
-                    binned_ccfs[species_label][observation_epoch][arm], var_shifted_ccfs[species_label][observation_epoch][arm] = np.zeros((nphase[arm], nv[arm])), np.zeros((nphase[arm], nv[arm]))
-                    
-                    i = 0
-                    RV[arm] = Kp_here*np.sin(2.*np.pi*orbital_phase[arm])
-                    breakpoint()
-                    for j in range(len(orbital_phase[arm])):
-                        #restrict to only in-transit spectra if doing transmission:
-                        #also want to leave out observations in 2ndary eclipse!
+                orbital_phase[arm] = orbital_phases[species_label][arm]
+                binsize[arm] = (np.max(orbital_phase[arm]) - np.min(orbital_phase[arm]))/len(orbital_phase[arm])*3
+                phase_bin[arm] = np.arange(np.min(orbital_phase[arm]), np.max(orbital_phase[arm]), binsize[arm])
+                nphase[arm], nv[arm] = len(phase_bin[arm]), len(drv[species_label][observation_epoch][arm])
+                #shifted_ccfs, var_shifted_ccfs = np.zeros((nKp, nv)), np.zeros((nKp, nv))
+                binned_ccfs[species_label][observation_epoch][arm], var_shifted_ccfs[species_label][observation_epoch][arm] = np.zeros((nphase[arm], nv[arm])), np.zeros((nphase[arm], nv[arm]))
+                
+                i = 0
+                RV[arm] = Kp_here*np.sin(2.*np.pi*orbital_phase[arm])
+                for j in range(len(orbital_phase[arm])-1):
+                    #restrict to only in-transit spectra if doing transmission:
+                    #also want to leave out observations in 2ndary eclipse!
 
+                    #breakpoint()
+                    if not 'transmission' in temperature_profile or np.abs(orbital_phase[arm][j]) <= half_duration_phase or np.abs(orbital_phase[arm][j]-0.5) >= half_duration_phase:
+                        phase_here = np.argmin(np.abs(phase_bin[arm] - orbital_phase[arm][j]))
                         breakpoint()
-                        if not 'transmission' in temperature_profile or np.abs(orbital_phase[arm][j]) <= half_duration_phase or np.abs(orbital_phase[arm][j]-0.5) >= half_duration_phase:
-                            phase_here = np.argmin(np.abs(phase_bin[arm] - orbital_phase[arm][j]))
-                            temp_ccf = np.interp(drv[species_label][observation_epoch][arm], drv[species_label][observation_epoch][arm]-RV[arm][j], cross_cor_display[species_label][observation_epoch][arm][j, :], left=0., right=0.0)
-                            sigma_temp_ccf = np.interp(drv[species_label][observation_epoch][arm], drv[species_label][observation_epoch][arm]-RV[arm][j], sigma_cross_cor[species_label][observation_epoch][arm][j, :], left=0., right=0.0)
-                            binned_ccfs[species_label][observation_epoch][arm][phase_here,:] += temp_ccf * ccf_weights[species_label][observation_epoch][arm][j]
-                            use_for_sigma = (np.abs(drv[species_label][observation_epoch][arm]) > 100.) & (temp_ccf != 0.)
-                            var_shifted_ccfs[species_label][arm][observation_epoch][phase_here,:] += np.std(temp_ccf[use_for_sigma])**2 * ccf_weights[species_label][observation_epoch][arm][j]**2
-                        i+=1
+                        temp_ccf = np.interp(drv[species_label][observation_epoch][arm], drv[species_label][observation_epoch][arm]-RV[arm][j], cross_cor_display[species_label][observation_epoch][arm][j, :], left=0., right=0.0)
+                        sigma_temp_ccf = np.interp(drv[species_label][observation_epoch][arm], drv[species_label][observation_epoch][arm]-RV[arm][j], sigma_cross_cor[species_label][observation_epoch][arm][j, :], left=0., right=0.0)
+                        binned_ccfs[species_label][observation_epoch][arm][phase_here,:] += temp_ccf * ccf_weights[species_label][observation_epoch][arm][j]
+                        use_for_sigma = (np.abs(drv[species_label][observation_epoch][arm]) > 100.) & (temp_ccf != 0.)
+                        var_shifted_ccfs[species_label][observation_epoch][arm][phase_here,:] += np.std(temp_ccf[use_for_sigma])**2 * ccf_weights[species_label][observation_epoch][arm][j]**2
+                    i+=1
                     sigma_shifted_ccfs[species_label][observation_epoch][arm] = np.sqrt(var_shifted_ccfs[species_label][observation_epoch][arm])
-                breakpoint()
+                #breakpoint()
                 if planet_name == 'KELT-20b':
                     ecc = 0.019999438851877625#0.0037 + 0.010 * 3.0 #rough 3-sigma limit
                     omega = 309.2455607770675#151.
