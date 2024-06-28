@@ -219,7 +219,6 @@ def combine_observations(observation_epochs, arms, planet_name, temperature_prof
 
             cross_cor_2 = np.load(ccf_file_2)
             orbital_phase_2 = np.load(ccf_file_2+'.phase.npy')
-            
 
             if method == 'ccf':
                 #I don't think the below is right, this is just for display purposes for now
@@ -227,7 +226,6 @@ def combine_observations(observation_epochs, arms, planet_name, temperature_prof
                     cross_cor_2[i,:]-=np.mean(cross_cor_2[i,:])
                     cross_cor_2[i,:]/=np.std(cross_cor_2[i,:])
 
-            
             if j == 0:
                 cross_cor, orbital_phase = cross_cor_2, orbital_phase_2
                 if method == 'ccf':
@@ -254,7 +252,6 @@ def combine_observations(observation_epochs, arms, planet_name, temperature_prof
         drv_original = drv[:]
         
         snr, Kp, drv, cross_cor_display, sigma_shifted_ccfs, ccf_weights = combine_ccfs(drv, cross_cor, sigma_cross_cor, orbital_phase, len(orbital_phase), ccf_weights, half_duration_phase, temperature_profile)
-
 
         ind = np.unravel_index(np.argmax(snr, axis=None), snr.shape)
         Kp_best, drv_best = Kp[ind[0]], drv[ind[1]]
@@ -289,8 +286,8 @@ def combine_observations(observation_epochs, arms, planet_name, temperature_prof
 
     get_peak_snr(snr, drv, Kp, do_inject_model, V_sys_true, Kp_true, RV_abs, Kp_expected, which_arms, all_epochs, f, method)
     #breakpoint()
-    
-    return Kp_true, orbital_phase, plotsnr, amps, amps_error, rv, rv_error, width, width_error, selected_idx, drv_restricted, plotsnr_restricted, residual_restricted
+
+    return Kp_true, orbital_phase, plotsnr, amps, amps_error, rv, rv_error, width, width_error, selected_idx, drv_restricted, plotsnr_restricted, residual_restricted, cross_cor, sigma_cross_cor, ccf_weights, cross_cor_display
 
 def run_all_ccfs(planet_name, temperature_profile, species_label, vmr, do_inject_model, do_run_all, do_make_new_model, method, phase_ranges='halves'):
 
@@ -323,8 +320,6 @@ def run_all_ccfs(planet_name, temperature_profile, species_label, vmr, do_inject
         if planet_name == 'TOI-1431b': observation_epochs = ['20231023']
         if planet_name == 'TOI-1518b': observation_epochs = ['20231106'] #, '20240114']
         
-
-
     if species_label == 'FeH' or species_label == 'CrH':
         arms = ['red']
     elif species_label == 'CaH':
@@ -365,7 +360,6 @@ def run_all_ccfs(planet_name, temperature_profile, species_label, vmr, do_inject
                 print('Now running the ',arm,' data for ',observation_epoch)
                 Kp, Kp_true, drv, species_label, planet_name, observation_epoch, arm, species_name_ccf, model_tag, plotsnr, cross_cor_display, sigma_cross_cor, orbital_phase, n_spectra, ccf_weights, half_duration_phase, temperature_profile, sigma_shifted_ccfs, amps, amps_error, rv, rv_error, width, width_error, selected_idx, drv_restricted, plotsnr_restricted, residual_restricted = run_one_ccf(species_label, vmr, arm, observation_epoch, template_wave, template_flux, template_wave_in, template_flux_in, planet_name, temperature_profile, do_inject_model, species_name_ccf, model_tag, f, method, do_make_new_model, phase_ranges)
 
-
                # Ensure observation_epoch key is initialized in fit_params[species_label]
                 if observation_epoch not in fit_params[species_label]:
                     fit_params[species_label][observation_epoch] = {}
@@ -401,8 +395,8 @@ def run_all_ccfs(planet_name, temperature_profile, species_label, vmr, do_inject
     
     Period, epoch, M_star, RV_abs, i, M_p, R_p, RA, Dec, Kp_expected, half_duration_phase, Ks_expected = get_planet_parameters(planet_name)
     
-    Kp_true, orbital_phase, plotsnr, amps, amps_error, rv, rv_error, width, width_error, selected_idx, drv_restricted, plotsnr_restricted, residual_restricted = combine_observations(observation_epochs, arms, planet_name, temperature_profile, species_label, species_name_ccf, model_tag, RV_abs, Kp_expected, do_inject_model, f, method, phase_ranges)
-
+    Kp_true, orbital_phase, plotsnr, amps, amps_error, rv, rv_error, width, width_error, selected_idx, drv_restricted, plotsnr_restricted, residual_restricted, cross_cor, sigma_cross_cor, ccf_weights, cross_cor_display = combine_observations(observation_epochs, arms, planet_name, temperature_profile, species_label, species_name_ccf, model_tag, RV_abs, Kp_expected, do_inject_model, f, method, phase_ranges)
+    
     fit_params[species_label]['combined'] = {}
     fit_params[species_label]['combined']['combined'] = {
         'amps': amps,
@@ -436,6 +430,4 @@ def run_all_ccfs(planet_name, temperature_profile, species_label, vmr, do_inject
     f.close()
     
     np.save('data_products/' + planet_name + '.' + observation_epoch + '.' + species_label + '.' + 'fit_params.npy', fit_params)
- 
-    breakpoint()
     return fit_params, ccf_parameters, observation_epochs, plotsnr_restricted 

@@ -1279,6 +1279,7 @@ def combine_ccfs(drv, cross_cor, sigma_cross_cor, orbital_phase, n_spectra, ccf_
     snr = shifted_ccfs / np.std(shifted_ccfs[:,use_for_snr])
     return snr, Kp, drv, cross_cor, sigma_shifted_ccfs, ccf_weights
 
+
 def combine_ccfs_asymmetry(drv, cross_cor, sigma_cross_cor, orbital_phase, n_spectra, ccf_weights, half_duration_phase, temperature_profile, phase_ranges):
 
     Kp = np.arange(50, 350, 1)
@@ -1622,7 +1623,7 @@ def gaussian_fit(Kp, Kp_true, drv, species_label, planet_name, observation_epoch
             
 
     idx = np.flatnonzero(Kp == int(np.floor(Kp_true)))[0] #Kp slice corresponding to expected Kp
-    idx = np.argmax(slice_peak) #Kp slice corresponding to max SNR 
+    idx = np.argmax(slice_peak) #Kp slice corresponding to max SNR within the valid range
                 
     popt_selected = [amps[idx], rv[idx], width[idx]]
     print('Selected SNR:', amps[idx], '$/pm$', amps_error[idx],

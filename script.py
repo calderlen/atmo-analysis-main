@@ -16,7 +16,7 @@ species_dict = {
 
 species_dict_temp = {
     'Fe I' : {'vmr' : 4.95e-5, 'arm':'combined'},
-    'Fe II' : {'vmr' : 4.95e-5, 'arm':'combined'}}
+    'Fe II' : {'vmr' : 4.946571802411902e-05, 'arm':'combined'}}
 
 species_dict_full = {
     'Al I' : {'vmr' : 6.284450120736337e-07, 'arm':'blue'},
@@ -90,10 +90,10 @@ species_dict_final = {
 
 #multiSpeciesCCF('KELT-20b', 'inverted-transmission-better', species_dict_final, False, True, True, 'ccf')
 
-#for species_label, species_params in species_dict_final.items():
+#for species_label, species_params in species_dict_temp.items():
 #    vmr = species_params['vmr']
 #    #overlayArms('KELT-20b', 'inverted-transmission-better', species_label, vmr, False, True, True, 'ccf')
-#    overlayArms('KELT-20b', 'inverted-transmission-better', species_label, vmr, False, True, True, 'ccf', 'halves')
+#    overlayArms('KELT-20b', 'inverted-transmission-better', species_label, vmr, False, True, True, 'ccf', 'ingress-egress')
 
 phaseResolvedBinnedVelocities('KELT-20b', 'inverted-transmission-better', species_dict_temp, False, True, True, 'ccf', phase_ranges='halves')
     
@@ -101,4 +101,4 @@ phaseResolvedBinnedVelocities('KELT-20b', 'inverted-transmission-better', specie
 #make_spectrum_plots(species_dict_final)
 
 
-#generate_observability_table('KELT-20b','inverted-transmission-better', 'PEPSI', species_dict_full, 'guillot')
+#generate_observability_table('KELT-20b','inverted-transmission-better', 'PEPSI', species_dict_full, 'guillot')6
