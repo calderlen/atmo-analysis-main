@@ -1,5 +1,5 @@
 from plotting_routines import *
-
+#from run_all_ccfs_old import *
 
 species_dict = {
     'Mg I' : {'vmr' : 6.08e-5, 'arm':'blue'},
@@ -15,14 +15,14 @@ species_dict = {
     'Ti II' : {'vmr' : 5.63e-9, 'arm':'blue'}}
 
 species_dict_temp = {
-    'Mg I' : {'vmr' : 6.08e-5, 'arm':'blue'},
     'Fe I' : {'vmr' : 4.95e-5, 'arm':'combined'},
-    'Fe II' : {'vmr' : 4.95e-5, 'arm':'combined'}}
+    'Fe II' : {'vmr' : 4.946571802411902e-05, 'arm':'combined'}}
 
 species_dict_full = {
     'Al I' : {'vmr' : 6.284450120736337e-07, 'arm':'blue'},
     'B I' : {'vmr' : 8.601920308199416e-10, 'arm':'blue'},
     'Ba I' : {'vmr' : 3.195916432382493e-10, 'arm':'blue'},
+    'Ba II' : {'vmr' : 3.195916432382493e-10, 'arm':'blue'},
     'Be I' : {'vmr' : 4.117137911265462e-11, 'arm':'blue'},
     'Ca I' : {'vmr' : 2.4587155473819153e-06, 'arm':'blue'},
     'Ca II' : {'vmr' : 2.4587155473819153e-06, 'arm':'blue'},
@@ -78,22 +78,27 @@ species_dict_final = {
     'Fe I' : {'vmr' : 4.946571802411902e-05, 'arm':'combined'},
     'Fe II' : {'vmr' : 4.946571802411902e-05, 'arm':'combined'},
     'Mg I' : {'vmr' : 6.081422083824978e-05, 'arm':'blue'},
-    'Na I' : {'vmr' : 2.8215497643996917e-06, 'arm':'red'}
+    'Na I' : {'vmr' : 2.8215497643996917e-06, 'arm':'blue'}
 }
 
-species_dict_final = dict(sorted(species_dict_final.items(), key=lambda item: item[1]['vmr'], reverse=True))
+#species_dict_final = dict(sorted(species_dict_final.items(), key=lambda item: item[1]['vmr'], reverse=True))
                     
 #Make plot stacking all of the synthetic transmission spectra for appendix
-multiSpeciesCCF('KELT-20b', 'inverted-transmission-better', species_dict_final, False, True, True, 'ccf', 'ingress-egress')
+#multiSpeciesCCF('KELT-20b', 'inverted-transmission-better', species_dict_final, False, True, True, 'ccf', 'ingress-egress')
 #multiSpeciesCCF('KELT-20b', 'inverted-transmission-better', species_dict_full, False, True, True, 'ccf', 'halves')
+#multiSpeciesCCF('KELT-20b', 'inverted-transmission-better', species_dict_full, True, True, True, 'ccf', 'halves')
 
-#for species_label, species_params in species_dict_final.items():
-#   vmr = species_params['vmr']
-#   overlayArms('KELT-20b', 'inverted-transmission-better', species_label, vmr, False, True, True, 'ccf', 'halves')
+#multiSpeciesCCF('KELT-20b', 'inverted-transmission-better', species_dict_final, False, True, True, 'ccf')
 
+#for species_label, species_params in species_dict_temp.items():
+#    vmr = species_params['vmr']
+#    #overlayArms('KELT-20b', 'inverted-transmission-better', species_label, vmr, False, True, True, 'ccf')
+#    overlayArms('KELT-20b', 'inverted-transmission-better', species_label, vmr, False, True, True, 'ccf', 'ingress-egress')
+
+phaseResolvedBinnedVelocities('KELT-20b', 'inverted-transmission-better', species_dict_temp, False, True, True, 'ccf', phase_ranges='halves')
     
 #species_dict = dict(sorted(species_dict.items(), key=lambda item: item[1]['vmr'], reverse=True))
 #make_spectrum_plots(species_dict_final)
 
 
-#generate_observability_table('KELT-20b','inverted-transmission-better', 'PEPSI', species_dict_full, 'guillot')
+#generate_observability_table('KELT-20b','inverted-transmission-better', 'PEPSI', species_dict_full, 'guillot')6

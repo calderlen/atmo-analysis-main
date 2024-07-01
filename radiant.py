@@ -435,8 +435,10 @@ def get_planet_parameters(planet_name):
 
     if planet_name == 'KELT-20b':
         #For KELT-20 b:, from Lund et al. 2018
-        Period = ufloat(3.4741070, 0.0000019)
-        epoch = ufloat(2457503.120049, 0.000190)
+        Period = ufloat(3.4741070, 0.0000019) # Lund et al. 2017
+        #Period = ufloat(3.4741085, 0.0000019) # Lund et al. 2017
+        epoch = ufloat(2457503.120049, 0.000190) #Lund et al. 2017
+        #epoch = ufloat(2457485.74965, 0.000190) #Lund et al. 2017
 
         M_star = ufloat(1.76, 0.19) #MSun
         RV_abs = ufloat(0.0, 0.0) #km/s
@@ -447,7 +449,7 @@ def get_planet_parameters(planet_name):
         RA = '19h38m38.74s'
         Dec = '+31d13m09.12s'
 
-        dur = 0.14898 #hours -> days
+        dur = 0.14898 #d, Lund et al. 2017
 
         Ks_expected = 0.0
         
@@ -601,10 +603,6 @@ def get_planet_parameters(planet_name):
         Period = ufloat(1.902603, 0.000011) #days
         epoch = ufloat(2458787.049255, 0.000094) #BJD_TDB
 
-        #this is the updated ephemeris from Alison
-        Period = ufloat(1.9026055, 0.0000066) #days
-        epoch = ufloat(2459854.41433, 0.00012) #BJD_TDB
-
         M_star = ufloat(1.79, 0.26) #MSun
         RV_abs = ufloat(0.0, 0.0) #km/s
         i = ufloat(77.84, 0.26) #degrees
@@ -688,11 +686,11 @@ def get_pepsi_data(arm, observation_epoch, planet_name, do_molecfit):
         if not do_molecfit:
             errorin[i,:]=np.sqrt(errorin[i,:])
             total_velocity = 0.0
-            #if planet_name == 'KELT-20b':
-            #    total_velocity = 3.2234 * 1000.
+            if planet_name == 'KELT-20b':
+                #total_velocity = 3.2234 * 1000.
 
-            #    doppler_shift = 1.0 / (1.0 - total_velocity / 1000. / ckms)
-                #wave[i,:] *= doppler_shift
+                doppler_shift = 1.0 / (1.0 - total_velocity / 1000. / ckms)
+                wave[i,:] *= doppler_shift
             
         if do_molecfit:
             wave[i,:]*=10000. #microns -> Angstroms
@@ -736,7 +734,7 @@ def get_pepsi_data(arm, observation_epoch, planet_name, do_molecfit):
             if any('SSBVEL' in s for s in hdu[0].header):
                 total_velocity += hdu[0].header['SSBVEL']
                 
-        if planet_name == 'KELT-20b': total_velocity += 3.2234 * 1000.
+        #if planet_name == 'KELT-20b': total_velocity += 3.2234 * 1000.
         if planet_name == 'TOI-1431b': total_velocity += 24.903 * 1000.
         if planet_name == 'TOI-1518b': total_velocity += 11.170 * 1000.
         
@@ -797,7 +795,6 @@ def get_pepsi_data(arm, observation_epoch, planet_name, do_molecfit):
     #    underestimate_factor = np.nanmedian(error_estimated[i,10:npix-10]/errorin[i,10:npix-10])
     #    errorin[i,:] *= underestimate_factor
 
-    
     return wave, fluxin, errorin, jd, snr_spectra, exptime, airmass, n_spectra, npix
 
 def get_orbital_phase(jd, epoch, Period, RA, Dec):
@@ -1282,6 +1279,7 @@ def combine_ccfs(drv, cross_cor, sigma_cross_cor, orbital_phase, n_spectra, ccf_
     snr = shifted_ccfs / np.std(shifted_ccfs[:,use_for_snr])
     return snr, Kp, drv, cross_cor, sigma_shifted_ccfs, ccf_weights
 
+
 def combine_ccfs_asymmetry(drv, cross_cor, sigma_cross_cor, orbital_phase, n_spectra, ccf_weights, half_duration_phase, temperature_profile, phase_ranges):
 
     Kp = np.arange(50, 350, 1)
@@ -1320,8 +1318,8 @@ def combine_ccfs_asymmetry(drv, cross_cor, sigma_cross_cor, orbital_phase, n_spe
         RV_2 = Kp_i*np.sin(2.*np.pi*orbital_phase_2)
         for k in range(len(orbital_phase_2)):
             #if not 'transmission' in temperature_profile or np.abs(orbital_phase_2[j]) <= half_duration_phase or np.abs(orbital_phase_2[k]-0.5) >= half_duration_phase:
-                temp_ccf_2 = np.interp(drv, drv-RV_2[k], cross_cor[j,:], left=0., right=0.0)
-                sigma_temp_ccf_2 = np.interp(drv, drv-RV_2[k], sigma_cross_cor[j,:], left=0., right=0.0)
+                temp_ccf_2 = np.interp(drv, drv-RV_2[k], cross_cor[k,:], left=0., right=0.0)
+                sigma_temp_ccf_2 = np.interp(drv, drv-RV_2[k], sigma_cross_cor[k,:], left=0., right=0.0)
                 shifted_ccfs_2[i,:] += temp_ccf_2 * ccf_weights[k]
                 var_shifted_ccfs_2[i,:] += sigma_temp_ccf_2**2 * ccf_weights[k]**2
 
@@ -1384,7 +1382,7 @@ def combine_ccfs_binned(drv, cross_cor, sigma_cross_cor, orbital_phase, n_spectr
         #if not 'transmission' in temperature_profile or np.abs(orbital_phase[j]) <= half_duration_phase:
         if np.abs(orbital_phase[j]) <= half_duration_phase:
             phase_here = np.argmin(np.abs(phase_bin - orbital_phase[j]))
-            
+            #breakpoint()
             temp_ccf = np.interp(drv, drv-RV[j], cross_cor[j, :], left=0., right=0.0)
             sigma_temp_ccf = np.interp(drv, drv-RV[j], sigma_cross_cor[j, :], left=0., right=0.0)
             binned_ccfs[phase_here,:] += temp_ccf * ccf_weights[j]
@@ -1411,7 +1409,7 @@ def combine_ccfs_binned(drv, cross_cor, sigma_cross_cor, orbital_phase, n_spectr
     good = np.abs(drv) < 25.
     c = pl.pcolor(drv[good], phase_bin, binned_ccfs[:,good], edgecolors='none',rasterized=True, cmap='magma_r')
     pl.plot([0.,0.],[np.min(phase_bin), np.max(phase_bin)],':',color='white')
-    #pl.plot(RVdiff[order], orbital_phase[order], '--', color='white')
+    pl.plot(RVdiff[order], orbital_phase[order], '--', color='white')
     pl.colorbar(c)
 
     pl.xlabel('$\Delta V$ (km/s)')
@@ -1489,11 +1487,25 @@ def combine_ccfs_binned(drv, cross_cor, sigma_cross_cor, orbital_phase, n_spectr
     phase_array = np.linspace(np.min(orbital_phase), np.max(orbital_phase), num=n_spectra)   
     slice_peak_chars = np.zeros(len(Kp))
 
+
+
+    if planet_name == 'KELT-20b':
+        ecc = 0.019999438851877625#0.0037 + 0.010 * 3.0 #rough 3-sigma limit
+        omega = 309.2455607770675#151.
+
+        ftransit=np.pi/2.-omega*np.pi/180.#-np.pi #true anomaly at transit
+        Etransit=2.*np.arctan(np.sqrt((1.-ecc)/(1.+ecc))*np.tan(ftransit/2.)) #eccentric anomaly at transit
+        timesince=1.0/(2.*np.pi)*(Etransit-ecc*np.sin(Etransit)) #time since periastron to transit
+        RVe = radvel.kepler.rv_drive(orbital_phase, np.array([1.0, 0.0-timesince, ecc, omega*np.pi/180.-np.pi, Kp_here])) 
+        
+    RV_diff = np.zeros(n_spectra)
+
     i = 0
     for Kp_i in Kp:
         RV = Kp_i*np.sin(2.*np.pi*orbital_phase)
-        
+
         for j in range(n_spectra):
+            
             #restrict to only in-transit spectra if doing transmission:
             #also want to leave out observations in 2ndary eclipse!
             phase_here = np.argmin(np.abs(phase_array - orbital_phase[j]))
@@ -1505,9 +1517,16 @@ def combine_ccfs_binned(drv, cross_cor, sigma_cross_cor, orbital_phase, n_spectr
             popt, pcov = curve_fit(gaussian, drv, temp_ccf, p0=[temp_ccf[peak], drv[peak], 2.5], sigma = np.sqrt(sigma_temp_ccf), maxfev=1000000)
             rv_chars[i,phase_here] = popt[1]
             rv_chars_error[i,phase_here] = np.sqrt(pcov[1,1])
+            RVdiff[phase_here] = RVe[phase_here] - RV[phase_here]
             slice_peak_chars[i] = temp_ccf[peak]
         i+=1
 
+
+    good = np.abs(drv) < 25.
+    c = pl.pcolor(drv[good], phase_bin, binned_ccfs[:,good], edgecolors='none',rasterized=True, cmap='magma_r')
+    pl.plot([0.,0.],[np.min(phase_bin), np.max(phase_bin)],':',color='white')
+    pl.plot(RVdiff[order], orbital_phase[order], '--', color='white')
+    pl.colorbar(c)
     fig, ax1 = pl.subplots(figsize=(8,8))
 
     ax1.text(0.05, 0.99, species_name_ccf, transform=ax1.transAxes, verticalalignment='top', horizontalalignment='left', fontsize=12)
@@ -1604,7 +1623,7 @@ def gaussian_fit(Kp, Kp_true, drv, species_label, planet_name, observation_epoch
             
 
     idx = np.flatnonzero(Kp == int(np.floor(Kp_true)))[0] #Kp slice corresponding to expected Kp
-    idx = np.argmax(slice_peak) #Kp slice corresponding to max SNR 
+    idx = np.argmax(slice_peak) #Kp slice corresponding to max SNR within the valid range
                 
     popt_selected = [amps[idx], rv[idx], width[idx]]
     print('Selected SNR:', amps[idx], '$/pm$', amps_error[idx],
@@ -1682,7 +1701,8 @@ def gaussian_fit(Kp, Kp_true, drv, species_label, planet_name, observation_epoch
     pl.close(fig1)
 
     # Line Profile plot
-    idx = np.where(Kp == int(np.floor(Kp_true)))[0][0] #Kp slice corresponding to expected Kp
+    #idx = np.where(Kp == int(np.floor(Kp_true)))[0][0] #Kp slice corresponding to expected Kp
+    idx = np.argmax(slice_peak) #Kp slice corresponding to max SNR
 
     Kp = np.arange(50, 350, 1)
     rv_chars, rv_chars_error = np.zeros((len(Kp), n_spectra)), np.zeros((len(Kp), n_spectra))
@@ -1771,7 +1791,7 @@ def gaussian_fit_asymmetry(Kp, Kp_true, drv, species_label, planet_name, observa
     # Fitting gaussian to all 1D Kp slices
     for i in Kp_valid:
         # Get the index of the peak with the maximum value within the desired range
-        valid_peaks = np.abs(drv) <= 15
+        valid_peaks = np.abs(drv) <= 20
         peak_1 = np.argmax(plotsnr_1[i, :] * valid_peaks)
 
         # If a valid peak was found, fit the Gaussian
@@ -1799,7 +1819,7 @@ def gaussian_fit_asymmetry(Kp, Kp_true, drv, species_label, planet_name, observa
 
     for i in Kp_valid:
         # Get the index of the peak with the maximum value within the desired range
-        valid_peaks = np.abs(drv) <=50
+        valid_peaks = np.abs(drv) <=20
         peak_2 = np.argmax(plotsnr_2[i, :] * valid_peaks)
 
         # If a valid peak was found, fit the Gaussian
@@ -1934,13 +1954,14 @@ def make_shifted_plot(snr, planet_name, observation_epoch, arm, species_name_ccf
     drv_masked, plotsnr_masked = drv[mask], plotsnr[:, mask]
     # Fit a Gaussian to the line profile
     amps, amps_error, rv, rv_error, width, width_error, residual, do_molecfit, idx, line_profile, drv_restricted, plotsnr_restricted, residual_restricted, fig1, ax1, ax2, fig2, ax3 = gaussian_fit(Kp, Kp_true, drv, species_label, planet_name, observation_epoch, arm, species_name_ccf, model_tag, plotsnr, sigma_shifted_ccfs, temperature_profile, cross_cor_display, sigma_cross_cor, ccf_weights)
-    psarr(plotsnr_masked, drv_masked, Kp, '$RV - V_{sys}$ (km/s)', '$K_p$ (km/s)', zlabel, filename=plotname, ctable=ctable, alines=True, apoints=apoints, acolor='white', textstr=species_label+' '+model_label, textloc = np.array([apoints[0]-75.,apoints[1]+75.]), textcolor='black', fileformat=plotformat)
+    psarr(plotsnr_masked, drv_masked, Kp, '$\Delta V$ (km/s)', '$K_p$ (km/s)', zlabel, filename=plotname, ctable=ctable, alines=True, apoints=apoints, acolor='white', textstr=species_label+' '+model_label, textloc = np.array([apoints[0]-75.,apoints[1]+75.]), textcolor='black', fileformat=plotformat)
     fig, axs = pl.subplots(2, sharex=True)
     #c = axs[0].pcolor(drv, Kp, plotsnr, cmap=ctable)
     #axs[1].plot(drv, plotsnr)
     #pl.show()
-
+    #breakpoint()
     return plotsnr, amps, amps_error, rv, rv_error, width, width_error, idx, drv_restricted, plotsnr_restricted, residual_restricted, pl
+    
 
 def make_shifted_plot_asymmetry(snr_1, snr_2, planet_name, observation_epoch, arm, species_name_ccf, model_tag, RV_abs, Kp_expected, V_sys_true, Kp_true, do_inject_model, drv, Kp, species_label, temperature_profile, sigma_shifted_ccfs_1, sigma_shifted_ccfs_2, method, cross_cor_display, sigma_cross_cor, ccf_weights, phase_ranges, plotformat = 'pdf'):
     
