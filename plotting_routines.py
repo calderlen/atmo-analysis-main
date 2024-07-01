@@ -988,7 +988,7 @@ def phaseResolvedBinnedVelocities(planet_name, temperature_profile, species_dict
 
                     RVdiff[arm] = RVe[arm] - RV[species_label][arm]
                     order = np.argsort(orbital_phases[species_label][arm])
-                    good[species_label][arm][observation_epoch] = np.abs(drv[species_label][arm][observation_epoch]) < 25.
+                    good[species_label][arm][observation_epoch] = np.abs(drv[species_label][arm][observation_epoch]) < 10.
 
                     RV[species_label][arm] = RV[species_label][arm][order]
                     orbital_phases[species_label][arm] = orbital_phases[species_label][arm][order]
@@ -1078,19 +1078,22 @@ def phaseResolvedBinnedVelocities(planet_name, temperature_profile, species_dict
                 snr[species_label][arm] = binned_ccfs[species_label][arm][observation_epoch] / np.std(binned_ccfs[species_label][arm][observation_epoch][:,use_for_snr])
         
 
-
-
     for species_label in species_dict.keys():
-        ax.plot([0.,0.],[np.min(phase_bin[arm]), np.max(phase_bin[arm])],':',color='white')
-        breakpoint()
-        ax.plot(rvs[species_label]['combined']['combined'], phase_bin[arm], 'o', color=species_colors[species_label])
-        ax.errorbar(rvs[species_label]['combined']['combined'], phase_bin[arm], xerr = rverrors[species_label][arm][observation_epoch], color=species_colors[species_label], fmt='none') 
+        for arm in arms:
+            for observation_epoch in observation_epochs:
+                if arm == 'combined':
+                    observation_epoch = 'combined'
+                    
+                ax.plot([0.,0.],[np.min(phase_bin[arm]), np.max(phase_bin[arm])],':',color='white')
+                ax.plot(rvs[species_label]['combined']['combined'], phase_bin[arm], 'o', color=species_colors[species_label])
+                ax.errorbar(rvs[species_label]['combined']['combined'], phase_bin[arm], xerr = rverrors[species_label][arm][observation_epoch], color=species_colors[species_label], fmt='none') 
 
-        pl.xlabel('$\Delta V$ (km/s)')
-        pl.ylabel('Orbital Phase (fraction)')
-        #pl.legend(fontsize='small')
-        ax.set_xlim([-25.,25.])
-        secax = ax.secondary_yaxis('right', functions=(phase2angle, angle2phase))
-        secax.set_ylabel('Orbital Phase (degrees)')
-        pl.savefig('plots/'+planet_name+'.' + observation_epoch + '.' + arm +'.phase-binned+RVs-overlaid.pdf', format='pdf')
-    pl.clf()
+                pl.xlabel('$\Delta V$ (km/s)')
+                pl.ylabel('Orbital Phase (fraction)')
+                ax.set_xlim([-25.,25.])
+                secax = ax.secondary_yaxis('right', functions=(phase2angle, angle2phase))
+                secax.set_ylabel('Orbital Phase (degrees)')
+                pl.legend()
+                pl.savefig('plots/'+planet_name+'.' + observation_epoch + '.' + arm +'.phase-binned+RVs-overlaid.pdf', format='pdf')
+            pl.clf()
+            

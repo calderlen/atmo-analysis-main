@@ -23,9 +23,9 @@ def make_alias(instrument="PEPSI", planet_name="KELT-20b", spectrum_type="transm
     """
     #make the models for the two species of interest
 
-    template_wave_1, template_flux_1 = make_new_model(instrument, spec_one, vmr_one, spectrum_type, planet_name, temperature_profile, do_plot=True)
+    template_wave_1, template_flux_1,_, _, _ = make_new_model(instrument, spec_one, vmr_one, spectrum_type, planet_name, temperature_profile, do_plot=True)
 
-    template_wave_2, template_flux_2 = make_new_model(instrument, spec_two, vmr_two, spectrum_type, planet_name, temperature_profile, do_plot=True)
+    template_wave_2, template_flux_2, _, _, _ = make_new_model(instrument, spec_two, vmr_two, spectrum_type, planet_name, temperature_profile, do_plot=True)
 
     #load in the orbital phase of the data
 
@@ -67,7 +67,7 @@ def make_alias(instrument="PEPSI", planet_name="KELT-20b", spectrum_type="transm
 
     snr, Kp, drv, cross_cor, sigma_shifted_ccfs, ccf_weights = combine_ccfs(drv, cross_cor, sigma_cross_cor, orbital_phase, n_spectra, np.ones_like(orbital_phase), half_duration_phase, temperature_profile)
     
-    plotsnr, amps, amps_error, rv, rv_error, width, width_error, idx, drv_restricted, plotsnr_restricted, residual_restricted, pl = make_shifted_plot(snr, planet_name, observation_epoch, arm, spec_two + 'ACF', model_tag, RV_abs, Kp_expected, V_sys_true, Kp_true, False, drv, Kp,  spec_two + 'ACF', temperature_profile, sigma_shifted_ccfs, 'ccf', cross_cor, sigma_cross_cor, ccf_weights, plotformat = 'pdf')
+    plotsnr, amps, amps_error, rv, rv_error, width, width_error, idx, drv_restricted, plotsnr_restricted, residual_restricted, pl = make_shifted_plot(snr, planet_name, observation_epoch, arm, spec_one+spec_two + 'ACF', model_tag, RV_abs, Kp_expected, V_sys_true, Kp_true, False, drv, Kp,  spec_one + spec_two + 'ACF', temperature_profile, sigma_shifted_ccfs, 'ccf', cross_cor, sigma_cross_cor, ccf_weights, plotformat = 'pdf')
     
     keep = Kp == np.round(unp.nominal_values(Kp_expected))
     ccf_1d = snr[keep,:]

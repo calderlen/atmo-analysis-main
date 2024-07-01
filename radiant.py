@@ -1456,7 +1456,7 @@ def combine_ccfs_binned(drv, cross_cor, sigma_cross_cor, orbital_phase, n_spectr
     c = ax.pcolor(drv[good], phase_bin, snr[:,good], edgecolors='none',rasterized=True, cmap='viridis_r')
     ax.plot([0.,0.],[np.min(phase_bin), np.max(phase_bin)],':',color='grey')
 
-    goodrv = (rvs > 0.) & (rvs < 25.)
+    goodrv = (rvs > -10.) & (rvs < 10.)
     ax.plot(rvs[goodrv], phase_bin[goodrv], 'o', color='white')
     ax.errorbar(rvs[goodrv], phase_bin[goodrv], xerr = rverrors[goodrv], color='white', fmt='none')
 
@@ -1522,7 +1522,7 @@ def combine_ccfs_binned(drv, cross_cor, sigma_cross_cor, orbital_phase, n_spectr
         i+=1
 
 
-    good = np.abs(drv) < 25.
+    good = np.abs(drv) < 10.
     c = pl.pcolor(drv[good], phase_bin, binned_ccfs[:,good], edgecolors='none',rasterized=True, cmap='magma_r')
     pl.plot([0.,0.],[np.min(phase_bin), np.max(phase_bin)],':',color='white')
     pl.plot(RVdiff[order], orbital_phase[order], '--', color='white')

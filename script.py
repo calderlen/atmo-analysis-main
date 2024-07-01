@@ -22,7 +22,7 @@ species_dict_full = {
     'Al I' : {'vmr' : 6.284450120736337e-07, 'arm':'blue'},
     'B I' : {'vmr' : 8.601920308199416e-10, 'arm':'blue'},
     'Ba I' : {'vmr' : 3.195916432382493e-10, 'arm':'blue'},
-    'Ba II' : {'vmr' : 3.195916432382493e-10, 'arm':'blue'},
+    #'Ba II' : {'vmr' : 3.195916432382493e-10, 'arm':'blue'},
     'Be I' : {'vmr' : 4.117137911265462e-11, 'arm':'blue'},
     'Ca I' : {'vmr' : 2.4587155473819153e-06, 'arm':'blue'},
     'Ca II' : {'vmr' : 2.4587155473819153e-06, 'arm':'blue'},
@@ -95,7 +95,7 @@ species_dict_final = {
 #    #overlayArms('KELT-20b', 'inverted-transmission-better', species_label, vmr, False, True, True, 'ccf')
 #    overlayArms('KELT-20b', 'inverted-transmission-better', species_label, vmr, False, True, True, 'ccf', 'ingress-egress')
 
-phaseResolvedBinnedVelocities('KELT-20b', 'inverted-transmission-better', species_dict_temp, False, True, True, 'ccf', phase_ranges='halves')
+phaseResolvedBinnedVelocities('KELT-20b', 'inverted-transmission-better', species_dict_full, False, True, True, 'ccf', phase_ranges='halves')
     
 #species_dict = dict(sorted(species_dict.items(), key=lambda item: item[1]['vmr'], reverse=True))
 #make_spectrum_plots(species_dict_final)
