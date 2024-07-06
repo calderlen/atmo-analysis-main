@@ -1382,7 +1382,6 @@ def combine_ccfs_binned(drv, cross_cor, sigma_cross_cor, orbital_phase, n_spectr
         #if not 'transmission' in temperature_profile or np.abs(orbital_phase[j]) <= half_duration_phase:
         if np.abs(orbital_phase[j]) <= half_duration_phase:
             phase_here = np.argmin(np.abs(phase_bin - orbital_phase[j]))
-            #breakpoint()
             temp_ccf = np.interp(drv, drv-RV[j], cross_cor[j, :], left=0., right=0.0)
             sigma_temp_ccf = np.interp(drv, drv-RV[j], sigma_cross_cor[j, :], left=0., right=0.0)
             binned_ccfs[phase_here,:] += temp_ccf * ccf_weights[j]
@@ -1673,7 +1672,7 @@ def gaussian_fit(Kp, Kp_true, drv, species_label, planet_name, observation_epoch
     ax1.text(0.15, 0.95, arm_species_text, transform=ax1.transAxes, verticalalignment='top', fontsize=10)
 
     # Vertical line for the Gaussian peak center
-    ax1.axvline(x=rv[idx], color='b', linestyle='-', label='Center')
+    ax1.axvline(x=rv[idx], color='k', linestyle='-', label='Center', linewidth=0.66)
     #ax1.set_title('1D CCF Slice + Gaussian Fit')
 
     # Vertical lines for sigma width (center ± sigma)
@@ -1685,10 +1684,10 @@ def gaussian_fit(Kp, Kp_true, drv, species_label, planet_name, observation_epoch
     #ax1.legend()
 
     # Add the horizontal line at 4 SNR
-    ax1.axhline(y=4, color='g', linestyle='--', label=r'4 $\sigma$')    
+    ax1.axhline(y=4, color='g', linestyle='--', label=r'4 $\sigma$', linewidth=0.66)    
 
     # Inset for residuals (ax2)
-    ax2.plot(drv, residual, 'o-', markersize=1)
+    ax2.plot(drv, residual, 'o-', markersize=1, color='k')
     ax2.set_xlim([-100, 100])
 
     ax2.set_xlabel('$\Delta V$ (km/s)')
@@ -1805,8 +1804,7 @@ def gaussian_fit_asymmetry(Kp, Kp_true, drv, species_label, planet_name, observa
             width_1[i] = popt_1[2]
             amps_error_1[i] = np.sqrt(pcov_1[0,0])
             rv_error_1[i] = np.sqrt(pcov_1[1,1])
-            width_error_1[i] = np.sqrt(pcov_1[2,2
-                                              ])
+            width_error_1[i] = np.sqrt(pcov_1[2,2])
             fwhm_1[i] = 2*np.sqrt(2*np.log(2))*width_1[i]
             fwhm_error_1[i] = 2*np.sqrt(2*np.log(2))*width_error_1[i]
 
@@ -1959,7 +1957,6 @@ def make_shifted_plot(snr, planet_name, observation_epoch, arm, species_name_ccf
     #c = axs[0].pcolor(drv, Kp, plotsnr, cmap=ctable)
     #axs[1].plot(drv, plotsnr)
     #pl.show()
-    #breakpoint()
     return plotsnr, amps, amps_error, rv, rv_error, width, width_error, idx, drv_restricted, plotsnr_restricted, residual_restricted, pl
     
 

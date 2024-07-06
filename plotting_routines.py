@@ -879,7 +879,7 @@ def generate_observability_table(planet_name, temperature_profile, instrument, s
 
 
 
-def phaseResolvedBinnedVelocities(planet_name, temperature_profile, species_dict, do_inject_model, do_run_all, do_make_new_model, method, phase_ranges='halves'):
+def phaseResolvedBinnedVelocities(planet_name, temperature_profile, species_dict, do_inject_model, do_run_all, do_make_new_model, method, num_binned_obs=3, phase_ranges='halves'):
   
     if do_inject_model:
         model_tag = '.injected-'+str(vmr)
@@ -965,7 +965,7 @@ def phaseResolvedBinnedVelocities(planet_name, temperature_profile, species_dict
                 ccf_weights[species_label][arm][observation_epoch] = ccf_parameters[species_label][observation_epoch][arm]['ccf_weights']
                 sigma_shifted_ccfs[species_label][arm][observation_epoch] = ccf_parameters[species_label][observation_epoch][arm]['sigma_shifted_ccfs']
                 drv[species_label][arm][observation_epoch] = fit_params[species_label][observation_epoch][arm]['drv']
-                binsize = np.max(orbital_phases[species_label][arm] - np.min(orbital_phases[species_label][arm])) / len(orbital_phases[species_label][arm])*3
+                binsize = np.max(orbital_phases[species_label][arm] - np.min(orbital_phases[species_label][arm])) / len(orbital_phases[species_label][arm])*num_binned_obs
                 phase_bin[arm] = np.arange(np.min(orbital_phases[species_label][arm]), np.max(orbital_phases[species_label][arm]), binsize)
                 nphase[arm], nv[arm] = len(phase_bin[arm]), len(drv[species_label][arm][observation_epoch])
 
@@ -977,25 +977,12 @@ def phaseResolvedBinnedVelocities(planet_name, temperature_profile, species_dict
                 Kp_here = unp.nominal_values(Kp_expected)
                 RV[species_label][arm] = Kp_here*np.sin(2.*np.pi*orbital_phases[species_label][arm])
 
-                if planet_name == 'KELT-20b':
-                    ecc = 0.019999438851877625#0.0037 + 0.010 * 3.0 #rough 3-sigma limit
-                    omega = 309.2455607770675#151.
+                order = np.argsort(orbital_phases[species_label][arm])
+                good[species_label][arm][observation_epoch] = np.abs(drv[species_label][arm][observation_epoch]) < 10.
 
-                    ftransit=np.pi/2.-omega*np.pi/180.#-np.pi #true anomaly at transit
-                    Etransit=2.*np.arctan(np.sqrt((1.-ecc)/(1.+ecc))*np.tan(ftransit/2.)) #eccentric anomaly at transit
-                    timesince=1.0/(2.*np.pi)*(Etransit-ecc*np.sin(Etransit)) #time since periastron to transit
-                    RVe[arm] = radvel.kepler.rv_drive(orbital_phases[species_label][arm], np.array([1.0, 0.0-timesince, ecc, omega*np.pi/180.-np.pi, Kp_here]))
+                RV[species_label][arm] = RV[species_label][arm][order]
+                orbital_phases[species_label][arm] = orbital_phases[species_label][arm][order]
 
-                    RVdiff[arm] = RVe[arm] - RV[species_label][arm]
-                    order = np.argsort(orbital_phases[species_label][arm])
-                    good[species_label][arm][observation_epoch] = np.abs(drv[species_label][arm][observation_epoch]) < 10.
-
-                    RV[species_label][arm] = RV[species_label][arm][order]
-                    orbital_phases[species_label][arm] = orbital_phases[species_label][arm][order]
-
-
-                    
-                        
                 for x in range(len(orbital_phases[species_label][arm])):
                     #restrict to only in-transit spectra if doing transmission:
                     #print(orbital_phase[x])
@@ -1012,7 +999,8 @@ def phaseResolvedBinnedVelocities(planet_name, temperature_profile, species_dict
 
                 sigma_shifted_ccfs[species_label][arm][observation_epoch] = np.sqrt(var_shifted_ccfs[species_label][arm][observation_epoch])
 
-    fig, ax = pl.subplots(layout='constrained', figsize=(10,8))
+    
+
 
     # Initializing the first layer of the dictionaries
     rvs, widths, rverrors, widtherrors, snr = {}, {}, {}, {}, {}
@@ -1077,23 +1065,82 @@ def phaseResolvedBinnedVelocities(planet_name, temperature_profile, species_dict
                 use_for_snr = np.abs(drv[species_label][arm][observation_epoch] > 100.)
                 snr[species_label][arm] = binned_ccfs[species_label][arm][observation_epoch] / np.std(binned_ccfs[species_label][arm][observation_epoch][:,use_for_snr])
         
-
-    for species_label in species_dict.keys():
-        for arm in arms:
+    for arm in arms:
+        fig, ax = pl.subplots(layout='constrained', figsize=(10,8))
+        for species_label in species_dict.keys():
             for observation_epoch in observation_epochs:
                 if arm == 'combined':
                     observation_epoch = 'combined'
-                    
+                
                 ax.plot([0.,0.],[np.min(phase_bin[arm]), np.max(phase_bin[arm])],':',color='white')
-                ax.plot(rvs[species_label]['combined']['combined'], phase_bin[arm], 'o', color=species_colors[species_label])
-                ax.errorbar(rvs[species_label]['combined']['combined'], phase_bin[arm], xerr = rverrors[species_label][arm][observation_epoch], color=species_colors[species_label], fmt='none') 
+                
+                # Create a mask for RVs within ±10 of zero
+                mask = (rvs[species_label][arm][observation_epoch] >= -10) & (rvs[species_label][arm][observation_epoch] <= 10)
+                
+                # Apply the mask to RVs and phase_bin for plotting
+                ax.plot(rvs[species_label][arm][observation_epoch][mask], phase_bin[arm][mask], 'o', color=species_colors[species_label], label=species_label)
+                ax.errorbar(rvs[species_label][arm][observation_epoch][mask], phase_bin[arm][mask], xerr = rverrors[species_label][arm][observation_epoch][mask], color=species_colors[species_label], fmt='none') 
 
                 pl.xlabel('$\Delta V$ (km/s)')
                 pl.ylabel('Orbital Phase (fraction)')
+                # add vertical line at 0
+                pl.axvline(x=0, color='black', linestyle='--', linewidth=0.66)
                 ax.set_xlim([-25.,25.])
                 secax = ax.secondary_yaxis('right', functions=(phase2angle, angle2phase))
                 secax.set_ylabel('Orbital Phase (degrees)')
                 pl.legend()
-                pl.savefig('plots/'+planet_name+'.' + observation_epoch + '.' + arm +'.phase-binned+RVs-overlaid.pdf', format='pdf')
-            pl.clf()
+                # add text showing number of binned observations
+                pl.text(0.05, 0.95, f'{num_binned_obs} binned observations', transform=ax.transAxes, fontsize=12, verticalalignment='top')
+                # add text showing arm and observation epoch
+                pl.text(0.05, 0.90, f'{arm} - {observation_epoch}', transform=ax.transAxes, fontsize=12, verticalalignment='top')
+                pl.savefig('plots/'+planet_name+'.' + '.' + str(num_binned_obs) + '.' +  observation_epoch + '.' + arm +'.phase-binned+RVs-overlaid.pdf', format='pdf')
+        pl.clf()
             
+            
+def aliasPlots(species_dict, instrument="PEPSI", planet_name="KELT-20b", spectrum_type="transmission", temperature_profile="inverted-transmission-better", model_tag="alias", spec_one='Fe', vmr_one=4.95e-05):
+    
+    arms = ['blue', 'red']
+    
+    Period, epoch, M_star, RV_abs, i, M_p, R_p, RA, Dec, Kp_expected, half_duration_phase, Ks_expected = get_planet_parameters(planet_name)
+    
+    observation_epoch = 'mock-obs'
+    
+    template_wave, template_flux,_, _, _ = make_new_model(instrument, spec_one, vmr_one, spectrum_type, planet_name, temperature_profile, do_plot=True)
+    
+    goods = (template_wave >= 4800.) & (template_wave < 5441.)
+    
+    template_wave, template_flux = template_wave[goods], template_flux[goods]
+ 
+    
+    
+    for species, params in species_dict.items():
+        for arm in arms:
+            spec_search = get_species_keys(species)[1]
+            vmr_search = params.get('vmr')
+            template_wave_search, template_flux_search,_, _, _ = make_new_model(instrument, spec_search, vmr_search, spectrum_type, planet_name, temperature_profile, do_plot=True)
+            
+            goods = (template_wave_search >= 4800.) & (template_wave_search < 5441.)
+            template_wave_search, template_flux_search = template_wave_search[goods], template_flux_search[goods]
+            
+            orbital_phase = np.load('data_products/KELT-20b.20190504.' + arm + '.' + spec_search + '.CCFs-raw.npy.phase.npy')
+            
+            n_spectra = len(orbital_phase)
+            
+            mock_spectra = np.zeros((n_spectra, len(template_wave)))
+            mock_wave = np.zeros((n_spectra, len(template_wave)))
+            
+            for i in range (n_spectra): mock_wave[i,:] = template_wave
+            
+            fluxin, Kp_true, V_sys_true = inject_model(Kp_expected, orbital_phase, mock_wave, mock_spectra, template_wave, template_flux, n_spectra)
+            
+            drv, cross_cor, sigma_cross_cor = get_ccfs(mock_wave, mock_spectra, np.ones_like(mock_spectra), template_wave_search, template_flux_search, n_spectra, mock_spectra, np.where(template_wave > 0.))
+
+            for i in range (n_spectra):
+                cross_cor[i,:]-=np.mean(cross_cor[i,:])
+                sigma_cross_cor[i,:] = np.sqrt(sigma_cross_cor[i,:]**2 + np.sum(sigma_cross_cor[i,:]**2)/len(sigma_cross_cor[i,:])**2)
+                #I guess the following is OK as long as there isn't a strong peak, which there shouldn't be in any of the individual CCFs
+                cross_cor[i,:]/=np.std(cross_cor[i,:])
+
+            snr, Kp, drv, cross_cor, sigma_shifted_ccfs, ccf_weights = combine_ccfs(drv, cross_cor, sigma_cross_cor, orbital_phase, n_spectra, np.ones_like(orbital_phase), half_duration_phase, temperature_profile)
+            
+            plotsnr, amps, amps_error, rv, rv_error, width, width_error, idx, drv_restricted, plotsnr_restricted, residual_restricted, pl = make_shifted_plot(snr, planet_name, observation_epoch, arm, spec_one + spec_search + '_Alias', model_tag, RV_abs, Kp_expected, V_sys_true, Kp_true, False, drv, Kp,  spec_one + spec_search + '.' + temperature_profile, sigma_shifted_ccfs, 'ccf', cross_cor, sigma_cross_cor, ccf_weights, plotformat = 'pdf')

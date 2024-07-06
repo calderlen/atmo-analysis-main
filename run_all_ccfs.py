@@ -112,12 +112,13 @@ def run_one_ccf(species_label, vmr, arm, observation_epoch, template_wave, templ
         # Specifically for KELT-20b
   
         ccf_model = dopplerShadowRemove(drv, planet_name, exptime, orbital_phase, 'pepsi')
-        scales = np.arange(-100, 100, 0.01)
+        scales = np.arange(-1000, 1000, 0.01)
         
         # Create memory space for residuals and rms2
         residuals = np.zeros(ccf_model.shape)
+        chi2 = np.zeros(len(scales))
         rms = np.zeros(len(scales))
-
+        epsilon = 1e-8
         for k, scale in enumerate(scales):
                 # Scale ccf_model and calculate residuals
                 ccf_model_scaled = ccf_model * scale
@@ -129,14 +130,14 @@ def run_one_ccf(species_label, vmr, arm, observation_epoch, template_wave, templ
         # Identify scale factor
         scale_factor_index = np.argmin(rms)
         scale_factor = scales[scale_factor_index]
-        # Subtract off
+        
         ccf_model *= scale_factor
+        
+        plotname = 'plots/' + planet_name + '.' + observation_epoch + '.' + species_name_ccf + model_tag + '.' + arm + '.DopplerShadow.pdf'
+        psarr(ccf_model, drv, orbital_phase, 'v (km/s)', 'orbital phase', 'SNR', filename=plotname, ctable='gist_yarg')
+        
         cross_cor -= ccf_model
 
-
-        #Make a plot of doppler shadow
-       # plotname = 'plots/' + planet_name + '.' + observation_epoch + '.' + species_name_ccf + model_tag + '.' + arm + '.DopplerShadow.pdf'
-       # psarr(ccf_model, drv, orbital_phase, 'v (km/s)', 'orbital phase', 'SNR', filename=plotname, ctable='gist_yarg')
 
 
         #Make a plot
@@ -285,7 +286,6 @@ def combine_observations(observation_epochs, arms, planet_name, temperature_prof
     make_shifted_plot_asymmetry(snr_1, snr_2, planet_name, all_epochs, which_arms, species_name_ccf, model_tag, RV_abs, Kp_expected, V_sys_true, Kp_true, do_inject_model, drv, Kp, species_label, temperature_profile, sigma_shifted_ccfs_1, sigma_shifted_ccfs_2, method, cross_cor_display, sigma_cross_cor, ccf_weights, phase_ranges)
 
     get_peak_snr(snr, drv, Kp, do_inject_model, V_sys_true, Kp_true, RV_abs, Kp_expected, which_arms, all_epochs, f, method)
-    #breakpoint()
 
     return Kp_true, orbital_phase, plotsnr, amps, amps_error, rv, rv_error, width, width_error, selected_idx, drv_restricted, plotsnr_restricted, residual_restricted, cross_cor, sigma_cross_cor, ccf_weights, cross_cor_display
 
@@ -421,7 +421,6 @@ def run_all_ccfs(planet_name, temperature_profile, species_label, vmr, do_inject
         'sigma_shifted_ccfs': sigma_shifted_ccfs
     }
 
-    #breakpoint()
 
     #if species_label != 'FeH': Kp_true, orbital_phase, plotsnr, amps, amps_error, rv, rv_error, width, width_error, selected_idx, drv_restricted, plotsnr_restricted, residual_restricted = combine_observations(observation_epochs, ['blue'], planet_name, temperature_profile, species_label, species_name_ccf, model_ta1, RV_abs, Kp_expected, do_inject_model, f, method)
 

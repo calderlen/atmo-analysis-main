@@ -19,7 +19,7 @@ species_dict_temp = {
     'Fe II' : {'vmr' : 4.946571802411902e-05, 'arm':'combined'}}
 
 species_dict_full = {
-    'Al I' : {'vmr' : 6.284450120736337e-07, 'arm':'blue'},
+    #'Al I' : {'vmr' : 6.284450120736337e-07, 'arm':'blue'},
     'B I' : {'vmr' : 8.601920308199416e-10, 'arm':'blue'},
     'Ba I' : {'vmr' : 3.195916432382493e-10, 'arm':'blue'},
     #'Ba II' : {'vmr' : 3.195916432382493e-10, 'arm':'blue'},
@@ -95,10 +95,12 @@ species_dict_final = {
 #    #overlayArms('KELT-20b', 'inverted-transmission-better', species_label, vmr, False, True, True, 'ccf')
 #    overlayArms('KELT-20b', 'inverted-transmission-better', species_label, vmr, False, True, True, 'ccf', 'ingress-egress')
 
-phaseResolvedBinnedVelocities('KELT-20b', 'inverted-transmission-better', species_dict_full, False, True, True, 'ccf', phase_ranges='halves')
+#phaseResolvedBinnedVelocities('KELT-20b', 'inverted-transmission-better', species_dict_full, False, True, True, 'ccf', phase_ranges='halves')
     
 #species_dict = dict(sorted(species_dict.items(), key=lambda item: item[1]['vmr'], reverse=True))
 #make_spectrum_plots(species_dict_final)
 
 
-#generate_observability_table('KELT-20b','inverted-transmission-better', 'PEPSI', species_dict_full, 'guillot')6
+generate_observability_table('KELT-20b','inverted-transmission-better', 'PEPSI', species_dict_full, 'guillot')6
+
+#aliasPlots(species_dict_full, instrument="PEPSI", planet_name="KELT-20b", spectrum_type="transmission", temperature_profile="inverted-transmission-better", model_tag="alias", spec_one='Fe', vmr_one=4.95e-05)
