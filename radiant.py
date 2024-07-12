@@ -1811,8 +1811,6 @@ def gaussian_fit_asymmetry(Kp, Kp_true, drv, species_label, planet_name, observa
     #idx = np.flatnonzero(Kp == int(np.floor(Kp_true)))[0] #Kp slice corresponding to expected Kp
     idx_1 = np.argmax(slice_peak_1) #Kp slice corresponding to max SNR 
 
-    print('Selected SNR for phase range 1:', amps_1[idx_1], '\n Selected Vsys for phase range 1:', rv_1[idx_1], '\n Selected sigma for phase range 1:', width_1[idx_1], '\n Selected Kp for phase range 1:', Kp[idx_1])
-
     slice_peak_2 = np.zeros(plotsnr_2.shape[0])
 
     for i in Kp_valid:
@@ -1845,7 +1843,9 @@ def gaussian_fit_asymmetry(Kp, Kp_true, drv, species_label, planet_name, observa
         ax1.axvline(x=rv_2[idx_2], color='blue', linestyle='--', label=f'$\Delta V$ = {rv_2[idx_2]}')
         ax1.text(0.95, 0.90, f'$\phi > 0$ $K_p$ slice: {Kp[idx_2]}', transform=ax1.transAxes, verticalalignment='top', horizontalalignment='right', fontsize=10)
         ax1.legend(loc='lower right', fontsize=8, frameon=False)
-
+        y_min, y_max = ax1.get_ylim()
+        ax1.fill_betweenx(y=[y_min, y_max], x1=rv_1[idx_1], x2=rv_2[idx_2], color='blue', alpha=0.4)
+        
     if phase_ranges == 'ingress-egress':
         ax1.plot(drv, plotsnr_1[idx_1, :], color='c', label='Ingress Line Profile', alpha=0.8)       
         ax1.axvline(x=rv_1[idx_1], color='c', linestyle='--', label=f'$\Delta V$ = {rv_1[idx_1]}')
@@ -1854,7 +1854,9 @@ def gaussian_fit_asymmetry(Kp, Kp_true, drv, species_label, planet_name, observa
         ax1.axvline(x=rv_2[idx_2], color='m', linestyle='--', label=f'$\Delta V$ = {rv_2[idx_2]}')
         ax1.text(0.95, 0.90, f'Egress $K_p$ slice: {Kp[idx_2]}', transform=ax1.transAxes, verticalalignment='top', horizontalalignment='right', fontsize=10)
         ax1.legend(loc='lower right', fontsize=8, frameon=False)
-
+        y_min, y_max = ax1.get_ylim()
+        ax1.fill_betweenx(y=[y_min, y_max], x1=rv_1[idx_1], x2=rv_2[idx_2], color='blue', alpha=0.4)
+        
     print('Selected SNR for phase range 1:', amps_1[idx_1], 
             '\n Selected Vsys for phase range 1:', rv_1[idx_1], 
             '\n Selected sigma for phase range 1:', width_1[idx_1], 
