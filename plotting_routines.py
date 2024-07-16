@@ -753,9 +753,9 @@ def calculate_observability_score(instrument_here, opacities_all, opacities_with
         observability_scores[species] = score
     
     # Normalize the scores so the most observable species is 1
-    max_score = max(observability_scores.values())
-    for species in observability_scores:
-        observability_scores[species] /= max_score
+    #max_score = max(observability_scores.values())
+    #for species in observability_scores:
+    #    observability_scores[species] /= max_score
     return observability_scores
 
 
@@ -1143,4 +1143,4 @@ def aliasPlots(species_dict, instrument="PEPSI", planet_name="KELT-20b", spectru
 
             snr, Kp, drv, cross_cor, sigma_shifted_ccfs, ccf_weights = combine_ccfs(drv, cross_cor, sigma_cross_cor, orbital_phase, n_spectra, np.ones_like(orbital_phase), half_duration_phase, temperature_profile)
             
-            plotsnr, amps, amps_error, rv, rv_error, width, width_error, idx, drv_restricted, plotsnr_restricted, residual_restricted, pl = make_shifted_plot(snr, planet_name, observation_epoch, arm, spec_one + spec_search + '_Alias', model_tag, RV_abs, Kp_expected, V_sys_true, Kp_true, False, drv, Kp,  spec_one + spec_search + '.' + temperature_profile, sigma_shifted_ccfs, 'ccf', cross_cor, sigma_cross_cor, ccf_weights, plotformat = 'pdf')
+            plotsnr, amps, amps_error, rv, rv_error, width, width_error, idx, drv_restricted, plotsnr_restricted, residual_restricted, pl = make_shifted_plot(snr, planet_name, observation_epoch, arm, spec_one + spec_search + '_Alias', model_tag, RV_abs, Kp_expected, V_sys_true, Kp_true, False, drv, Kp,  spec_one + spec_search + '.',temperature_profile, sigma_shifted_ccfs, 'ccf', cross_cor, sigma_cross_cor, ccf_weights, plotformat = 'pdf')
