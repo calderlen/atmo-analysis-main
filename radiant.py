@@ -1450,6 +1450,8 @@ def combine_ccfs_binned(drv, cross_cor, sigma_cross_cor, orbital_phase, n_spectr
     snr = binned_ccfs / np.std(binned_ccfs[:,use_for_snr])
     masked_snr = np.ma.masked_where(snr <= 3, snr)
 
+    #RVs plot
+    
     fig, ax = pl.subplots(layout='constrained', figsize=(10,8))
     #c = ax.pcolor(drv[good], phase_bin, masked_snr[:,good], edgecolors='none',rasterized=True, cmap='viridis_r')
     c = ax.pcolor(drv[good], phase_bin, snr[:,good], edgecolors='none',rasterized=True, cmap='viridis_r')
@@ -1476,6 +1478,36 @@ def combine_ccfs_binned(drv, cross_cor, sigma_cross_cor, orbital_phase, n_spectr
 
     
     pl.savefig('plots/'+planet_name+'.'+species_name_ccf+ '.' + arm +'.phase-binned+RVs.pdf', format='pdf')
+    pl.clf()
+    
+    #FWHM plot
+    
+    
+    fig, ax = pl.subplots(layout='constrained', figsize=(10,8))
+    #c = ax.pcolor(drv[good], phase_bin, masked_snr[:,good], edgecolors='none',rasterized=True, cmap='viridis_r')
+    #c = ax.pcolor(drv[good], phase_bin, snr[:,good], edgecolors='none',rasterized=True, cmap='viridis_r')
+    ax.plot([0.,0.],[np.min(phase_bin), np.max(phase_bin)],':',color='grey')
+
+    #goodrv = (rvs > -10.) & (rvs < 10.)
+    ax.plot(widths, phase_bin, 'o', color='white')
+    ax.errorbar(widths, phase_bin, xerr = widtherrors, color='white', fmt='none')
+
+    ax.set_xlabel('$FWHM$ (km/s)')
+    ax.set_ylabel('Orbital Phase (fraction)')
+
+    # add title with species name above the plot
+    ax.text(0.5, 1.03, species_name_ccf, transform=ax.transAxes, verticalalignment='top', horizontalalignment='left', fontsize=12)
+
+    ax.set_xlim([-50.,50.])
+
+    secax = ax.secondary_yaxis('right', functions = (phase2angle, angle2phase))
+    secax.set_ylabel('Orbital Phase (degrees)')
+
+    # add a color bar
+    fig.colorbar(c, ax=ax, label='SNR ($\sigma$)')
+
+    
+    pl.savefig('plots/'+planet_name+'.'+species_name_ccf+ '.' + arm +'.phase-binned+FWHMs.pdf', format='pdf')
     pl.clf()
     
     Kp = np.arange(50, 350, 1)
@@ -1587,6 +1619,7 @@ def gaussian_fit(Kp, Kp_true, drv, species_label, planet_name, observation_epoch
     else:
         wave, fluxin, errorin, jd, snr_spectra, exptime, airmass, n_spectra, npix = get_pepsi_data(arm, '20190504', planet_name, do_molecfit)
         
+        breakpoint()
 
     orbital_phase = get_orbital_phase(jd, epoch, Period, RA, Dec)
     # Gaussian Fit plot
@@ -1622,7 +1655,7 @@ def gaussian_fit(Kp, Kp_true, drv, species_label, planet_name, observation_epoch
             
 
     idx = np.flatnonzero(Kp == int(np.floor(Kp_true)))[0] #Kp slice corresponding to expected Kp
-    idx = np.argmax(slice_peak) #Kp slice corresponding to max SNR within the valid range
+    #idx = np.argmax(slice_peak) #Kp slice corresponding to max SNR within the valid range
                 
     popt_selected = [amps[idx], rv[idx], width[idx]]
     print('Selected SNR:', amps[idx], '$/pm$', amps_error[idx],
@@ -1701,7 +1734,7 @@ def gaussian_fit(Kp, Kp_true, drv, species_label, planet_name, observation_epoch
 
     # Line Profile plot
     #idx = np.where(Kp == int(np.floor(Kp_true)))[0][0] #Kp slice corresponding to expected Kp
-    idx = np.argmax(slice_peak) #Kp slice corresponding to max SNR
+    #idx = np.argmax(slice_peak) #Kp slice corresponding to max SNR
 
     Kp = np.arange(50, 350, 1)
     rv_chars, rv_chars_error = np.zeros((len(Kp), n_spectra)), np.zeros((len(Kp), n_spectra))
@@ -1813,8 +1846,8 @@ def gaussian_fit_asymmetry(Kp, Kp_true, drv, species_label, planet_name, observa
             fwhm_1[i] = 2*np.sqrt(2*np.log(2))*width_1[i]
             fwhm_error_1[i] = 2*np.sqrt(2*np.log(2))*width_error_1[i]
 
-    #idx = np.flatnonzero(Kp == int(np.floor(Kp_true)))[0] #Kp slice corresponding to expected Kp
-    idx_1 = np.argmax(slice_peak_1) #Kp slice corresponding to max SNR 
+    idx_1 = np.flatnonzero(Kp == int(np.floor(Kp_true)))[0] #Kp slice corresponding to expected Kp
+    #idx_1 = np.argmax(slice_peak_1) #Kp slice corresponding to max SNR 
 
 
     for i in Kp_valid:
@@ -1837,7 +1870,8 @@ def gaussian_fit_asymmetry(Kp, Kp_true, drv, species_label, planet_name, observa
             fwhm_2[i] = 2*np.sqrt(2*np.log(2))*width_1[i]
             fwhm_error_2[i] = 2*np.sqrt(2*np.log(2))*width_error_1[i]
             
-    idx_2 = np.argmax(slice_peak_2) #Kp slice corresponding to max SNR 
+    idx_2 = np.flatnonzero(Kp == int(np.floor(Kp_true)))[0] #Kp slice corresponding to expected Kp
+    #idx_2 = np.argmax(slice_peak_2) #Kp slice corresponding to max SNR 
     
     slice_peak = np.zeros(snr.shape[0])
     
@@ -1919,6 +1953,9 @@ def gaussian_fit_asymmetry(Kp, Kp_true, drv, species_label, planet_name, observa
     fig.savefig(snr_fit_asymmetry, dpi=300, bbox_inches='tight')
 
     pl.close(fig)
+    
+    
+    
     
     #i = 0
     #for Kp_i in Kp:

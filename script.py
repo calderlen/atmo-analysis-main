@@ -22,7 +22,7 @@ species_dict_full = {
     'Al I' : {'vmr' : 6.284450120736337e-07, 'arm':'blue'},
     'B I' : {'vmr' : 8.601920308199416e-10, 'arm':'blue'},
     'Ba I' : {'vmr' : 3.195916432382493e-10, 'arm':'blue'},
-    #'Ba II' : {'vmr' : 3.195916432382493e-10, 'arm':'blue'},
+    'Ba II' : {'vmr' : 3.195916432382493e-10, 'arm':'blue'},
     'Be I' : {'vmr' : 4.117137911265462e-11, 'arm':'blue'},
     'Ca I' : {'vmr' : 2.4587155473819153e-06, 'arm':'blue'},
     'Ca II' : {'vmr' : 2.4587155473819153e-06, 'arm':'blue'},
@@ -105,20 +105,22 @@ species_dict_molecules = {
                     
 #Make plot stacking all of the synthetic transmission spectra for appendix
 #multiSpeciesCCF('KELT-20b', 'inverted-transmission-better', species_dict_temp, False, True, True, 'ccf', 'halves')
-multiSpeciesCCF('KELT-20b', 'inverted-transmission-better', species_dict_molecules, False, True, True, 'ccf', 'halves')
+#multiSpeciesCCF('KELT-20b', 'inverted-transmission-better', species_dict_temp, False, True, True, 'ccf', 'halves')
 
 
 #for species_label, species_params in species_dict_final.items():
 #    vmr = species_params['vmr']
 #    #overlayArms('KELT-20b', 'inverted-transmission-better', species_label, vmr, False, True, True, 'ccf')
-#    overlayArms('KELT-20b', 'inverted-transmission-better', species_label, vmr, False, True, True, 'ccf', 'ingress-egress')pythee
+#    overlayArms('KELT-20b', 'inverted-transmission-better', species_label, vmr, False, True, True, 'ccf', 'ingress-egress')
 
 #phaseResolvedBinnedVelocities('KELT-20b', 'inverted-transmission-better', species_dict_temp, False, True, True, 'ccf', phase_ranges='halves')
     
 #species_dict = dict(sorted(species_dict.items(), key=lambda item: item[1]['vmr'], reverse=True))
 #make_spectrum_plots(species_dict_final)
 
+generate_observability_table('KELT-20b','inverted-transmission-better', 'PEPSI', species_dict_full, 'guillot')
 
-#generate_observability_table('KELT-20b','inverted-transmission-better', 'PEPSI', species_dict_full, 'guillot')
 
-#aliasPlots(species_dict_full, instrument="PEPSI", planet_name="KELT-20b", spectrum_type="transmission", temperature_profile="inverted-transmission-better", model_tag="alias", spec_one='Fe+', vmr_one=4.95e-05)
+#aliasPlots(species_dict_final, instrument="PEPSI", planet_name="KELT-20b", spectrum_type="transmission", temperature_profile="inverted-transmission-better", model_tag="alias", spec_one='Fe', vmr_one=4.95e-05)
+
+#fastchem_plot(species_dict_final)

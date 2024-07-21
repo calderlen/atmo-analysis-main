@@ -655,17 +655,15 @@ def make_spectrum_plots(species_dict):
 
 # Make plot stacking PT profiles for each species
 
-def fastchem_plot(abundance_species):
-
-
-    #Do the chemistry calculations
-    #this loads the temperatures and pressures produced by petitRADTRANS, you may need to modify these lines if you store these data products somewhere else
+def fastchem_plot(species_dict):
+    # Load temperatures and pressures
     temperatures = np.load('data_products/radtrans_temperature.npy')
     pressures = np.load('data_products/radtrans_pressure.npy')
 
+    # Initialize FastChem
     fastchem = pyfastchem.FastChem('/home/calder/Documents/FastChem/input/element_abundances/asplund_2020_extended.dat', 
-                                '/home/calder/Documents/FastChem/input/logK/logK.dat', 
-                                1)
+                                   '/home/calder/Documents/FastChem/input/logK/logK.dat', 
+                                   1)
     
     input_data = pyfastchem.FastChemInput()
     output_data = pyfastchem.FastChemOutput()
@@ -673,91 +671,85 @@ def fastchem_plot(abundance_species):
     input_data.temperature = temperatures
     input_data.pressure = pressures
 
+    # Calculate densities
     fastchem_flag = fastchem.calcDensities(input_data, output_data)
 
     number_densities = np.array(output_data.number_densities)
-    gas_number_density = pressures*1e6 / (const.k_B.cgs * temperatures)
+    gas_number_density = pressures * 1e6 / (const.k_B.cgs * temperatures)
 
-    #set the quench pressure to 1 bar
-    quench = np.argmin(np.abs(pressures-1e1))
+    # Set the quench pressure to 1 bar
+    quench = np.argmin(np.abs(pressures - 1e1))
 
-    a_index = []
-    abundance_species_indices, abundance_species_masses_ordered = [], []
-    n_species = fastchem.getElementNumber()
-
-
-
-    if np.amin(output_data.element_conserved[:]) == 1:
-        print("  - element conservation: ok")
-    else:
-        print("  - element conservation: fail")
-
-
-    #save the monitor output to a file
-
+    # Initialize plot
+    pl.figure(figsize=(6, 6))
     line_styles = ['-', '--', '-.', ':']
 
-    for i, species in enumerate(abundance_species):
-        index = fastchem.getGasSpeciesIndex(species)
+    # Iterate over species in the dictionary
+    for i, (species, properties) in enumerate(species_dict.items()):
+        species_name_inject, species_name = get_species_keys(species)
+        index = fastchem.getGasSpeciesIndex(species_name)
         if index != pyfastchem.FASTCHEM_UNKNOWN_SPECIES:
-            abundance_species_indices.append(index) 
-            this_species = number_densities[quench, index]/gas_number_density[quench]
-            # Plot the species with different line styles and add a label
-            pl.plot(number_densities[:, index]/gas_number_density[:],pressures, linestyle=line_styles[i % len(line_styles)], label=species)
+            this_species_density = number_densities[:, index] / gas_number_density
+            pl.plot(this_species_density, pressures, linestyle=line_styles[i % len(line_styles)], label=f"{species_name} ({properties['arm']})")
         else:
-            print("Species", species, "to plot not found in FastChem")
+            print(f"Species {species} not found in FastChem")
 
     pl.xscale('log')
     pl.yscale('log')
-
-    # label the axes
     pl.xlabel('VMR')
     pl.ylabel('Pressure (bar)')
-
-    # add ticks to the plot
     pl.tick_params(axis='both', which='both', direction='in', top=True, right=True)
-
-    # add a legend to the plot without bounding box and small, and dont make it transparent
-    pl.legend(loc='lower left', fontsize='small', frameon=False, facecolor='white', edgecolor='black')   
-
-
-    # increase the size of the plot
-    pl.gcf().set_size_inches(6, 6)
-
-    # set y limit from 10^-12 to 10^0
+    pl.legend(loc='lower left', fontsize='small', frameon=False, facecolor='white', edgecolor='black')
     pl.ylim(1e-8, 1e0)
     pl.gca().invert_yaxis()
+    pl.savefig('plots/abundances.pdf')
+    pl.show()
 
-    pl.savefig('plots/'+'PT-plots.pdf')  # Save the plot as a PDF
 
 
 def calculate_observability_score(instrument_here, opacities_all, opacities_without_species, wavelengths):
-
     observability_scores = {}
-
-    # Define the wavelength range in Å
+    
     lambda_low, lambda_high = get_wavelength_range(instrument_here)
-    
-     # Mask to select the wavelength range
-    mask = (wavelengths >= lambda_low) & (wavelengths <= lambda_high)
-    
-    # Calculate the total opacity with all species included
-    tau_all = np.log(opacities_all[mask])
+    # Define the wavelength range in Å    
+    if 'PEPSI' in instrument_here:
+        arms = ['blue', 'red']
 
-    for species, opacities in opacities_without_species.items():
-        # Calculate the opacity without the current species
-        tau_without_species = np.log(opacities[mask])
+        for arm in arms:
+            if arm == 'red': 
+                red_lambda_min, red_lambda_max = 6231, 7427
+            if arm == 'blue': 
+                blue_lambda_min, blue_lambda_max = 4752, 5425
+
+        breakpoint()
+        # Mask to select the wavelength range
+        mask_red = (wavelengths > red_lambda_min) & (wavelengths < red_lambda_max)
+        mask_blue = (wavelengths > blue_lambda_min) & (wavelengths < blue_lambda_max)
+        mask = (wavelengths >= lambda_low) & (wavelengths <= lambda_high)
         
-        # Calculate the observability score using the provided formula
-        score = simps(tau_all - tau_without_species, wavelengths[mask])
-        observability_scores[species] = score
-    
-    # Normalize the scores so the most observable species is 1
-    #max_score = max(observability_scores.values())
-    #for species in observability_scores:
-    #    observability_scores[species] /= max_score
-    return observability_scores
+        # Calculate the total opacity with all species included
+        tau_all = np.log10(opacities_all[mask])
 
+        for species, opacities in opacities_without_species.items():
+            # Calculate the opacity without the current species
+            tau_without_species = np.log10(opacities[mask])
+            
+            # Ensure the masks are applied to both y (tau_all - tau_without_species) and x (wavelengths)
+            y_red = tau_all[mask_red] - tau_without_species[mask_red]
+            x_red = wavelengths[mask_red]
+            y_blue = tau_all[mask_blue] - tau_without_species[mask_blue]
+            x_blue = wavelengths[mask_blue]
+            
+            # Calculate the observability score using the provided formula
+            score = simps(y_red, x_red) + simps(y_blue, x_blue)
+            observability_scores[species] = score
+        
+        # Normalize the scores so the most observable species is 1
+        max_score = max(observability_scores.values())
+        for species in observability_scores:
+            observability_scores[species] /= max_score
+    
+    return observability_scores
 
 def create_atmospheres(planet_name, temperature_profile, instrument, species_dict, ptprofile):
 
@@ -874,7 +866,8 @@ def generate_observability_table(planet_name, temperature_profile, instrument, s
         for species, score in observability_scores.items():
             writer.writerow([species, score])
     p = plotter(filename ,cmap='magma',extended=False, log_scale=False)
-    export_png(p, filename='plots/observability_scores.pdf', webdriver=webdriver.Chrome())
+    
+    export_png(p, filename='plots/observability_scores.png', webdriver=webdriver.Chrome())
 
 
 
@@ -1105,7 +1098,7 @@ def aliasPlots(species_dict, instrument="PEPSI", planet_name="KELT-20b", spectru
     
     observation_epoch = 'mock-obs'
     
-    template_wave, template_flux,_, _, _ = make_new_model(instrument, spec_one, vmr_one, spectrum_type, planet_name, temperature_profile, do_plot=True)
+    template_wave, template_flux, _, _, _ = make_new_model(instrument, spec_one, vmr_one, spectrum_type, planet_name, temperature_profile, do_plot=True)
     
     goods = (template_wave >= 4800.) & (template_wave < 5441.)
     
