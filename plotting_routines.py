@@ -721,11 +721,11 @@ def calculate_observability_score(instrument_here, opacities_all, opacities_with
             if arm == 'blue': 
                 blue_lambda_min, blue_lambda_max = 4752, 5425
 
-        breakpoint()
+
         # Mask to select the wavelength range
-        mask_red = (wavelengths > red_lambda_min) & (wavelengths < red_lambda_max)
-        mask_blue = (wavelengths > blue_lambda_min) & (wavelengths < blue_lambda_max)
-        mask = (wavelengths >= lambda_low) & (wavelengths <= lambda_high)
+        mask_red = (wavelengths >= red_lambda_min) & (wavelengths <= red_lambda_max)
+        mask_blue = (wavelengths >= blue_lambda_min) & (wavelengths <= blue_lambda_max)
+        mask = (wavelengths >= lambda_low-0.1) & (wavelengths <= lambda_high+0.1)
         
         # Calculate the total opacity with all species included
         tau_all = np.log10(opacities_all[mask])

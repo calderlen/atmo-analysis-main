@@ -1618,8 +1618,6 @@ def gaussian_fit(Kp, Kp_true, drv, species_label, planet_name, observation_epoch
     # Temporary hack for aliasing KELT-20b transmission spectra -- REMOVE THIS LATER
     else:
         wave, fluxin, errorin, jd, snr_spectra, exptime, airmass, n_spectra, npix = get_pepsi_data(arm, '20190504', planet_name, do_molecfit)
-        
-        breakpoint()
 
     orbital_phase = get_orbital_phase(jd, epoch, Period, RA, Dec)
     # Gaussian Fit plot
