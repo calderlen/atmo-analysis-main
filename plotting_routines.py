@@ -6,12 +6,12 @@ import numpy as np
 import os
 import matplotlib.pyplot as plt
 from astropy import constants as const
-from scipy.integrate import simps
+from scipy.integrate import simpson
 from run_all_ccfs import *
 
-from petitRADTRANS import Radtrans
-from petitRADTRANS import nat_cst as nc
-from petitRADTRANS.physics import guillot_global
+from petitRADTRANS.radtrans import Radtrans
+from petitRADTRANS import physical_constants as cst
+from petitRADTRANS.physics import temperature_profile_function_guillot_global
 
 from bokeh.models import (
     ColumnDataSource,
@@ -741,7 +741,7 @@ def calculate_observability_score(instrument_here, opacities_all, opacities_with
             x_blue = wavelengths[mask_blue]
             
             # Calculate the observability score using the provided formula
-            score = simps(y_red, x_red) + simps(y_blue, x_blue)
+            score = simpson(y_red, x_red) + simpson(y_blue, x_blue)
             observability_scores[species] = score
         
         # Normalize the scores so the most observable species is 1
@@ -842,7 +842,7 @@ def create_atmospheres(planet_name, temperature_profile, instrument, species_dic
     atmosphere.calc_transm(temperature, abundances, gravity, MMW, R_pl=R_pl, P0_bar=P0)
     opacities_all = atmosphere.transm_rad
 
-    wavelengths = nc.c / atmosphere.freq / 1e-8  # Convert frequency to wavelength in Å
+    wavelengths = cst.c / atmosphere.freq / 1e-8  # Convert frequency to wavelength in Å
 
     opacities_without_species = {}
     

@@ -1,31 +1,31 @@
 #Code from Anusha
 import numpy as np
 import matplotlib.pyplot as plt
-import petitRADTRANS.nat_cst as nc
-from petitRADTRANS import Radtrans
+from petitRADTRANS import physical_constants as cst
+from petitRADTRANS.radtrans import Radtrans
 from specutils.fitting import fit_continuum
 # from astropy.modeling.polynomial import Chebyshev1D
 # from astropy.modeling.fitting import LevMarLSQFitter
 from astropy import units as u
 from JW_lib import gaussian_filter1d
 import time
-from petitRADTRANS.physics import guillot_global
+from petitRADTRANS.physics import temperature_profile_function_guillot_global
 
 def instantiate_radtrans(species, lambda_low, lambda_high, pressures, downsample_factor=1):
 
     if downsample_factor == 1:
         atmosphere = Radtrans(line_species = species, \
                           rayleigh_species = ['H2', 'He'], \
-                          continuum_opacities = ['H2-H2', 'H2-He', 'H-'], \
-                          wlen_bords_micron = [lambda_low/10.**4,lambda_high/10.**4], \
-                          mode = 'lbl')
+                          gas_continuum_contributors = ['H2-H2', 'H2-He', 'H-'], \
+                          wavelength_boundaries = [lambda_low/10.**4,lambda_high/10.**4], \
+                          line_opacity_mode = 'lbl')
     else:
         atmosphere = Radtrans(line_species = species, \
                           rayleigh_species = ['H2', 'He'], \
-                          continuum_opacities = ['H2-H2', 'H2-He', 'H-'], \
-                          wlen_bords_micron = [lambda_low/10.**4,lambda_high/10.**4], \
-                          mode = 'lbl', lbl_opacity_sampling = downsample_factor)
-        # default rayleigh_species and continuum_opacities
+                          gas_continuum_contributors = ['H2-H2', 'H2-He', 'H-'], \
+                          wavelength_boundaries = [lambda_low/10.**4,lambda_high/10.**4], \
+                          line_opacity_mode = 'lbl', line_by_line_opacity_sampling = downsample_factor)
+        # default rayleigh_species and gas_contiuum_contributors
     atmosphere.setup_opa_structure(pressures)
 
     return atmosphere
@@ -58,7 +58,7 @@ def create_model(params, spectrum_type, do_contribution, new_atmo, atmosphere='n
 
     # Define planetary radius, gravity, temperatures, abundances, and mean molecular weight:
     if ptprofile == 'guillot':
-        temperature = guillot_global(pressures, kappa_IR, gamma, gravity, T_int, T_equ)
+        temperature = temperature_profile_function_guillot_global(pressures, kappa_IR, gamma, gravity, T_int, T_equ)
     if ptprofile == 'two-point':
         temperature = np.ones_like(pressures)
         temperature = T_equ + (T_high - T_equ) / (np.log10(P2) - np.log10(P1)) * (np.log10(pressures) - np.log10(P1))
@@ -92,7 +92,7 @@ def create_model(params, spectrum_type, do_contribution, new_atmo, atmosphere='n
         out_pl = atmosphere.transm_rad
         contribution = atmosphere.contr_tr
         
-    wav_pl = nc.c/atmosphere.freq/1e-8 
+    wav_pl = cst.c/atmosphere.freq/1e-8 
 
     
 
