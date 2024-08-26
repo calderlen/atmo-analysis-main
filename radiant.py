@@ -866,7 +866,7 @@ def make_spectrum_plot(template_wave, template_flux, planet_name, species_name_c
     if planet_name != 'WASP-189b':
         pl.fill([4800,4800,5441,5441],[np.nanmin(template_flux),np.nanmax(template_flux),np.nanmax(template_flux),np.nanmin(template_flux)],color='blue',alpha=0.25)
     pl.fill([6278,6278,7419,7419],[np.nanmin(template_flux),np.nanmax(template_flux),np.nanmax(template_flux),np.nanmin(template_flux)],color='red',alpha=0.25)
-
+    
     pl.plot(template_wave, template_flux, color='black')
 
     pl.xlabel('wavelength (Angstroms)')
@@ -1619,7 +1619,6 @@ def gaussian_fit(Kp, Kp_true, drv, species_label, planet_name, observation_epoch
     else:
         wave, fluxin, errorin, jd, snr_spectra, exptime, airmass, n_spectra, npix = get_pepsi_data(arm, '20190504', planet_name, do_molecfit)
         
-        breakpoint()
 
     orbital_phase = get_orbital_phase(jd, epoch, Period, RA, Dec)
     # Gaussian Fit plot
@@ -2004,10 +2003,10 @@ def make_shifted_plot(snr, planet_name, observation_epoch, arm, species_name_ccf
 
     if 'transmission' in temperature_profile:
         ctable = 'bone'
-        ctable = 'magma_r'
+        ctable = 'magma'
     else:
         ctable = 'afmhot'
-        ctable = 'magma_r'
+        ctable = 'magma'
 
     #keeprv = np.abs(drv-apoints[0]) <= 100.
     keeprv = np.abs(drv-apoints[0]) <= 401.

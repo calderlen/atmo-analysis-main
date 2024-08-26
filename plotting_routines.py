@@ -10,7 +10,6 @@ from scipy.integrate import simps
 from run_all_ccfs import *
 
 from petitRADTRANS import Radtrans
-from petitRADTRANS import nat_cst as nc
 from petitRADTRANS.physics import guillot_global
 
 from bokeh.models import (
@@ -591,6 +590,7 @@ def combinedPhaseResolvedLineProfiles(planet_name, temperature_profile, species_
 #def transitAsymmetries(planet_name, temperature_profile, species_label, vmr, do_inject_model, do_run_all, do_make_new_model, method):
 
 #Make plot stacking all of the synthetic transmission spectra for appendix
+
 def make_spectrum_plots(species_dict):
     
     instrument = 'PEPSI'
@@ -600,58 +600,159 @@ def make_spectrum_plots(species_dict):
 
     parameters = {}
     parameters['Hm'] = 1e-9
-    parameters['em'] = 0.0008355 #constant for now, link to FastChem later
-    parameters['H0'] = 2.2073098e-12 #ditto
+    parameters['em'] = 0.0008355  # constant for now, link to FastChem later
+    parameters['H0'] = 2.2073098e-12  # ditto
     parameters['P0'] = 1.0
     
-    
     if instrument == 'PEPSI':
-        if (planet_name == 'WASP-189b' or planet_name == 'KELT-20b'):
+        if planet_name == 'WASP-189b' or planet_name == 'KELT-20b':
             instrument_here = 'PEPSI-25'
         else:
             instrument_here = 'PEPSI-35'
     else:
         instrument_here = instrument
-          
 
-    
     if planet_name == 'KELT-20b':
-            parameters['Teq'] = 3000.
-            
-            if temperature_profile == 'inverted-emission-better' or temperature_profile == 'inverted-transmission-better':
-                parameters['kappa'] = 0.04
-                parameters['gamma'] = 30.
-                ptprofile = 'guillot'
-        
-        
+        parameters['Teq'] = 3000.
+        if temperature_profile in ['inverted-emission-better', 'inverted-transmission-better']:
+            parameters['kappa'] = 0.04
+            parameters['gamma'] = 30.
+            ptprofile = 'guillot'
+    
     n_spectra = len(species_dict.keys())  # Number of spectra to plot
     
-    fig, axs = pl.subplots(n_spectra, sharex=True, figsize=(6, n_spectra*2))  # Create subplots based on the number of spectra 
-    fig.subplots_adjust(hspace=0.125)  
+    # Create subplots based on the number of spectra
+    if n_spectra == 1:
+        fig, axs = pl.subplots(figsize=(12, 8))
+        axs = [axs]  # Make it a list to simplify the loop
+    else:
+        fig, axs = pl.subplots(n_spectra, sharex=True, figsize=(6, n_spectra*2))
+    
+    fig.subplots_adjust(hspace=0.125)
+    
     for i, (species, params) in enumerate(species_dict.items()):
         species_name_inject, species_name = get_species_keys(species)
-        vmr = params.get('vmr')        
-        template_wave, template_flux,_,_,_ = make_new_model(instrument, species_name, vmr, spectrum_type, planet_name, temperature_profile)
+        vmr = params.get('vmr')
+        template_wave, template_flux, _, _, _ = make_new_model(instrument, species_name, vmr, spectrum_type, planet_name, temperature_profile)
 
-        #if planet_name == 'WASP-189b' or planet_name == 'KELT-20b':
-        #    axs[i].fill([4265,4265,4800,4800],[np.nanmin(template_flux),np.nanmax(template_flux),np.nanmax(template_flux),np.nanmin(template_flux)],color='cyan',alpha=0.25)
         if planet_name != 'WASP-189b':
-            axs[i].fill([4800,4800,5441,5441],[np.nanmin(template_flux),np.nanmax(template_flux),np.nanmax(template_flux),np.nanmin(template_flux)],color='blue',alpha=0.25)
-            
-        axs[i].text(0.125, 0.85, species_name, transform=axs[i].transAxes)
-        axs[i].plot(template_wave, template_flux, color='black')
-
-        axs[i].fill([6278,6278,7419,7419],[np.nanmin(template_flux),np.nanmax(template_flux),np.nanmax(template_flux),np.nanmin(template_flux)],color='red',alpha=0.25)
+            axs[i].fill([4800, 4800, 5441, 5441], 
+                        [np.nanmin(template_flux), np.nanmax(template_flux), np.nanmax(template_flux), np.nanmin(template_flux)], 
+                        color='blue', alpha=0.25)
+        
+        axs[i].text(0.075, 0.875, species, transform=axs[i].transAxes, fontsize=40)
+        axs[i].plot(template_wave[100:-101], template_flux[100:-101], color='black')
+        
+        axs[i].fill([6278, 6278, 7419, 7419], 
+                    [np.nanmin(template_flux), np.nanmax(template_flux), np.nanmax(template_flux), np.nanmin(template_flux)], 
+                    color='red', alpha=0.25)
 
         if i == n_spectra - 1:  # If this is the last subplot
-            axs[i].tick_params(axis='x', which='both', labeltop=False, labelbottom=True)  # Only show x-axis label on the bottom
-            axs[i].set_xlabel('Wavelength (Å)')
+            axs[i].tick_params(axis='x', which='both', labeltop=False, labelbottom=True, labelsize=24)  # Only show x-axis label on the bottom
+            axs[i].set_xlabel('Wavelength (Å)', fontsize=24)
         else:
-            axs[i].tick_params(axis='x', which='both', labeltop=False, labelbottom=False)  # Don't show x-axis label on other subplots
-        axs[i].set_ylabel('normalized flux')
+            axs[i].tick_params(axis='x', which='both', labeltop=False, labelbottom=False, labelsize=24)  # Don't show x-axis label on other subplots
+        # Remove individual y-axis labels
+        axs[i].set_ylabel('')
+        axs[i].tick_params(axis='y', which='both', labelsize=24)
 
-        plotout = 'plots/spectra.' + planet_name +  '.' + temperature_profile + '.pdf'
-        pl.savefig(plotout,format='pdf')
+    # Add a common y-axis label
+    fig.text(0.04, 0.5, 'Normalized flux', va='center', rotation='vertical', fontsize=24)
+
+    plotout = f'plots/spectra.{species}.{planet_name}.{temperature_profile}.pdf'
+    pl.tight_layout(rect=[0.05, 0, 1, 1])
+    pl.savefig(plotout, format='pdf')
+
+
+def make_spectrum_plots_split(species_dict):
+
+    instrument = 'PEPSI'
+    planet_name = 'KELT-20b'
+    observation_epoch = '20190504'
+    temperature_profile = 'inverted-transmission-better'
+    spectrum_type = 'transmission'
+
+    parameters = {}
+    parameters['Hm'] = 1e-9
+    parameters['em'] = 0.0008355
+    parameters['H0'] = 2.2073098e-12
+    parameters['P0'] = 1.0
+    
+    if instrument == 'PEPSI':
+        if planet_name == 'WASP-189b' or planet_name == 'KELT-20b':
+            instrument_here = 'PEPSI-25'
+        else:
+            instrument_here = 'PEPSI-35'
+    else:
+        instrument_here = instrument
+
+    if planet_name == 'KELT-20b':
+        parameters['Teq'] = 3000.
+        if temperature_profile in ['inverted-emission-better', 'inverted-transmission-better']:
+            parameters['kappa'] = 0.04
+            parameters['gamma'] = 30.
+            ptprofile = 'guillot'
+    
+    n_spectra = len(species_dict.keys())  # Number of spectra to plot
+    
+    # Create subplots with specified figure size
+    if n_spectra == 1:
+        fig, [axBlue, axRed] = pl.subplots(2, 1, sharex=False, figsize=(12, 8)) 
+
+    for i, (species, params) in enumerate(species_dict.items()):
+        species_name_inject, species_name = get_species_keys(species)
+        vmr = params.get('vmr')
+
+        template_wave, template_flux, _, _, _ = make_new_model(instrument, species_name, vmr, spectrum_type, planet_name, temperature_profile)
+
+        
+        template_wave_blue = template_wave[(template_wave > 4800) & (template_wave < 5441)]
+        template_flux_blue = template_flux[(template_wave > 4800) & (template_wave < 5441)]
+        wave_blue, flux_blue, errorin, jd, snr_spectra, exptime, airmass, n_spectra, npix = get_pepsi_data('red', observation_epoch, planet_name, True)
+
+        template_wave_red = template_wave[(template_wave > 6278) & (template_wave < 7419)]
+        template_flux_red = template_flux[(template_wave > 6278) & (template_wave < 7419)]
+        wave_red, flux_red, errorin, jd, snr_spectra, exptime, airmass, n_spectra, npix = get_pepsi_data('blue', observation_epoch, planet_name, False)
+
+
+        # Add species text only on the top plot
+        if i == 0:
+            fig.text(0.005, 0.995, species, fontsize=38, ha='left', va='top')
+
+
+        # Add "Blue arm" label on the top plot
+        axBlue.text(0.95, 0.05, 'Blue arm', transform=axBlue.transAxes, fontsize=24, color='blue', ha='right', va='bottom')
+        axBlue.plot(template_wave_blue, template_flux_blue, color='black')
+        axBlue.plot(wave_blue, flux_blue, color='blue')
+
+        # Add "Red arm" label on the bottom plot
+        axRed.text(0.95, 0.05, 'Red arm', transform=axRed.transAxes, fontsize=24, color='red', ha='right', va='bottom')
+        axRed.plot(template_wave_red, template_flux_red, color='black')
+        axRed.plot(wave_red, flux_red, color='red')
+        
+
+        # Set ticks on both sides and add minor ticks
+        for ax in [axBlue, axRed]:
+            ax.tick_params(axis='both', which='both', direction='in', top=True, right=True)  # Major ticks on both sides
+            ax.minorticks_on()  # Add minor ticks
+            ax.tick_params(axis='both', which='minor', direction='in', top=True, right=True)  # Minor ticks on both sides
+
+        # Add x label
+        axRed.set_xlabel('Wavelength (Å)', fontsize=24)
+        axRed.tick_params(axis='x', which='both', labelsize=24)
+        axBlue.tick_params(axis='x', which='both', labelsize=24)
+        axRed.tick_params(axis='y', which='both', labelsize=24)
+        axBlue.tick_params(axis='y', which='both', labelsize=24)
+
+        # Add y-axis label to the figure
+        fig.text(0.04, 0.5, 'Normalized flux', va='center', rotation='vertical', fontsize=24)
+
+        # Save the figure
+        plotout = f'plots/spectraIndArms.{species}.{planet_name}.{temperature_profile}.pdf'
+        pl.tight_layout(rect=[0.05, 0, 1, 1])
+        pl.savefig(plotout, format='pdf')
+
+
 
 # Make plot stacking PT profiles for each species
 

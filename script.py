@@ -97,6 +97,12 @@ species_dict_molecules = {
     'VO' : {'vmr' : 1.0e-5, 'arm':'blue'}
 }
 
+species_dict_Fe2 = {'Fe II' : {'vmr' : 4.946571802411902e-05, 'arm':'combined'}}
+species_dict_Mg = {'Mg I' : {'vmr' : 6.081422083824978e-05, 'arm':'blue'}}
+species_dict_Ni = {'Ni I' : {'vmr' : 2.568167989682126e-06, 'arm':'blue'}}
+
+
+
 
 # metal oxides and hydrides that should be checked
 # BaH, BaO, CrH, CrO, CuH, CuO, FeO, MgO, MnH, MnO, NaO
@@ -105,7 +111,7 @@ species_dict_molecules = {
                     
 #Make plot stacking all of the synthetic transmission spectra for appendix
 #multiSpeciesCCF('KELT-20b', 'inverted-transmission-better', species_dict_temp, False, True, True, 'ccf', 'halves')
-#multiSpeciesCCF('KELT-20b', 'inverted-transmission-better', species_dict_temp, False, True, True, 'ccf', 'halves')
+#multiSpeciesCCF('KELT-20b', 'inverted-transmission-better', species_dict_full, False, True, True, 'ccf', 'halves')
 
 
 #for species_label, species_params in species_dict_final.items():
@@ -113,14 +119,18 @@ species_dict_molecules = {
 #    #overlayArms('KELT-20b', 'inverted-transmission-better', species_label, vmr, False, True, True, 'ccf')
 #    overlayArms('KELT-20b', 'inverted-transmission-better', species_label, vmr, False, True, True, 'ccf', 'ingress-egress')
 
-#phaseResolvedBinnedVelocities('KELT-20b', 'inverted-transmission-better', species_dict_temp, False, True, True, 'ccf', phase_ranges='halves')
+#phaseResolvedBinnedVelocities('KELT-20b', 'inverted-transmission-better', species_dict_final, False, True, True, 'ccf', phase_ranges='halves')
     
 #species_dict = dict(sorted(species_dict.items(), key=lambda item: item[1]['vmr'], reverse=True))
 #make_spectrum_plots(species_dict_final)
 
-generate_observability_table('KELT-20b','inverted-transmission-better', 'PEPSI', species_dict_full, 'guillot')
+make_spectrum_plots_split(species_dict_Fe2)
+#make_spectrum_plots_split(species_dict_Mg)
+#make_spectrum_plots_split(species_dict_Ni)
+#make_spectrum_plots_split(species_dict_Ni)
+#generate_observability_table('KELT-20b','inverted-transmission-better', 'PEPSI', species_dict_full, 'guillot')
 
 
-#aliasPlots(species_dict_final, instrument="PEPSI", planet_name="KELT-20b", spectrum_type="transmission", temperature_profile="inverted-transmission-better", model_tag="alias", spec_one='Fe', vmr_one=4.95e-05)
+#aliasPlots(species_dict_full, instrument="PEPSI", planet_name="KELT-20b", spectrum_type="transmission", temperature_profile="inverted-transmission-better", model_tag="alias", spec_one='Fe', vmr_one=4.95e-05)
 
 #fastchem_plot(species_dict_final)

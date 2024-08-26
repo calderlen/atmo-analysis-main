@@ -48,7 +48,7 @@ def psarr(inarr, xaxis, yaxis, xname, yname, zname, filename=' ', contour=False,
         if stack == 2: pl.figure(figsize=(6.375,2.5))
         if stack == 3: pl.figure(figsize=(6.375,1.85))
     else:
-        pl.figure(figsize=(2,7))
+        pl.figure(figsize=(7,7))
 
     if invert:
         cmap = pl.cm.get_cmap(ctable + '_r')  # Reverse the colormap
@@ -91,7 +91,7 @@ def psarr(inarr, xaxis, yaxis, xname, yname, zname, filename=' ', contour=False,
     x_max = xaxis[x_index]
     y_max = yaxis[y_index]
 
-    pl.plot(x_max, y_max, 'cx', markersize=10)
+    pl.plot(x_max, y_max, 'kx', markersize=15)
 
     pl.tight_layout()
     if filename != 'none': 

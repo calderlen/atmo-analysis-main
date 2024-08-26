@@ -60,7 +60,7 @@ def run_one_ccf(species_label, vmr, arm, observation_epoch, template_wave, templ
 
     #import pdb; pdb.set_trace()
 
-    psarr(unp.nominal_values(residual_flux), wave, orbital_phase, 'wavelength (Angstroms)', 'orbital phase', 'flux residual', filename=plotname,flat=True, ctable='gist_gray_r')
+    psarr(unp.nominal_values(residual_flux), wave, orbital_phase, 'wavelength (Angstroms)', 'orbital phase', 'flux residual', filename=plotname,flat=True, ctable='gist_gray')
 
     sysrem_file = 'data_products/' + planet_name + '.' + observation_epoch + '.' + arm + '.SYSREM-' + str(n_systematics[0]) + '+' + str(n_systematics[1])+model_tag+'.npy'
 
@@ -133,18 +133,26 @@ def run_one_ccf(species_label, vmr, arm, observation_epoch, template_wave, templ
         
         ccf_model *= scale_factor
         
+        # Plot the pre-subtraction raw CCF
+        plotname = 'plots/' + planet_name + '.' + observation_epoch + '.' + species_name_ccf + model_tag + '.' + arm + '.preSubtractionRawCCF.pdf'
+        psarr(cross_cor, drv, orbital_phase, 'RV (km/s)', 'Orbital phase', 'SNR', filename=plotname, ctable='viridis')
+        
+
         # Plot the Doppler Shadow
         plotname = 'plots/' + planet_name + '.' + observation_epoch + '.' + species_name_ccf + model_tag + '.' + arm + '.DopplerShadow.pdf'
-        psarr(ccf_model, drv, orbital_phase, 'v (km/s)', 'orbital phase', 'SNR', filename=plotname, ctable='gist_yarg')
+        psarr(ccf_model, drv, orbital_phase, 'RV (km/s)', 'Orbital phase', 'SNR', filename=plotname, ctable='viridis')
         
         cross_cor -= ccf_model
 
-
+        # Plot the post-subtraction raw CCF
+        plotname = 'plots/' + planet_name + '.' + observation_epoch + '.' + species_name_ccf + model_tag + '.' + arm + '.postSubtractionRawCCF.pdf'
+        psarr(cross_cor, drv, orbital_phase, 'RV (km/s)', 'Orbital phase', 'SNR', filename=plotname, ctable='viridis')
+        
 
         #Make a plot
         plotname = 'plots/' + planet_name + '.' + observation_epoch + '.' + str(do_inject_model) + '.' + species_name_ccf + model_tag + '.' + arm + '.CCFs-raw.pdf'
         
-        psarr(cross_cor, drv, orbital_phase, 'v (km/s)', 'orbital phase', 'SNR', filename=plotname, ctable='gist_yarg')
+        psarr(cross_cor, drv, orbital_phase, 'RV (km/s)', 'Orbital phase', 'SNR', filename=plotname, ctable='gray')
 
         #blank out the non-radial pulsations for now
         if planet_name == 'WASP-33b' or planet_name == 'TOI-1431b':
@@ -429,6 +437,5 @@ def run_all_ccfs(planet_name, temperature_profile, species_label, vmr, do_inject
     #if species_label != 'CaH': Kp_true, orbital_phase, plotsnr, amps, amps_error, rv, rv_error, width, width_error, selected_idx, drv_restricted, plotsnr_restricted, residual_restricted = combine_observations(observation_epochs, ['red'], planet_name, temperature_profile, species_label, species_name_ccf, model_tag, RV_abs, Kp_expected, do_inject_model, f, method)
     
     f.close()
-    breakpoint()
     np.save('data_products/' + planet_name + '.' + observation_epoch + '.' + species_label + '.' + 'fit_params.npy', fit_params)
     return fit_params, ccf_parameters, observation_epochs, plotsnr_restricted 
