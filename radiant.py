@@ -1454,7 +1454,7 @@ def combine_ccfs_binned(drv, cross_cor, sigma_cross_cor, orbital_phase, n_spectr
     
     fig, ax = pl.subplots(layout='constrained', figsize=(10,8))
     #c = ax.pcolor(drv[good], phase_bin, masked_snr[:,good], edgecolors='none',rasterized=True, cmap='viridis_r')
-    c = ax.pcolor(drv[good], phase_bin, snr[:,good], edgecolors='none',rasterized=True, cmap='viridis_r')
+    c = ax.pcolor(drv[good], phase_bin, snr[:,good], edgecolors='none',rasterized=True, cmap='viridis')
     ax.plot([0.,0.],[np.min(phase_bin), np.max(phase_bin)],':',color='grey')
 
     goodrv = (rvs > -10.) & (rvs < 10.)
@@ -1664,6 +1664,15 @@ def gaussian_fit(Kp, Kp_true, drv, species_label, planet_name, observation_epoch
           '\n Selected FWHM:', fwhm[idx], '$/pm$', fwhm_error[idx]
     )
 
+    # Save these to log file
+    with open('logs/' + planet_name + '.' + observation_epoch + '.' + arm + '.' + species_name_ccf + model_tag + '.log', 'w') as f:
+        f.write('Selected SNR: ' + str(amps[idx]) + ' +/- ' + str(amps_error[idx]) + '\n')
+        f.write('Selected Vsys: ' + str(rv[idx]) + ' +/- ' + str(rv_error[idx]) + '\n')
+        f.write('Selected sigma: ' + str(width[idx]) + ' +/- ' + str(width_error[idx]) + '\n')
+        f.write('Selected Kp: ' + str(Kp[idx]) + '\n')
+        f.write('Selected FWHM: ' + str(fwhm[idx]) + ' +/- ' + str(fwhm_error[idx]) + '\n')
+
+    
     # Computing residuals and chi-squared for selected slice
     residual = plotsnr[idx, :] - gaussian(drv, *popt_selected)
     # chi2 = np.sum((residual / np.std(residual))**2)/(len(drv)-len(popt))
@@ -1707,7 +1716,7 @@ def gaussian_fit(Kp, Kp_true, drv, species_label, planet_name, observation_epoch
     ax1.axvline(x=rv[idx], color='k', linestyle='-', label='Center', linewidth=0.66)
     #ax1.set_title('1D CCF Slice + Gaussian Fit')
 
-    # Vertical lines for sigma width (center ± sigma)
+    # Vertical lines for sigma width (center +/- sigma)
     #sigma_left = rv[idx] - width[idx]
     #sigma_right = rv[idx] + width[idx]
     #ax1.axvline(x=sigma_left, color='purple', linestyle='--', label='- Sigma')
@@ -1715,8 +1724,10 @@ def gaussian_fit(Kp, Kp_true, drv, species_label, planet_name, observation_epoch
 
     #ax1.legend()
 
-    # Add the horizontal line at 4 SNR
-    ax1.axhline(y=4, color='g', linestyle='--', label=r'4 $\sigma$', linewidth=0.66)    
+    # Add the horizontal line at 3 SNR and 5 SNR
+    ax1.axhline(y=3, color='gray', linestyle='--', label=r'Tentative detection threshold$', linewidth=0.66, alpha=0.5)
+    ax1.axhline(y=5, color='black', linestyle='--', label=r'Detection threshold$', linewidth=0.66)
+
 
     # Inset for residuals (ax2)
     ax2.plot(drv, residual, 'o-', markersize=1, color='k')
@@ -1927,12 +1938,29 @@ def gaussian_fit_asymmetry(Kp, Kp_true, drv, species_label, planet_name, observa
             '\n Selected Kp for phase range 1:', Kp[idx_1],
             '\n Selected FWHM for phase range 1:', fwhm_1[idx_1]
             )
+    
     print('Selected SNR for phase range 2:', amps_2[idx_2],
             '\n Selected Vsys for phase range 2:', rv_2[idx_2],
             '\n Selected sigma for phase range 2:', width_2[idx_2],
             '\n Selected Kp for phase range 2:', Kp[idx_2],
             '\n Selected FWHM for phase range 2:', fwhm_2[idx_2]
             )
+
+    # Save these to log file
+
+    with open(f'logs/{planet_name}.{observation_epoch}.{arm}.{species_name_ccf}{model_tag}.log', 'w') as f:
+        f.write(f'Selected SNR for phase range 1 ({phase_ranges}): {amps_1[idx_1]} +/- {amps_error_1[idx_1]}\n')
+        f.write(f'Selected Vsys for phase range 1 ({phase_ranges}): {rv_1[idx_1]} +/- {rv_error_1[idx_1]}\n')
+        f.write(f'Selected sigma for phase range 1 ({phase_ranges}): {width_1[idx_1]} +/- {width_error_1[idx_1]}\n')
+        f.write(f'Selected Kp for phase range 1 ({phase_ranges}): {Kp[idx_1]}\n') 
+        f.write(f'Selected FWHM for phase range 1 ({phase_ranges}): {fwhm_1[idx_1]} +/- {fwhm_error_1[idx_1]}\n')
+        
+        f.write(f'Selected SNR for phase range 2 ({phase_ranges}): {amps_2[idx_2]} +/- {amps_error_2[idx_2]}\n')
+        f.write(f'Selected Vsys for phase range 2 ({phase_ranges}): {rv_2[idx_2]} +/- {rv_error_2[idx_2]}\n')
+        f.write(f'Selected sigma for phase range 2 ({phase_ranges}): {width_2[idx_2]} +/- {width_error_2[idx_2]}\n')
+        f.write(f'Selected Kp for phase range 2 ({phase_ranges}): {Kp[idx_2]}\n')
+        f.write(f'Selected FWHM for phase range 2 ({phase_ranges}): {fwhm_2[idx_2]} +/- {fwhm_error_2[idx_2]}\n')
+
 
     # Species Label
     ax1.text(0.05, 0.99, species_label, transform=ax1.transAxes, verticalalignment='top', horizontalalignment='left', fontsize=12)

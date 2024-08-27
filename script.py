@@ -111,7 +111,7 @@ species_dict_Ni = {'Ni I' : {'vmr' : 2.568167989682126e-06, 'arm':'blue'}}
                     
 #Make plot stacking all of the synthetic transmission spectra for appendix
 #multiSpeciesCCF('KELT-20b', 'inverted-transmission-better', species_dict_temp, False, True, True, 'ccf', 'halves')
-#multiSpeciesCCF('KELT-20b', 'inverted-transmission-better', species_dict_full, False, True, True, 'ccf', 'halves')
+multiSpeciesCCF('KELT-20b', 'inverted-transmission-better', species_dict_full, False, True, True, 'ccf', 'halves')
 
 
 #for species_label, species_params in species_dict_final.items():
@@ -124,7 +124,7 @@ species_dict_Ni = {'Ni I' : {'vmr' : 2.568167989682126e-06, 'arm':'blue'}}
 #species_dict = dict(sorted(species_dict.items(), key=lambda item: item[1]['vmr'], reverse=True))
 #make_spectrum_plots(species_dict_final)
 
-make_spectrum_plots_split(species_dict_Fe2)
+#make_spectrum_plots_split(species_dict_Fe2)
 #make_spectrum_plots_split(species_dict_Mg)
 #make_spectrum_plots_split(species_dict_Ni)
 #make_spectrum_plots_split(species_dict_Ni)

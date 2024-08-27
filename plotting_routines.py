@@ -332,7 +332,8 @@ def overlayArms(planet_name, temperature_profile, species_label, vmr, do_inject_
         pl.setp(ax1.get_xticklabels(), visible=False)
         ax1.set_ylabel('SNR')
         # Add the horizontal line at 4 SNR
-        ax1.axhline(y=4, color='g', linestyle='--', label=r'4 $\sigma$')    
+        ax1.axhline(y=3, color='gray', linestyle='--', label=r'Tentative detection threshold$')
+        ax1.axhline(y=5, color='black', linestyle='--', label=r'Detection threshold$')    
         ax2.set_xlabel('$\Delta$V (km/s)')
         ax2.set_ylabel('Residuals')
         
@@ -356,6 +357,10 @@ def overlayArms(planet_name, temperature_profile, species_label, vmr, do_inject_
         # Consider a clearer naming scheme
         overlay_fits = 'plots/'+ planet_name + '.' + observation_epoch + '.' + arm + '.' + species_label + '.line-profiles-overlaidarms.pdf'
         # Save the plot
+
+        # add a legend
+        ax1.legend(loc='upper right')
+    
         fig.savefig(overlay_fits, dpi=300, bbox_inches='tight')
         pl.close(fig)
             
@@ -708,11 +713,11 @@ def make_spectrum_plots_split(species_dict):
         
         template_wave_blue = template_wave[(template_wave > 4800) & (template_wave < 5441)]
         template_flux_blue = template_flux[(template_wave > 4800) & (template_wave < 5441)]
-        wave_blue, flux_blue, errorin, jd, snr_spectra, exptime, airmass, n_spectra, npix = get_pepsi_data('red', observation_epoch, planet_name, True)
+        #wave_blue, flux_blue, errorin, jd, snr_spectra, exptime, airmass, n_spectra, npix = get_pepsi_data('red', observation_epoch, planet_name, True)
 
         template_wave_red = template_wave[(template_wave > 6278) & (template_wave < 7419)]
         template_flux_red = template_flux[(template_wave > 6278) & (template_wave < 7419)]
-        wave_red, flux_red, errorin, jd, snr_spectra, exptime, airmass, n_spectra, npix = get_pepsi_data('blue', observation_epoch, planet_name, False)
+        #wave_red, flux_red, errorin, jd, snr_spectra, exptime, airmass, n_spectra, npix = get_pepsi_data('blue', observation_epoch, planet_name, False)
 
 
         # Add species text only on the top plot
@@ -723,11 +728,13 @@ def make_spectrum_plots_split(species_dict):
         # Add "Blue arm" label on the top plot
         axBlue.text(0.95, 0.05, 'Blue arm', transform=axBlue.transAxes, fontsize=24, color='blue', ha='right', va='bottom')
         axBlue.plot(template_wave_blue, template_flux_blue, color='black')
+        breakpoint()
         axBlue.plot(wave_blue, flux_blue, color='blue')
 
         # Add "Red arm" label on the bottom plot
         axRed.text(0.95, 0.05, 'Red arm', transform=axRed.transAxes, fontsize=24, color='red', ha='right', va='bottom')
         axRed.plot(template_wave_red, template_flux_red, color='black')
+        breakpoint()
         axRed.plot(wave_red, flux_red, color='red')
         
 

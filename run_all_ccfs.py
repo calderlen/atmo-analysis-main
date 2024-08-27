@@ -152,7 +152,7 @@ def run_one_ccf(species_label, vmr, arm, observation_epoch, template_wave, templ
         #Make a plot
         plotname = 'plots/' + planet_name + '.' + observation_epoch + '.' + str(do_inject_model) + '.' + species_name_ccf + model_tag + '.' + arm + '.CCFs-raw.pdf'
         
-        psarr(cross_cor, drv, orbital_phase, 'RV (km/s)', 'Orbital phase', 'SNR', filename=plotname, ctable='gray')
+        psarr(cross_cor, drv, orbital_phase, '$RV$ (km/s)', 'Orbital phase', 'SNR', filename=plotname, ctable='gray')
 
         #blank out the non-radial pulsations for now
         if planet_name == 'WASP-33b' or planet_name == 'TOI-1431b':
@@ -164,7 +164,7 @@ def run_one_ccf(species_label, vmr, arm, observation_epoch, template_wave, templ
 
             plotname = 'plots/' + planet_name + '.' + observation_epoch + '.' + species_name_ccf + model_tag + '.' + arm + '.blanked.CCFs-raw.pdf'
 
-            psarr(cross_cor, drv, orbital_phase, 'v (km/s)', 'orbital phase', 'SNR', filename=plotname, ctable='gist_gray', carr = Kp_true * np.sin(2.*np.pi*orbital_phase))
+            psarr(cross_cor, drv, orbital_phase, '$RV$ (km/s)', 'orbital phase', 'SNR', filename=plotname, ctable='gist_gray', carr = Kp_true * np.sin(2.*np.pi*orbital_phase))
 
             np.save(ccf_file, cross_cor)
             np.save(ccf_file+'.sigma.npy', sigma_cross_cor)
@@ -281,7 +281,7 @@ def combine_observations(observation_epochs, arms, planet_name, temperature_prof
 
         phase_order = np.argsort(orbital_phase)
         
-        psarr(cross_cor_display[phase_order,:], drv, orbital_phase[phase_order], 'v (km/s)', 'orbital phase', 'SNR', filename=plotname, ctable='gist_yarg', carr = Kp_true * np.sin(2.*np.pi*orbital_phase[phase_order]))
+        psarr(cross_cor_display[phase_order,:], drv, orbital_phase[phase_order], '$RV$ (km/s)', 'Orbital phase', 'SNR', filename=plotname, ctable='gist_gray', carr = Kp_true * np.sin(2.*np.pi*orbital_phase[phase_order]))
 
 
     if 'likelihood' in method:
